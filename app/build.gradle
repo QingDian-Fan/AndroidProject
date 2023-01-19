@@ -1,0 +1,102 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace build_versions.applicationId
+    compileSdk build_versions.compile_sdk
+
+    defaultConfig {
+        applicationId build_versions.applicationId
+        minSdk build_versions.min_sdk
+        targetSdk build_versions.target_sdk
+        versionCode build_versions.version_code
+        versionName build_versions.version_name
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    def releaseFile = file(build_key.keystoreReleaseFilepath)
+    def debugFile = file(build_key.keystoreDebugFilepath)
+    signingConfigs {
+        release {
+            storeFile releaseFile
+            keyAlias build_key.keystoreAlias
+            storePassword build_key.keystorePSW
+            keyPassword build_key.keystoreAliasPSW
+        }
+        beta {
+            storeFile debugFile
+            keyAlias build_key.debugKeystoreAlias
+            storePassword build_key.keystorePSW
+            keyPassword build_key.keystoreAliasPSW
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            zipAlignEnabled true
+            shrinkResources true
+            resValue "string", "app_name", "WanAndroid"
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (releaseFile.exists()) {
+                println("WITH -> buildTypes -> release: using jks key")
+                signingConfig signingConfigs.release
+            } else {
+                println("WITH -> buildTypes -> release: using default key")
+            }
+        }
+
+        debug {
+            minifyEnabled false
+            applicationIdSuffix '.debug'
+            resValue "string", "app_name", "WanAndroid-Debug"
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (debugFile.exists()) {
+                println("WITH -> buildTypes -> debug: using jks key")
+                signingConfig signingConfigs.beta
+            } else {
+                println("WITH -> buildTypes -> debug: using default key")
+            }
+
+        }
+    }
+
+    android.applicationVariants.all { variant ->
+        variant.outputs.all {
+            def buildTime = project.hasProperty('BUILD_TIME') ? BUILD_TIME : new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08:00"))
+
+            if (variant.buildType.name == 'debug') {
+                outputFileName = "玩Android-${variant.baseName}-${versionName}-${buildTime}.apk"
+            }
+            if (variant.buildType.name == 'release') {
+                outputFileName = "玩Android-${variant.baseName}-${versionName}-${buildTime}.apk"
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+}

@@ -1,0 +1,23 @@
+/*application版本控制*/
+def build_versions = [:]
+build_versions.min_sdk = 23
+build_versions.target_sdk = 32
+build_versions.compile_sdk = 32
+build_versions.tool_version = "30.0.0"
+build_versions.version_code = 1
+build_versions.version_name = "1.0.0"  //android版本信息 alpha beta rc release
+build_versions.applicationId = "com.dian.demo"
+ext.build_versions = build_versions
+
+//签名文件配置
+def build_key = [:]
+build_key.keystoreReleaseFilepath = "../keystore/project.keystore"
+build_key.keystoreDebugFilepath = "../keystore/debug.keystore"
+build_key.keystoreAlias = "ProjectKeystore"
+build_key.debugKeystoreAlias = "DebugKeystore"
+build_key.keystoreAliasPSW = "dian3426"
+build_key.keystorePSW = "dian3426"
+ext.build_key = build_key
+
+
+
