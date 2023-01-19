@@ -8,6 +8,7 @@
     <!-- 外部存储:分享时使用 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="MANAGE_EXTERNAL_STORAGE"/>
     <!-- 相机、手电筒：扫描二维码时使用 -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
