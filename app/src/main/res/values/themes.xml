@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.WanAndroid" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
@@ -13,4 +13,14 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="AppTheme.Normal">
+        <item name="android:statusBarColor">@color/colorPink</item>
+        <item name="android:windowBackground">@color/bg_common</item>
+    </style>
+
+    <style name="AppTheme.Splash">
+        <item name="android:statusBarColor">@color/colorPink</item>
+    </style>
+
 </resources>

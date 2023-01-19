@@ -1,3 +1,42 @@
 <resources>
+    <string name="release_base_url">https://www.wanandroid.com/</string>
+    <string name="debug_base_url">http://mobile.bwstudent.com/</string>
 
+
+    <string name="titlebar_search_hint">搜索</string>
+    <string name="language">ch</string>
+
+
+    <string name="share_qq">QQ</string>
+    <string name="share_qzone">QQ空间</string>
+    <string name="share_wechat">微信</string>
+    <string name="share_moment">朋友圈</string>
+    <string name="share_weibo">微博</string>
+    <string name="share_link">复制链接</string>
+    <string name="share_save_img">保存图片</string>
+    <string name="link_is_copy">链接已复制到粘贴板中</string>
+    <string name="img_is_save">图片已保存到相册</string>
+
+    <string name="share_cancel">分享取消</string>
+    <string name="share_denied">分享拒绝</string>
+
+    <string name="cancel">取消</string>
+    <string name="confirm" >确认</string>
+    <string name="loading">正在加载&#8230;</string>
+    <string name="loading_end">我是有底线的</string>
+    <string name="generate_code_hint">请输入要生成的内容</string>
+    <string name="generate_code_text">生成二维码</string>
+    <string name="save_success">保存成功</string>
+    <string name="generate_qr_code">生成二维码</string>
+    <string name="decode_qr_code_fail">解析二维码失败</string>
+    <string name="debug_environment">测试环境</string>
+    <string name="release_environment">生产环境</string>
+    <string name="text_ping_test">PING TEST</string>
+    <string name="text_schema">SCHEMA</string>
+    <string name="input_content">请输入内容</string>
+    <string name="debug_page_title">调试页面</string>
+
+    <string name="short_cut_scan">扫一扫</string>
+    <string name="short_cut_generate">生成二维码</string>
+    <string name="short_cut_tip">当前功能咱不可用</string>
 </resources>
