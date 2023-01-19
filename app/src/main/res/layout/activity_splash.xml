@@ -10,6 +10,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:id="@+id/bg_splash"
         android:background="@drawable/bg_splash"
         tools:context="com.demo.project.ui.activity.SplashActivity">
 

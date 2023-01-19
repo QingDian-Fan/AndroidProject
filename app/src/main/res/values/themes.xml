@@ -21,6 +21,7 @@
 
     <style name="AppTheme.Splash">
         <item name="android:statusBarColor">@color/colorPink</item>
+        <item name="android:windowBackground">@drawable/bg_splash</item>
     </style>
 
 </resources>

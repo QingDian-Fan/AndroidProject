@@ -2,6 +2,14 @@ package com.dian.demo
 
 import android.app.Application
 import android.content.Context
+import com.dian.demo.config.AppConfig.WB_APP_KEY
+import com.dian.demo.config.AppConfig.WB_REDIRECT_URl
+import com.dian.demo.config.AppConfig.WB_SCOPE
+import com.dian.demo.http.HttpUtils
+import com.dian.demo.utils.ExceptionHandlerUtil
+import com.sina.weibo.sdk.auth.AuthInfo
+import com.sina.weibo.sdk.openapi.SdkListener
+import com.sina.weibo.sdk.openapi.WBAPIFactory
 
 
 class ProjectApplication : Application() {
@@ -23,11 +31,11 @@ class ProjectApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         init()
-       // initWeiBoSdk()
-        //HttpUtils.getInstance().init(this)
+        initWeiBoSdk()
+        HttpUtils.getInstance().init(this)
     }
 
-  /*  private fun initWeiBoSdk() {
+  private fun initWeiBoSdk() {
         val authInfo = AuthInfo(this, WB_APP_KEY, WB_REDIRECT_URl, WB_SCOPE)
         WBAPIFactory.createWBAPI(this).registerApp(this, authInfo, object : SdkListener {
             override fun onInitSuccess() {
@@ -38,13 +46,13 @@ class ProjectApplication : Application() {
 
             }
         })
-    }*/
+    }
 
     private fun init() {
         mContext = this
         instance = this
-        //ExceptionHandlerUtil.init()
-       // NightModeUtil.initNightMode()
+        ExceptionHandlerUtil.init()
+
     }
 
 

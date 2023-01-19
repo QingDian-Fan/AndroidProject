@@ -9,6 +9,8 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivitySplashBinding
 import com.dian.demo.utils.ShortCutUtil
+import java.util.Timer
+import java.util.TimerTask
 
 class SplashActivity : BaseAppBindActivity<ActivitySplashBinding>() {
 
@@ -22,8 +24,19 @@ class SplashActivity : BaseAppBindActivity<ActivitySplashBinding>() {
         if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.N_MR1) initShortCut()
 
         getTitleBarView().visibility = gone
-        DebugActivity.start(this@SplashActivity)
-        finish()
+        getTitleBarView().postDelayed({
+            DebugActivity.start(this@SplashActivity)
+            finish()
+        },3000)
+      /*  val timer =Timer()
+        val timerTask =object : TimerTask() {
+            override fun run() {
+                DebugActivity.start(this@SplashActivity)
+                finish()
+            }
+        }
+        timer.schedule(timerTask,3000)*/
+
     }
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)
