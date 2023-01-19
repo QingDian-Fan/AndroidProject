@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
 /**
- * appkey:7bf0f3de89c9206aab25f1b2ff7da4cd
+ * token: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
  */
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
