@@ -43,6 +43,7 @@
     <string name="short_cut_tip">当前功能咱不可用</string>
 
     <string name="home_title_text">首页</string>
+    <string name="demo_title_text">功能演示</string>
     <string name="app_content">玩Android是一个每日推荐20~30篇Android优质文章的站点,提供Android常用工具和常用网站,并以知识体系的形式展现所有的文章分类。</string>
     <string name="app_website">https://wanandroid.com/</string>
     <string name="choose_logo">选择图片</string>

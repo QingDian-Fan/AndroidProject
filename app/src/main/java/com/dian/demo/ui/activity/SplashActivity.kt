@@ -33,21 +33,21 @@ class SplashActivity : BaseAppBindActivity<ActivitySplashBinding>() {
                 when (it) {
                     is PermissionResult.Grant -> {  //权限允许
                         getTitleBarView().postDelayed({
-                            HomeActivity.start(this@SplashActivity)
+                            DemoActivity.start(this@SplashActivity)
                             finish()
                         }, 1500)
                     }
                     is PermissionResult.Rationale -> {  //权限拒绝
                         showToast("权限拒绝")
                         getTitleBarView().postDelayed({
-                            HomeActivity.start(this@SplashActivity)
+                            DemoActivity.start(this@SplashActivity)
                             finish()
                         }, 1500)
                     }
                     is PermissionResult.Deny -> {   //权限拒绝，且勾选了不再询问
                         showToast("权限拒绝，且勾选了不再询问")
                         getTitleBarView().postDelayed({
-                            HomeActivity.start(this@SplashActivity)
+                            DemoActivity.start(this@SplashActivity)
                             finish()
                         }, 1500)
                     }

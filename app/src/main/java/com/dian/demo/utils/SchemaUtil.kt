@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.text.TextUtils
 import com.dian.demo.R
-import com.dian.demo.ui.activity.HomeActivity
+import com.dian.demo.ui.activity.DemoActivity
 import com.dian.demo.ui.activity.WebExplorerActivity
 import com.dian.demo.utils.IntentUtils.openBrowser
 
@@ -38,7 +38,7 @@ object SchemaUtil {
                 WebExplorerActivity.start(mContext, linkUrl!!, title)
             }
             PAGE_HOME -> {
-                HomeActivity.start(mContext)
+                DemoActivity.start(mContext)
             }
         }
 

@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:paddingHorizontal="20dp"
-        tools:context=".ui.activity.HomeActivity">
+        tools:context=".ui.activity.DemoActivity">
 
         <Button
             android:id="@+id/btn_share_text"

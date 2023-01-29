@@ -9,7 +9,7 @@ import android.view.View
 import com.demo.project.utils.ext.gone
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
-import com.dian.demo.databinding.ActivityHomeBinding
+import com.dian.demo.databinding.ActivityDemoBinding
 import com.dian.demo.ui.dialog.DebugDialog
 import com.dian.demo.utils.ResourcesUtils
 import com.dian.demo.utils.ScreenShotUtils
@@ -17,17 +17,17 @@ import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.share.dialog.ShareDialog
 
 
-class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
+class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
 
     companion object {
         fun start(mContext: Context) {
             val intent = Intent()
-            intent.setClass(mContext, HomeActivity::class.java)
+            intent.setClass(mContext, DemoActivity::class.java)
             mContext.startActivity(intent)
         }
     }
 
-    override fun getLayoutId(): Int = R.layout.activity_home
+    override fun getLayoutId(): Int = R.layout.activity_demo
 
     override fun initialize(savedInstanceState: Bundle?) {
         getTitleBarView().setCenterText(ResourcesUtils.getString(R.string.home_title_text))
