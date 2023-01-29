@@ -16,8 +16,11 @@ import androidx.core.view.drawToBitmap
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityGenerateBinding
+import com.dian.demo.utils.BitmapUtils
+import com.dian.demo.utils.PictureSelector
 import com.dian.demo.utils.ResourcesUtils
 import com.dian.demo.utils.code.generate.GenerateCodeUtils
+import com.dian.demo.utils.ext.singleClick
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -35,6 +38,7 @@ class GenerateActivity : BaseAppBindActivity<ActivityGenerateBinding>() {
     }
 
     private var codeBitmap: Bitmap? = null
+    private var logoBitmap: Bitmap? = null
 
     override fun getLayoutId(): Int = R.layout.activity_generate
 
@@ -43,21 +47,20 @@ class GenerateActivity : BaseAppBindActivity<ActivityGenerateBinding>() {
      */
     override fun initialize(savedInstanceState: Bundle?) {
         setPageTitle(ResourcesUtils.getString(R.string.generate_qr_code))
+
+        binding.tvChooseLogo.singleClick {
+            PictureSelector.select(this@GenerateActivity, 1001)
+        }
+
         binding.tvGenerate.setOnClickListener {
             if (binding.etContent.text == null || TextUtils.isEmpty(binding.etContent.text.toString())) return@setOnClickListener
             val contentString = binding.etContent.text.toString()
-            val portrait = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher_pink)
-            codeBitmap = GenerateCodeUtils.createQRCodeBitmap(contentString, portrait, 1024, 170)
+            logoBitmap =
+                logoBitmap ?: BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher_pink)
+            codeBitmap = GenerateCodeUtils.createQRCodeBitmap(contentString, logoBitmap, 1024, 150)
             binding.ivCode.setImageBitmap(codeBitmap)
         }
 
-        /* mIvCode.isDrawingCacheEnabled = true //禁用绘图缓存
-            mIvCode.buildDrawingCache()
-            val temBitmap: Bitmap = mIvCode.drawingCache
-            val result: String = QrCodeUtils.parseQRcode(temBitmap)
-            Toast.makeText(this, "长按识别二维码结果:$result", Toast.LENGTH_LONG).show()
-            //禁用DrawingCahce否则会影响性能 ,而且不禁止会导致每次截图到保存的是缓存的位图
-            mIvCode.isDrawingCacheEnabled = false //识别完成之后开启绘图缓存*/
         binding.ivCode.setOnLongClickListener {
             saveBitmapGallery(
                 this@GenerateActivity,
@@ -65,6 +68,18 @@ class GenerateActivity : BaseAppBindActivity<ActivityGenerateBinding>() {
                 "QR_Code_" + System.currentTimeMillis()
             )
             false
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            1001 -> {
+                PictureSelector.result(resultCode, data)?.let {
+                    logoBitmap = BitmapUtils.getBitmapFromUri(this@GenerateActivity, it)
+                    binding.tvChooseLogo.text = "√"
+                }
+            }
         }
     }
 

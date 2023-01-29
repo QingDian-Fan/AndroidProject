@@ -7,6 +7,8 @@
     <string name="language">ch</string>
 
 
+
+
     <string name="share_qq">QQ</string>
     <string name="share_qzone">QQ空间</string>
     <string name="share_wechat">微信</string>
@@ -21,7 +23,7 @@
     <string name="share_denied">分享拒绝</string>
 
     <string name="cancel">取消</string>
-    <string name="confirm" >确认</string>
+    <string name="confirm">确认</string>
     <string name="loading">正在加载&#8230;</string>
     <string name="loading_end">我是有底线的</string>
     <string name="generate_code_hint">请输入要生成的内容</string>
@@ -39,4 +41,10 @@
     <string name="short_cut_scan">扫一扫</string>
     <string name="short_cut_generate">生成二维码</string>
     <string name="short_cut_tip">当前功能咱不可用</string>
+
+    <string name="home_title_text">首页</string>
+    <string name="app_content">玩Android是一个每日推荐20~30篇Android优质文章的站点,提供Android常用工具和常用网站,并以知识体系的形式展现所有的文章分类。</string>
+    <string name="app_website">https://wanandroid.com/</string>
+    <string name="choose_logo">选择图片</string>
+    <string name="exit_app">再按一次退出程序</string>
 </resources>

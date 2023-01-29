@@ -50,7 +50,7 @@ android {
             minifyEnabled true
             zipAlignEnabled true
             shrinkResources true
-            resValue "string", "app_name", "WanAndroid"
+            resValue "string", "app_name", "玩Android"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (releaseFile.exists()) {
                 println("WITH -> buildTypes -> release: using jks key")
@@ -63,7 +63,7 @@ android {
         debug {
             minifyEnabled false
             applicationIdSuffix '.debug'
-            resValue "string", "app_name", "WanAndroid-Debug"
+            resValue "string", "app_name", "玩Android-Debug"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (debugFile.exists()) {
                 println("WITH -> buildTypes -> debug: using jks key")

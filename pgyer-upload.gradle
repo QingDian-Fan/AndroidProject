@@ -177,16 +177,13 @@ def sendMsgToDing(def fileSize, def data) {
     _content.append("\n\n**下载地址**:\n\nhttps://www.pgyer.com/${data.buildKey}")
     //_content.append("\n\n**安装密码**:\n\ncarzone123")
     _content.append("\n\n" + qrCodeUrl)
+   // _content.append("\n\n" + "@范庆典")
     def json = new JsonBuilder()
     json {
         msgtype "markdown"
         markdown {
             title _title
             text _content.toString()
-        }
-        at {
-            atMobiles([])
-            isAtAll false
         }
     }
     dos.writeBytes(json.toString())

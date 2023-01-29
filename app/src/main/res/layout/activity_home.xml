@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        tools:context=".ui.activity.HomeActivity">
+
+        <Button
+            android:id="@+id/btn_share_text"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp46"
+            android:layout_marginTop="60dp"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="10dp"
+            android:text="Share Text"
+            android:textColor="@color/colorWhite" />
+
+        <Button
+            android:id="@+id/btn_share_link"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp46"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="10dp"
+            android:text="Share Link"
+            android:textColor="@color/colorWhite" />
+
+        <Button
+            android:id="@+id/btn_share_bitmap"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp46"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="10dp"
+            android:text="Share Bitmap"
+            android:textColor="@color/colorWhite" />
+
+        <Button
+            android:id="@+id/btn_debug_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp46"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="10dp"
+            android:text="调试页面"
+            android:textColor="@color/colorWhite" />
+
+        <Button
+            android:id="@+id/btn_scan_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp46"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="10dp"
+            android:text="扫码页面"
+            android:textColor="@color/colorWhite" />
+
+        <Button
+            android:id="@+id/btn_generate_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp46"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="10dp"
+            android:text="生成二维码"
+            android:textColor="@color/colorWhite" />
+
+        <Button
+            android:id="@+id/btn_web_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp46"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="10dp"
+            android:text="跳转Web页面"
+            android:textColor="@color/colorWhite" />
+    </LinearLayout>
+</layout>

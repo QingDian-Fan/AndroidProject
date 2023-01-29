@@ -23,17 +23,12 @@ open class WebExplorerActivity : BaseAppBindActivity<ActivityWebExplorerBinding>
         private const val EXTRA_URL = "EXTRA_URL"
         private const val EXTRA_TITLE = "EXTRA_TITLE"
 
-        @JvmStatic
-        fun start(mContext: Context, urlString: String) {
-            val intent = Intent()
-            intent.setClass(mContext, WebExplorerActivity::class.java)
-            intent.putExtra(EXTRA_URL, urlString)
-            mContext.startActivity(intent)
-
-        }
 
         @JvmStatic
-        fun start(mContext: Context, urlString: String, titleString: String) {
+        fun start(
+            mContext: Context, urlString: String,
+            titleString: String = ResourcesUtils.getString(R.string.app_name)
+        ) {
             val intent = Intent()
             intent.setClass(mContext, WebExplorerActivity::class.java)
             intent.putExtra(EXTRA_URL, urlString)
@@ -55,7 +50,11 @@ open class WebExplorerActivity : BaseAppBindActivity<ActivityWebExplorerBinding>
     override fun initialize(savedInstanceState: Bundle?) {
         urlString = intent.getStringExtra(EXTRA_URL)
         titleString = intent.getStringExtra(EXTRA_TITLE)
-        setPageTitle( if (titleString != null && !TextUtils.isEmpty(titleString)) titleString!! else ResourcesUtils.getString(R.string.app_name))
+        setPageTitle(
+            if (titleString != null && !TextUtils.isEmpty(titleString)) titleString!! else ResourcesUtils.getString(
+                R.string.app_name
+            )
+        )
 
         mWebFragment = WebFragment.getFragment(urlString!!)
         supportFragmentManager.beginTransaction()

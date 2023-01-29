@@ -2,13 +2,16 @@ package com.dian.demo.ui.dialog
 
 import android.app.Dialog
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.fragment.app.DialogFragment
 import com.dian.demo.R
+import com.dian.demo.ui.activity.WebExplorerActivity
 import com.dian.demo.utils.ResourcesUtils
+import com.dian.demo.utils.SchemaUtil
 import com.dian.demo.utils.ext.singleClick
 
 
@@ -29,7 +32,12 @@ class DebugDialog : DialogFragment() {
         val mTvTitle = mView.findViewById<AppCompatTextView>(R.id.tv_title)
         val mEtInput = mView.findViewById<AppCompatEditText>(R.id.et_input)
         mTvTitle.text = ResourcesUtils.getString(R.string.text_schema)
-        mTvConfirm.singleClick { dismissAllowingStateLoss() }
+        mEtInput.setText("dian://webview?link_url=https://wanandroid.com/")
+        mTvConfirm.singleClick {
+            if (!TextUtils.isEmpty(mEtInput.text.toString().trim())) {
+                SchemaUtil.schemaToPage(requireContext(),mEtInput.text.toString().trim())
+            }
+        }
         mTvCancel.singleClick { dismissAllowingStateLoss() }
     }
 

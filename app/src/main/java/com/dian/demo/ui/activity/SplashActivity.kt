@@ -17,6 +17,7 @@ import com.dian.demo.utils.permissions.PermissionResult
 class SplashActivity : BaseAppBindActivity<ActivitySplashBinding>() {
 
     override fun getLayoutId(): Int = R.layout.activity_splash
+
     /**
      *  初始化操作
      */
@@ -27,28 +28,28 @@ class SplashActivity : BaseAppBindActivity<ActivitySplashBinding>() {
         getTitleBarView().visibility = gone
 
         LivePermissions(this@SplashActivity)
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA)
+            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
             .observe(this, Observer {
                 when (it) {
                     is PermissionResult.Grant -> {  //权限允许
                         getTitleBarView().postDelayed({
-                            DebugActivity.start(this@SplashActivity)
+                            HomeActivity.start(this@SplashActivity)
                             finish()
-                        }, 2500)
+                        }, 1500)
                     }
                     is PermissionResult.Rationale -> {  //权限拒绝
                         showToast("权限拒绝")
                         getTitleBarView().postDelayed({
-                            DebugActivity.start(this@SplashActivity)
+                            HomeActivity.start(this@SplashActivity)
                             finish()
-                        }, 2500)
+                        }, 1500)
                     }
                     is PermissionResult.Deny -> {   //权限拒绝，且勾选了不再询问
                         showToast("权限拒绝，且勾选了不再询问")
                         getTitleBarView().postDelayed({
-                            DebugActivity.start(this@SplashActivity)
+                            HomeActivity.start(this@SplashActivity)
                             finish()
-                        }, 2500)
+                        }, 1500)
                     }
                 }
             })

@@ -10,8 +10,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:background="@color/bg_common"
+        android:orientation="vertical"
         tools:context="com.demo.project.ui.activity.GenerateActivity">
 
         <androidx.appcompat.widget.AppCompatEditText
@@ -25,12 +25,27 @@
             android:hint="@string/generate_code_hint"
             android:textSize="15dp" />
 
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_choose_logo"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_marginHorizontal="15dp"
+            android:layout_marginTop="25dp"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/bg_btn_generate"
+            android:gravity="center"
+            android:letterSpacing="0.3"
+            android:text="@string/choose_logo"
+            android:textColor="@color/colorWhite"
+            android:textSize="18dp" />
+
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tv_generate"
             android:layout_width="match_parent"
             android:layout_height="45dp"
             android:layout_marginHorizontal="15dp"
-            android:layout_marginTop="35dp"
+            android:layout_marginTop="15dp"
             android:layout_marginBottom="55dp"
             android:background="@drawable/bg_btn_generate"
             android:gravity="center"
@@ -41,16 +56,16 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_code"
-            android:layout_width="250dp"
+            android:layout_width="240dp"
+            android:layout_height="240dp"
+            android:layout_gravity="center_horizontal"
             android:background="@color/bg_common"
             android:padding="8dp"
-            android:scaleType="fitXY"
-            android:layout_height="250dp"
-            android:layout_gravity="center_horizontal" />
+            android:scaleType="fitXY" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.8" />
+            android:layout_weight="0.7" />
     </LinearLayout>
 </layout>
