@@ -11,6 +11,7 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityDemoBinding
 import com.dian.demo.ui.dialog.DebugDialog
+import com.dian.demo.utils.CacheUtil
 import com.dian.demo.utils.ResourcesUtils
 import com.dian.demo.utils.ScreenShotUtils
 import com.dian.demo.utils.ext.showAllowStateLoss
@@ -88,6 +89,9 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
             }
             R.id.btn_web_activity -> {
                 DebugDialog().showAllowStateLoss(supportFragmentManager, "web")
+            }
+            R.id.btn_clear_cache -> {
+                CacheUtil.clearAllCache(this@DemoActivity)
             }
         }
     }

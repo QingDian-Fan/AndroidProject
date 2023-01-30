@@ -53,14 +53,14 @@ object IntentUtils {
     }
 
     @JvmStatic
-    fun isInstalled(context: Context, packageName: String?): Boolean {
+    fun isInstalled(context: Context, packageName: String): Boolean {
         var packageInfo: PackageInfo?
         try {
-            packageInfo = context.packageManager.getPackageInfo(packageName!!, 0)
+            packageInfo = context.packageManager.getPackageInfo(packageName, 0)
         } catch (e: PackageManager.NameNotFoundException) {
             packageInfo = null
             e.printStackTrace()
         }
-        return true
+        return packageInfo!=null
     }
 }
