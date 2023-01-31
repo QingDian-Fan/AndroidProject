@@ -4,9 +4,9 @@ package com.dian.demo.config
 import com.demo.project.config.Constant.DEBUG_URL_CONFIG
 import com.dian.demo.BuildConfig
 import com.dian.demo.R
-import com.dian.demo.utils.LogUtils
-import com.dian.demo.utils.PreferenceUtils
-import com.dian.demo.utils.ResourcesUtils
+import com.dian.demo.utils.LogUtil
+import com.dian.demo.utils.PreferenceUtil
+import com.dian.demo.utils.ResourcesUtil
 
 
 object AppConfig {
@@ -27,12 +27,12 @@ object AppConfig {
 
 
 
-    val BASE_URL: String = ResourcesUtils.getString(R.string.release_base_url)
+    val BASE_URL: String = ResourcesUtil.getString(R.string.release_base_url)
 
     fun getBaseUrl(): String{
         return if (BuildConfig.DEBUG) {
-            LogUtils.e("------>", PreferenceUtils.getString(DEBUG_URL_CONFIG, BASE_URL))
-            PreferenceUtils.getString(DEBUG_URL_CONFIG, BASE_URL)
+            LogUtil.e("------>", PreferenceUtil.getString(DEBUG_URL_CONFIG, BASE_URL))
+            PreferenceUtil.getString(DEBUG_URL_CONFIG, BASE_URL)
         } else BASE_URL
 
     }

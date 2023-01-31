@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.ViewModelProvider
-import com.demo.project.base.BaseViewModel
 import com.demo.project.base.ILazyLoad
 import com.dian.demo.utils.ext.observeNonNull
 

@@ -5,12 +5,11 @@ import android.os.Bundle
 import android.view.Window
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
 import com.demo.project.base.ToastEvent
 import com.demo.project.base.ViewBehavior
 import com.dian.demo.ProjectApplication
 import com.dian.demo.utils.ScreenShotListenManager
-import com.dian.demo.utils.ToastUtils
+import com.dian.demo.utils.ToastUtil
 import com.dian.demo.utils.share.ShareActivity
 
 
@@ -57,9 +56,9 @@ abstract class BaseActivity : ShareActivity(), ViewBehavior {
 
     override fun showToast(event: ToastEvent) {
         if (event.content != null) {
-            ToastUtils.showToast(this, event.content!!, event.showLong)
+            ToastUtil.showToast(this, event.content!!, event.showLong)
         } else if (event.contentResId != null) {
-            ToastUtils.showToast(this, getString(event.contentResId!!), event.showLong)
+            ToastUtil.showToast(this, getString(event.contentResId!!), event.showLong)
         }
     }
 

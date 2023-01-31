@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-object DateFormatUtils {
+object DateFormatUtil {
     private const val DATE_FORMAT_TIME_SHARE = "yyyy.MM.dd HH:mm"
     private const val DATE_FORMAT_TIME = "yyyy-MM-dd"
     private const val DATE_FORMAT_TIME_24H = "HH:mm"

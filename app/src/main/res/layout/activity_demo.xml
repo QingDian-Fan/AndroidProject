@@ -7,7 +7,7 @@
 
         <import type="com.dian.demo.utils.CacheUtil" />
 
-        <import type="com.dian.demo.utils.ResourcesUtils" />
+        <import type="com.dian.demo.utils.ResourcesUtil" />
 
         <import type="com.dian.demo.R" />
 

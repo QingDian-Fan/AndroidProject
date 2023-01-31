@@ -12,7 +12,7 @@ import android.widget.Toast
  * @description: Toast相关工具类
  * @since: 1.0.0
  */
-object ToastUtils {
+object ToastUtil {
     var toast: Toast? = null
 
     @JvmStatic

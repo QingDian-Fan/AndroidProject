@@ -11,8 +11,8 @@ import com.dian.demo.ProjectApplication;
 import com.dian.demo.R;
 import com.dian.demo.config.AppConfig;
 import com.dian.demo.utils.CacheUtil;
-import com.dian.demo.utils.ResourcesUtils;
-import com.dian.demo.utils.ToastUtils;
+import com.dian.demo.utils.ResourcesUtil;
+import com.dian.demo.utils.ToastUtil;
 import com.dian.demo.utils.share.ShareFactory;
 import com.dian.demo.utils.share.channel.Channel;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
@@ -66,10 +66,10 @@ public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHan
                     ShareFactory.sendSuccessAction(Channel.WECHAT);
                     break;
                 case BaseResp.ErrCode.ERR_USER_CANCEL:
-                    ToastUtils.showToast(ProjectApplication.getAppContext(), ResourcesUtils.getString(R.string.share_cancel), false, Gravity.CENTER);
+                    ToastUtil.showToast(ProjectApplication.getAppContext(), ResourcesUtil.getString(R.string.share_cancel), false, Gravity.CENTER);
                     break;
                 case BaseResp.ErrCode.ERR_AUTH_DENIED:
-                    ToastUtils.showToast(ProjectApplication.getAppContext(), ResourcesUtils.getString(R.string.share_denied), false, Gravity.CENTER);
+                    ToastUtil.showToast(ProjectApplication.getAppContext(), ResourcesUtil.getString(R.string.share_denied), false, Gravity.CENTER);
                     break;
             }
         }

@@ -13,8 +13,8 @@ import android.view.Gravity;
 import com.dian.demo.ProjectApplication;
 import com.dian.demo.R;
 import com.dian.demo.config.AppConfig;
-import com.dian.demo.utils.ResourcesUtils;
-import com.dian.demo.utils.ToastUtils;
+import com.dian.demo.utils.ResourcesUtil;
+import com.dian.demo.utils.ToastUtil;
 import com.dian.demo.utils.share.QQShareListener;
 import com.tencent.connect.share.QQShare;
 import com.tencent.connect.share.QzonePublish;
@@ -51,7 +51,7 @@ public class QQChannel extends CustomChannel {
             intent.setComponent(new ComponentName("com.tencent.mobileqq", "com.tencent.mobileqq.activity.JumpActivity"));
             ProjectApplication.getAppContext().startActivity(intent);
         } else {
-            ToastUtils.showToast(ProjectApplication.getAppContext(),"暂不支持分享纯文本",false, Gravity.CENTER);
+            ToastUtil.showToast(ProjectApplication.getAppContext(),"暂不支持分享纯文本",false, Gravity.CENTER);
         }
 
     }
@@ -90,7 +90,7 @@ public class QQChannel extends CustomChannel {
         if (!isQQZone) {
             params.putInt(QQShare.SHARE_TO_QQ_KEY_TYPE, QQShare.SHARE_TO_QQ_TYPE_DEFAULT);
             params.putString(QQShare.SHARE_TO_QQ_TITLE, title);
-            params.putString(QQShare.SHARE_TO_QQ_APP_NAME, ResourcesUtils.getString(R.string.app_name));
+            params.putString(QQShare.SHARE_TO_QQ_APP_NAME, ResourcesUtil.getString(R.string.app_name));
             params.putString(QQShare.SHARE_TO_QQ_SUMMARY, des);//"摘要"
             params.putString(QQShare.SHARE_TO_QQ_TARGET_URL, link);
             params.putString(QQShare.SHARE_TO_QQ_IMAGE_URL, bmpUri);

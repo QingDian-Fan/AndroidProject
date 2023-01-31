@@ -9,7 +9,7 @@ import com.dian.demo.ProjectApplication;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PreferenceUtils {
+public class PreferenceUtil {
     private static final String CONFIG = "app_config";
 
 

@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public class ScreenShotUtils {
+public class ScreenShotUtil {
 
     /**
      * 根据指定的Activity截图（带空白的状态栏）

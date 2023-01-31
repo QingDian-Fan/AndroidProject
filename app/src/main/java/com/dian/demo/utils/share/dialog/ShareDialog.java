@@ -26,9 +26,9 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.dian.demo.ProjectApplication;
 import com.dian.demo.R;
-import com.dian.demo.utils.IntentUtils;
-import com.dian.demo.utils.ResourcesUtils;
-import com.dian.demo.utils.ToastUtils;
+import com.dian.demo.utils.IntentUtil;
+import com.dian.demo.utils.ResourcesUtil;
+import com.dian.demo.utils.ToastUtil;
 import com.dian.demo.utils.share.ShareFactory;
 import com.dian.demo.utils.share.ShareModel;
 import com.dian.demo.utils.share.ShareUtils;
@@ -89,21 +89,21 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
     }
 
     private void initPlatformData() {
-        if (IntentUtils.isInstalled(requireContext(), Channel.PACKAGE_QQ)) {
-            platformList.add(new PlatformData(1, ResourcesUtils.getString(R.string.share_qq), Channel.PACKAGE_QQ, ResourcesUtils.getDrawable(R.drawable.icon_share_qq), Channel.QQ));
-            platformList.add(new PlatformData(2, ResourcesUtils.getString(R.string.share_qzone), Channel.PACKAGE_QQ, ResourcesUtils.getDrawable(R.drawable.icon_share_qzone), Channel.QQ_ZONE));
+        if (IntentUtil.isInstalled(requireContext(), Channel.PACKAGE_QQ)) {
+            platformList.add(new PlatformData(1, ResourcesUtil.getString(R.string.share_qq), Channel.PACKAGE_QQ, ResourcesUtil.getDrawable(R.drawable.icon_share_qq), Channel.QQ));
+            platformList.add(new PlatformData(2, ResourcesUtil.getString(R.string.share_qzone), Channel.PACKAGE_QQ, ResourcesUtil.getDrawable(R.drawable.icon_share_qzone), Channel.QQ_ZONE));
         }
-        if (IntentUtils.isInstalled(requireContext(), Channel.PACKAGE_WECHAT)) {
-            platformList.add(new PlatformData(3, ResourcesUtils.getString(R.string.share_wechat), Channel.PACKAGE_WECHAT, ResourcesUtils.getDrawable(R.drawable.icon_share_wechat), Channel.WECHAT));
-            platformList.add(new PlatformData(4, ResourcesUtils.getString(R.string.share_moment), Channel.PACKAGE_WECHAT, ResourcesUtils.getDrawable(R.drawable.icon_share_moment), Channel.WECHAT_TIMELINE));
+        if (IntentUtil.isInstalled(requireContext(), Channel.PACKAGE_WECHAT)) {
+            platformList.add(new PlatformData(3, ResourcesUtil.getString(R.string.share_wechat), Channel.PACKAGE_WECHAT, ResourcesUtil.getDrawable(R.drawable.icon_share_wechat), Channel.WECHAT));
+            platformList.add(new PlatformData(4, ResourcesUtil.getString(R.string.share_moment), Channel.PACKAGE_WECHAT, ResourcesUtil.getDrawable(R.drawable.icon_share_moment), Channel.WECHAT_TIMELINE));
         }
-        if (IntentUtils.isInstalled(requireContext(), Channel.PACKAGE_WEIBO)) {
-            platformList.add(new PlatformData(7, ResourcesUtils.getString(R.string.share_weibo), Channel.PACKAGE_WEIBO, ResourcesUtils.getDrawable(R.drawable.icon_share_weibo), Channel.WEIBO));
+        if (IntentUtil.isInstalled(requireContext(), Channel.PACKAGE_WEIBO)) {
+            platformList.add(new PlatformData(7, ResourcesUtil.getString(R.string.share_weibo), Channel.PACKAGE_WEIBO, ResourcesUtil.getDrawable(R.drawable.icon_share_weibo), Channel.WEIBO));
         }
         if (shareModel.type == ShareModel.TYPE_HTML) {
-            platformList.add(new PlatformData(5, ResourcesUtils.getString(R.string.share_link), Channel.PACKAGE_THIS, ResourcesUtils.getDrawable(R.drawable.icon_share_link), Channel.COPY_LINK));
+            platformList.add(new PlatformData(5, ResourcesUtil.getString(R.string.share_link), Channel.PACKAGE_THIS, ResourcesUtil.getDrawable(R.drawable.icon_share_link), Channel.COPY_LINK));
         } else if (shareModel.type == ShareModel.TYPE_BITMAP) {
-            platformList.add(new PlatformData(6, ResourcesUtils.getString(R.string.share_save_img), Channel.PACKAGE_THIS, ResourcesUtils.getDrawable(R.drawable.icon_share_save_img), Channel.SAVE_LOCAL));
+            platformList.add(new PlatformData(6, ResourcesUtil.getString(R.string.share_save_img), Channel.PACKAGE_THIS, ResourcesUtil.getDrawable(R.drawable.icon_share_save_img), Channel.SAVE_LOCAL));
         }
         initShareAdapter();
     }
@@ -215,7 +215,7 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
         dismissAllowingStateLoss();
         if (platformData.shareChannel == Channel.COPY_LINK) {
             getContext().getSystemService(ClipboardManager.class).setPrimaryClip(ClipData.newPlainText("url", shareModel.link));
-            ToastUtils.showToast(ProjectApplication.getAppContext(), ResourcesUtils.getString(R.string.link_is_copy), false, Gravity.CENTER);
+            ToastUtil.showToast(ProjectApplication.getAppContext(), ResourcesUtil.getString(R.string.link_is_copy), false, Gravity.CENTER);
             return;
         } else if (platformData.shareChannel == Channel.SAVE_LOCAL) {
             if (shareModel.bitmap != null) {
@@ -228,7 +228,7 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
                     }
                 });
             }
-            ToastUtils.showToast(ProjectApplication.getAppContext(), ResourcesUtils.getString(R.string.img_is_save), false, Gravity.CENTER);
+            ToastUtil.showToast(ProjectApplication.getAppContext(), ResourcesUtil.getString(R.string.img_is_save), false, Gravity.CENTER);
             return;
         }
         CustomChannel customChannel = ShareFactory.newChannel(getActivity(), platformData.shareChannel);

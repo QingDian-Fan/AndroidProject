@@ -1,7 +1,6 @@
 package com.dian.demo.ui.activity
 
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -13,7 +12,7 @@ import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityWebExplorerBinding
 import com.dian.demo.ui.fragment.WebFragment
 import com.dian.demo.ui.titlebar.CommonTitleBar
-import com.dian.demo.utils.ResourcesUtils
+import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.share.dialog.ShareDialog
 
 
@@ -27,7 +26,7 @@ open class WebExplorerActivity : BaseAppBindActivity<ActivityWebExplorerBinding>
         @JvmStatic
         fun start(
             mContext: Context, urlString: String,
-            titleString: String = ResourcesUtils.getString(R.string.app_name)
+            titleString: String = ResourcesUtil.getString(R.string.app_name)
         ) {
             val intent = Intent()
             intent.setClass(mContext, WebExplorerActivity::class.java)
@@ -51,7 +50,7 @@ open class WebExplorerActivity : BaseAppBindActivity<ActivityWebExplorerBinding>
         urlString = intent.getStringExtra(EXTRA_URL)
         titleString = intent.getStringExtra(EXTRA_TITLE)
         setPageTitle(
-            if (titleString != null && !TextUtils.isEmpty(titleString)) titleString!! else ResourcesUtils.getString(
+            if (titleString != null && !TextUtils.isEmpty(titleString)) titleString!! else ResourcesUtil.getString(
                 R.string.app_name
             )
         )
@@ -73,7 +72,7 @@ open class WebExplorerActivity : BaseAppBindActivity<ActivityWebExplorerBinding>
                     true,
                     mBitmap,
                     mWebFragment!!.getCurrentUrlString(),
-                    ResourcesUtils.getString(R.string.app_name),
+                    ResourcesUtil.getString(R.string.app_name),
                     mWebFragment!!.getCurrentTitleString()
                 )
                 dialogFragment.show(supportFragmentManager, "")

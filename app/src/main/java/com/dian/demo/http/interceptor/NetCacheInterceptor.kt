@@ -2,7 +2,7 @@ package com.dian.demo.http.interceptor
 
 
 import com.dian.demo.ProjectApplication
-import com.dian.demo.utils.NetWorkUtils
+import com.dian.demo.utils.NetWorkUtil
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -16,7 +16,7 @@ class NetCacheInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val response = chain.proceed(request)
-        if (NetWorkUtils.isNetworkAvailable(ProjectApplication.getAppContext())) {
+        if (NetWorkUtil.isNetworkAvailable(ProjectApplication.getAppContext())) {
             val maxAge = 60 * 3
             // 有网络时 设置缓存超时时间0时 ,意思就是不读取缓存数据,只对get有用,post没有缓冲
             response.newBuilder()

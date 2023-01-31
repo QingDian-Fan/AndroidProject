@@ -12,7 +12,7 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 
-object ResourcesUtils {
+object ResourcesUtil {
 
     private fun getResources(): Resources {
         return ProjectApplication.getAppContext().resources

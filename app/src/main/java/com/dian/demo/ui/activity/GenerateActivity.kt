@@ -16,9 +16,9 @@ import androidx.core.view.drawToBitmap
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityGenerateBinding
-import com.dian.demo.utils.BitmapUtils
+import com.dian.demo.utils.BitmapUtil
 import com.dian.demo.utils.PictureSelector
-import com.dian.demo.utils.ResourcesUtils
+import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.code.generate.GenerateCodeUtils
 import com.dian.demo.utils.ext.singleClick
 import java.io.File
@@ -46,7 +46,7 @@ class GenerateActivity : BaseAppBindActivity<ActivityGenerateBinding>() {
      *  初始化操作
      */
     override fun initialize(savedInstanceState: Bundle?) {
-        setPageTitle(ResourcesUtils.getString(R.string.generate_qr_code))
+        setPageTitle(ResourcesUtil.getString(R.string.generate_qr_code))
 
         binding.tvChooseLogo.singleClick {
             PictureSelector.select(this@GenerateActivity, 1001)
@@ -76,7 +76,7 @@ class GenerateActivity : BaseAppBindActivity<ActivityGenerateBinding>() {
         when (requestCode) {
             1001 -> {
                 PictureSelector.result(resultCode, data)?.let {
-                    logoBitmap = BitmapUtils.getBitmapFromUri(this@GenerateActivity, it)
+                    logoBitmap = BitmapUtil.getBitmapFromUri(this@GenerateActivity, it)
                     binding.tvChooseLogo.text = "√"
                 }
             }
@@ -103,7 +103,7 @@ class GenerateActivity : BaseAppBindActivity<ActivityGenerateBinding>() {
             bmp.compress(Bitmap.CompressFormat.JPEG, 90, outStream)
             Toast.makeText(
                 mContext,
-                ResourcesUtils.getString(R.string.save_success),
+                ResourcesUtil.getString(R.string.save_success),
                 Toast.LENGTH_LONG
             ).show()
         } catch (e: Exception) {

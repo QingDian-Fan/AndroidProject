@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment
 import com.demo.project.base.ILazyLoad
 import com.demo.project.base.ToastEvent
 import com.demo.project.base.ViewBehavior
-import com.dian.demo.utils.ToastUtils
+import com.dian.demo.utils.ToastUtil
 
 /**
  * @author: QingDian_Fan
@@ -183,9 +183,9 @@ abstract class BaseFragment : Fragment(), ILazyLoad, ViewBehavior {
 
     override fun showToast(event: ToastEvent) {
         if (event.content != null) {
-            ToastUtils.showToast(requireContext(), event.content!!, event.showLong)
+            ToastUtil.showToast(requireContext(), event.content!!, event.showLong)
         } else if (event.contentResId != null) {
-            ToastUtils.showToast(requireContext(), getString(event.contentResId!!), event.showLong)
+            ToastUtil.showToast(requireContext(), getString(event.contentResId!!), event.showLong)
         }
     }
 

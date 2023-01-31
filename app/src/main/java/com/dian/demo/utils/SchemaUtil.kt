@@ -6,7 +6,7 @@ import android.text.TextUtils
 import com.dian.demo.R
 import com.dian.demo.ui.activity.DemoActivity
 import com.dian.demo.ui.activity.WebExplorerActivity
-import com.dian.demo.utils.IntentUtils.openBrowser
+import com.dian.demo.utils.IntentUtil.openBrowser
 
 
 object SchemaUtil {
@@ -20,7 +20,7 @@ object SchemaUtil {
     fun schemaToPage(
         mContext: Context,
         msg: String,
-        title: String = ResourcesUtils.getString(R.string.app_name)
+        title: String = ResourcesUtil.getString(R.string.app_name)
     ) {
         if (TextUtils.isEmpty(msg)) {
             return

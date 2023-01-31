@@ -1,7 +1,7 @@
 package com.dian.demo.http
 
 import com.demo.project.http.HttpError
-import com.dian.demo.utils.LogUtils
+import com.dian.demo.utils.LogUtil
 
 
 /**
@@ -77,7 +77,7 @@ sealed class ResponseHolder<out T> {
         if (isError()) {
             onCompletion?.invoke()
             action.invoke((this as Error).error)
-            LogUtils.e("Request-Error--->","message:${this.error.errorMsg}")
+            LogUtil.e("Request-Error--->","message:${this.error.errorMsg}")
         }
         return this
     }

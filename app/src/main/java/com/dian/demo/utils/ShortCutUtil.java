@@ -27,15 +27,15 @@ public class ShortCutUtil {
     public List<ShortcutInfo> createShortCut(Context mContext) {
         List<ShortcutInfo> shortList = new ArrayList<>();
         ShortcutInfo scanShortCut = new ShortcutInfo.Builder(mContext, SHORTCUT_ID_SCAN)
-                .setShortLabel(ResourcesUtils.getString((R.string.short_cut_scan)))
-                .setLongLabel(ResourcesUtils.getString(R.string.short_cut_scan))
+                .setShortLabel(ResourcesUtil.getString((R.string.short_cut_scan)))
+                .setLongLabel(ResourcesUtil.getString(R.string.short_cut_scan))
                 .setIcon(Icon.createWithResource(mContext, R.mipmap.icon_short_cut_scan))
                 .setIntent(new Intent(Intent.ACTION_VIEW)
                 .setClass(mContext, ScanActivity.class))//intent必须设置action
                 .build();
         ShortcutInfo generateShortCut = new ShortcutInfo.Builder(mContext, SHORTCUT_ID_GENERATE)
-                .setShortLabel(ResourcesUtils.getString((R.string.short_cut_generate)))
-                .setLongLabel(ResourcesUtils.getString(R.string.short_cut_generate))
+                .setShortLabel(ResourcesUtil.getString((R.string.short_cut_generate)))
+                .setLongLabel(ResourcesUtil.getString(R.string.short_cut_generate))
                 .setIcon(Icon.createWithResource(mContext,  R.mipmap.icon_short_cut_genrate))
                 .setIntent(new Intent(Intent.ACTION_VIEW)
                 .setClass(mContext, GenerateActivity.class))//intent必须设置action

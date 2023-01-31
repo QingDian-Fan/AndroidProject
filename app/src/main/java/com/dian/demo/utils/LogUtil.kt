@@ -8,7 +8,7 @@ import com.dian.demo.BuildConfig
  * @description: Log相关工具类
  * @since: 1.0.0
  */
-object LogUtils {
+object LogUtil {
     @JvmField
     var tag = "TAG----->"
 

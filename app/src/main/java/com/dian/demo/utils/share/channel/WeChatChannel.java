@@ -15,7 +15,7 @@ import com.dian.demo.BuildConfig;
 import com.dian.demo.ProjectApplication;
 import com.dian.demo.R;
 import com.dian.demo.config.AppConfig;
-import com.dian.demo.utils.ResourcesUtils;
+import com.dian.demo.utils.ResourcesUtil;
 import com.dian.demo.utils.share.ShareUtils;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 import com.tencent.mm.opensdk.modelmsg.WXImageObject;
@@ -54,7 +54,7 @@ public class WeChatChannel extends CustomChannel {
         WXMediaMessage msg = new WXMediaMessage();
         msg.mediaObject = textObj;
         msg.description = text;
-        msg.mediaTagName = ResourcesUtils.getString(R.string.app_name);
+        msg.mediaTagName = ResourcesUtil.getString(R.string.app_name);
         SendMessageToWX.Req req = new SendMessageToWX.Req();
         req.transaction = buildTransaction("text");
         req.message = msg;

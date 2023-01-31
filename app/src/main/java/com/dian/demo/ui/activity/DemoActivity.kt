@@ -15,8 +15,8 @@ import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityDemoBinding
 import com.dian.demo.ui.dialog.DebugDialog
 import com.dian.demo.utils.CacheUtil
-import com.dian.demo.utils.ResourcesUtils
-import com.dian.demo.utils.ScreenShotUtils
+import com.dian.demo.utils.ResourcesUtil
+import com.dian.demo.utils.ScreenShotUtil
 import com.dian.demo.utils.SpannableStringUtil
 import com.dian.demo.utils.StatusBarUtil
 import com.dian.demo.utils.ext.showAllowStateLoss
@@ -37,32 +37,32 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
 
     override fun initialize(savedInstanceState: Bundle?) {
         getTitleBarView().setOpenStatusBar(false)
-        getTitleBarView().setCenterText(ResourcesUtils.getString(R.string.demo_title_text))
+        getTitleBarView().setCenterText(ResourcesUtil.getString(R.string.demo_title_text))
         getTitleBarView().leftImageButton.visibility = gone
 
-        StatusBarUtil.setColor(this@DemoActivity, ResourcesUtils.getColor(R.color.bg_common), 0)
+        StatusBarUtil.setColor(this@DemoActivity, ResourcesUtil.getColor(R.color.bg_common), 0)
         StatusBarUtil.setLightMode(this@DemoActivity)
 
         binding.tvSpan.text = SpannableStringUtil.Builder()
             .append("您已同意")
             .append("《用户协议》")
-            .setForegroundColor(ResourcesUtils.getColor(R.color.text_blue_color))
+            .setForegroundColor(ResourcesUtil.getColor(R.color.text_blue_color))
             .setClickSpan(object : ClickableSpan() {
                 override fun onClick(mView: View) {
                     WebExplorerActivity.start(
                         this@DemoActivity,
-                        ResourcesUtils.getString(R.string.app_website)
+                        ResourcesUtil.getString(R.string.app_website)
                     )
                 }
             })
             .append("和")
             .append("《隐私政策》")
-            .setForegroundColor(ResourcesUtils.getColor(R.color.colorPink))
+            .setForegroundColor(ResourcesUtil.getColor(R.color.colorPink))
             .setClickSpan(object : ClickableSpan() {
                 override fun onClick(mView: View) {
                     WebExplorerActivity.start(
                         this@DemoActivity,
-                        ResourcesUtils.getString(R.string.app_website)
+                        ResourcesUtil.getString(R.string.app_website)
                     )
                 }
             })
@@ -85,7 +85,7 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
     }
 
     private fun exitApp() = if (System.currentTimeMillis() - mLastTime > mDuraction) {
-        showToast(ResourcesUtils.getString(R.string.exit_app))
+        showToast(ResourcesUtil.getString(R.string.exit_app))
         mLastTime = System.currentTimeMillis()
     } else {
         onBackPressed()
@@ -95,7 +95,7 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
     fun clickView(view: View) {
         when (view.id) {
             R.id.btn_share_text -> {
-                ShareDialog().setText(true, ResourcesUtils.getString(R.string.app_content))
+                ShareDialog().setText(true, ResourcesUtil.getString(R.string.app_content))
                     .showAllowStateLoss(supportFragmentManager, "share-text")
             }
             R.id.btn_share_link -> {
@@ -103,13 +103,13 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
                 ShareDialog().setLinkData(
                     true,
                     iconLogo,
-                    ResourcesUtils.getString(R.string.app_website),
-                    ResourcesUtils.getString(R.string.app_name),
-                    ResourcesUtils.getString(R.string.app_content)
+                    ResourcesUtil.getString(R.string.app_website),
+                    ResourcesUtil.getString(R.string.app_name),
+                    ResourcesUtil.getString(R.string.app_content)
                 ).showAllowStateLoss(supportFragmentManager, "share-link")
             }
             R.id.btn_share_bitmap -> {
-                val bitmap = ScreenShotUtils.shotActivityNoStatusBar(this)
+                val bitmap = ScreenShotUtil.shotActivityNoStatusBar(this)
                 ShareDialog().setBitmapData(bitmap)
                     .showAllowStateLoss(supportFragmentManager, "share-bitmap")
             }
@@ -128,7 +128,7 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
             R.id.btn_clear_cache -> {
                 CacheUtil.clearAllCache(this@DemoActivity)
                 binding.btnClearCache.postDelayed({
-                    binding.btnClearCache.text = ResourcesUtils.getString(
+                    binding.btnClearCache.text = ResourcesUtil.getString(
                         R.string.cache_text, CacheUtil.getTotalCacheSize(
                             ProjectApplication.getAppContext()
                         )

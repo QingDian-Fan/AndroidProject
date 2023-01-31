@@ -1,4 +1,4 @@
-package com.demo.project.base
+package com.dian.demo.base
 
 import android.annotation.SuppressLint
 import android.app.Application
@@ -8,9 +8,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import androidx.lifecycle.ViewModel
-import com.dian.demo.repository.DataRepoImpl
-import com.dian.demo.base.ViewModelFactory
-import com.dian.demo.base.ViewModelLifecycle
+import com.demo.project.base.ToastEvent
+import com.demo.project.base.ViewBehavior
+import com.dian.demo.ProjectApplication
+import com.dian.demo.repository.remote.DataRepoImpl
+import com.dian.demo.repository.local.DataBaseManager
 import kotlinx.coroutines.launch
 
 /**
@@ -21,7 +23,8 @@ import kotlinx.coroutines.launch
  * @since: 1.0.0
  */
 abstract class BaseViewModel : ViewModel(), ViewModelLifecycle, ViewBehavior {
-     val repo by lazy { DataRepoImpl() }
+    val repo by lazy { DataRepoImpl() }
+    val localRepo by lazy { DataBaseManager.getInstance(ProjectApplication.getAppContext()) }
 
     // loading视图显示Event
     var _loadingEvent = MutableLiveData<Boolean>()

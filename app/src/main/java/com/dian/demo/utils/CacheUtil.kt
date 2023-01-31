@@ -3,8 +3,6 @@ package com.dian.demo.utils
 import android.content.Context
 import android.os.Environment.MEDIA_MOUNTED
 import android.os.Environment.getExternalStorageState
-import android.util.Log
-import com.dian.demo.ProjectApplication
 import java.io.File
 import java.math.BigDecimal
 
@@ -17,7 +15,7 @@ object CacheUtil {
             cacheSize += getFolderSize(context.externalCacheDir)
             cacheSize += getFolderSize(context.cacheDir)
         }
-        LogUtils.e("TAG-Cache", "Cache-Size:${cacheSize.toDouble()}")
+        LogUtil.e("TAG-Cache", "Cache-Size:${cacheSize.toDouble()}")
         return getFormatSize(cacheSize.toDouble())
     }
 

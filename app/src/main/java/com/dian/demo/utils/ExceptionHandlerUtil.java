@@ -77,7 +77,7 @@ public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
             fileOutputStream = new FileOutputStream(crashFile, true);
             PrintWriter printWriter = new PrintWriter(fileOutputStream);
             ex.printStackTrace(printWriter);
-            printWriter.append(DateFormatUtils.getShareDate());
+            printWriter.append(DateFormatUtil.getShareDate());
             printWriter.append("\n\n");
             printWriter.close();
             try {
@@ -97,7 +97,7 @@ public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
     public static void doShareFile() {
         File file = new File(LOG_PATH_SDCARD_DIR, LOG_NAME);
         if (!file.exists()) {
-            ToastUtils.showToast(ProjectApplication.getAppContext(),"木有找到日志文件",false, Gravity.CENTER);
+            ToastUtil.showToast(ProjectApplication.getAppContext(),"木有找到日志文件",false, Gravity.CENTER);
             return;
         }
         //Uri logUri = Uri.parse(file.getAbsolutePath());

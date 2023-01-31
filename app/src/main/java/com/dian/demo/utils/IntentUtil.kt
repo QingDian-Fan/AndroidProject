@@ -9,7 +9,7 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.annotation.RequiresPermission
 
-object IntentUtils {
+object IntentUtil {
 
     /**
      * 调用系统拨号界面

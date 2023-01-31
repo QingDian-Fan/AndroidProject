@@ -17,7 +17,7 @@ import com.dian.demo.utils.webview.webset.DefaultWebChromeClient
 import com.dian.demo.utils.webview.webset.DefaultWebSetting
 import com.dian.demo.utils.webview.webset.DefaultWebViewClient
 import com.dian.demo.http.gson.GsonFactory
-import com.dian.demo.utils.LogUtils
+import com.dian.demo.utils.LogUtil
 
 /**
  * @ClassName: BaseWebView
@@ -186,7 +186,7 @@ class BaseWebView : WebView, NestedScrollingChild {
         if (!TextUtils.isEmpty(callbackname) && !TextUtils.isEmpty(response)) {
             post {
                 val jscode = "javascript:myjs.callback('$callbackname',$response)"
-                LogUtils.e("xxxxxx", jscode)
+                LogUtil.e("xxxxxx", jscode)
                 evaluateJavascript(jscode, null)
             }
         }

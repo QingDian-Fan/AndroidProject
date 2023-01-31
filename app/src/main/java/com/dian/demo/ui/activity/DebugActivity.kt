@@ -15,8 +15,8 @@ import com.dian.demo.ui.dialog.DebugDialog
 import com.dian.demo.ui.titlebar.CommonTitleBar
 import com.dian.demo.utils.DomainUtil
 import com.dian.demo.utils.ExceptionHandlerUtil
-import com.dian.demo.utils.PreferenceUtils
-import com.dian.demo.utils.ResourcesUtils
+import com.dian.demo.utils.PreferenceUtil
+import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.ext.singleClick
 import java.io.BufferedReader
 import java.io.InputStream
@@ -49,7 +49,7 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
      *  初始化操作
      */
     override fun initialize(savedInstanceState: Bundle?) {
-        setPageTitle(ResourcesUtils.getString(R.string.debug_page_title))
+        setPageTitle(ResourcesUtil.getString(R.string.debug_page_title))
         setPageRightIcon(R.mipmap.icon_share)
         getTitleBarView().setListener { _, action, _ ->
             if (action == CommonTitleBar.ACTION_LEFT_BUTTON) {
@@ -58,8 +58,8 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
                 ExceptionHandlerUtil.doShareFile()
             }
         }
-        val debugUrl: String = ResourcesUtils.getString(R.string.debug_base_url)
-        val releaseUrl: String = ResourcesUtils.getString(R.string.release_base_url)
+        val debugUrl: String = ResourcesUtil.getString(R.string.debug_base_url)
+        val releaseUrl: String = ResourcesUtil.getString(R.string.release_base_url)
 
         val urlString = getBaseUrl()
         if (urlString == debugUrl) {
@@ -74,7 +74,7 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
             thread {
                 pingAddress(
                     DomainUtil.getDomainMedium(
-                        PreferenceUtils.getString(
+                        PreferenceUtil.getString(
                             DEBUG_URL_CONFIG,
                             debugUrl
                         )
@@ -85,12 +85,12 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
         binding.cvDebug.singleClick {
             binding.ivDebugCheck.setImageResource(R.mipmap.icon_selected)
             binding.ivReleaseCheck.setImageResource(R.mipmap.icon_unselected)
-            PreferenceUtils.putString(DEBUG_URL_CONFIG, debugUrl)
+            PreferenceUtil.putString(DEBUG_URL_CONFIG, debugUrl)
         }
         binding.cvRelease.singleClick {
             binding.ivDebugCheck.setImageResource(R.mipmap.icon_unselected)
             binding.ivReleaseCheck.setImageResource(R.mipmap.icon_selected)
-            PreferenceUtils.putString(DEBUG_URL_CONFIG, releaseUrl)
+            PreferenceUtil.putString(DEBUG_URL_CONFIG, releaseUrl)
         }
         binding.btnSchema.singleClick {
               val debugDialog = DebugDialog()

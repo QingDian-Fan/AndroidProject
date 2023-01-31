@@ -327,7 +327,7 @@ public class ScreenShotListenManager {
         workService.execute(() -> {
             ScreenData screenData = handleMediaContentChange(mContentUri);
             if (screenData==null){
-                LogUtils.e(TAG,"--------------handleScreenData:获取截图失败");
+                LogUtil.e(TAG,"--------------handleScreenData:获取截图失败");
             }else {
                 handleMediaRowData(screenData);
             }

@@ -7,7 +7,7 @@ import android.view.Gravity
 import android.webkit.MimeTypeMap
 import com.demo.project.http.*
 import com.dian.demo.ProjectApplication
-import com.dian.demo.utils.ToastUtils
+import com.dian.demo.utils.ToastUtil
 import com.google.gson.JsonParseException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -178,12 +178,12 @@ open class HttpClient : HttpClientBase() {
         isInfoResponse: Boolean = true,
         call: suspend (service: RequestService) -> Response<String>
     ): ResponseHolder<T> {
-        try {
+        return try {
             val response = call.invoke(getRequestService())
-            return parseResponse(response, type, isInfoResponse)
+            parseResponse(response, type, isInfoResponse)
         } catch (cause: Throwable) {
             val httpError = catchException(cause)
-            return ResponseHolder.Error(httpError)
+            ResponseHolder.Error(httpError)
         }
     }
 
@@ -198,13 +198,13 @@ open class HttpClient : HttpClientBase() {
         isInfoResponse: Boolean = true,
         call: suspend (service: RequestService) -> Response<String>
     ): Flow<ResponseHolder<T>> {
-        try {
-            return flow {
+        return try {
+            flow {
                 val response = call.invoke(getRequestService())
                 emit(parseResponse(response, type, isInfoResponse))
             }
         } catch (cause: Throwable) {
-            return flow {
+            flow {
                 val httpError = catchException(cause)
                 emit(ResponseHolder.Error(httpError))
             }
@@ -220,16 +220,16 @@ open class HttpClient : HttpClientBase() {
         isInfoResponse: Boolean = true
     ): ResponseHolder<T> {
         try {
-            if (response.isSuccessful && response.body() != null) {
+            return if (response.isSuccessful && response.body() != null) {
                 // 请求成功
                 if (isInfoResponse) {
-                    return resolveInfoResponse(response, type)
+                    resolveInfoResponse(response, type)
                 } else {
-                    return resolveNoInfoResponse(response, type)
+                    resolveNoInfoResponse(response, type)
                 }
             } else {
                 // 请求失败
-                return resolveFailedResponse(response)
+                resolveFailedResponse(response)
             }
         } catch (cause: Throwable) {
             val httpError = catchException(cause)
@@ -254,7 +254,7 @@ open class HttpClient : HttpClientBase() {
             if (resp.isNotLogin()) {
 
                 //SchemaUtils.toStart(ProjectApplication.getAppContext(), "dian://login")
-                ToastUtils.showToast(
+                ToastUtil.showToast(
                     ProjectApplication.getAppContext(),
                     resp.errorMsg,
                     false,

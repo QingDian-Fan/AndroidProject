@@ -12,9 +12,9 @@ import com.demo.project.utils.ext.gone
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityScanBinding
-import com.dian.demo.utils.BitmapUtils
+import com.dian.demo.utils.BitmapUtil
 import com.dian.demo.utils.PictureSelector
-import com.dian.demo.utils.ResourcesUtils
+import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.code.core.QRCodeView
 import com.dian.demo.utils.code.decoder.QRCodeDecoder
 import com.dian.demo.utils.ext.singleClick
@@ -40,7 +40,7 @@ class ScanActivity : BaseAppBindActivity<ActivityScanBinding>(), QRCodeView.Dele
         when (requestCode) {
             REQ_CODE_SELECT_PIC -> {
                 PictureSelector.result(resultCode, data)?.let {
-                    decodeQrCode(BitmapUtils.getBitmapFromUri(this@ScanActivity, it))
+                    decodeQrCode(BitmapUtil.getBitmapFromUri(this@ScanActivity, it))
                 }
             }
         }
@@ -111,14 +111,14 @@ class ScanActivity : BaseAppBindActivity<ActivityScanBinding>(), QRCodeView.Dele
 
     private fun decodeQrCode(bitmap: Bitmap?) {
         if (bitmap==null){
-            showToast(ResourcesUtils.getString(R.string.decode_qr_code_fail))
+            showToast(ResourcesUtil.getString(R.string.decode_qr_code_fail))
             return
         }
         Executors.newSingleThreadExecutor().execute {
           val resultString = QRCodeDecoder.syncDecodeQRCode(bitmap)
             runOnUiThread {
                 if (TextUtils.isEmpty(resultString)) {
-                    showToast(ResourcesUtils.getString(R.string.decode_qr_code_fail))
+                    showToast(ResourcesUtil.getString(R.string.decode_qr_code_fail))
                 }else{
                     if (resultString!!.startsWith("http://", false) || resultString.startsWith("https://", false)) {
                         WebExplorerActivity.start(this@ScanActivity, resultString)

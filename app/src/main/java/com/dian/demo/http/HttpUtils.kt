@@ -4,7 +4,7 @@ import android.content.Context
 import com.dian.demo.BuildConfig
 import com.dian.demo.ProjectApplication
 import com.dian.demo.http.interceptor.*
-import com.dian.demo.utils.LogUtils
+import com.dian.demo.utils.LogUtil
 import com.readystatesoftware.chuck.ChuckInterceptor
 import okhttp3.Cache
 import java.io.File
@@ -48,13 +48,13 @@ class HttpUtils {
             .setLogger(object : HttpLoggingInterceptor.Logger {
                 override fun log(message: String) {
                     if (message.contains("--> END") || message.contains("<-- END")) {
-                        LogUtils.e(LOG_TAG, "||  " + message)
-                        LogUtils.e(LOG_TAG, LOG_DIVIDER)
+                        LogUtil.e(LOG_TAG, "||  " + message)
+                        LogUtil.e(LOG_TAG, LOG_DIVIDER)
                     } else if (message.contains("-->") || message.contains("<--")) {
-                        LogUtils.e(LOG_TAG, LOG_DIVIDER)
-                        LogUtils.e(LOG_TAG, "||  " + message)
+                        LogUtil.e(LOG_TAG, LOG_DIVIDER)
+                        LogUtil.e(LOG_TAG, "||  " + message)
                     } else {
-                        LogUtils.e(LOG_TAG, "||  " + message)
+                        LogUtil.e(LOG_TAG, "||  " + message)
                     }
                 }
             })

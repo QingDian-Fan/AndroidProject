@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 
-object BitmapUtils {
+object BitmapUtil {
     // 通过uri加载图片
     fun getBitmapFromUri(context: Context, uri: Uri?): Bitmap? {
         try {
