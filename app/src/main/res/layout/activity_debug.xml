@@ -131,7 +131,6 @@
                     android:layout_marginHorizontal="20dp"
                     android:layout_marginTop="30dp"
                     android:gravity="center"
-                    android:textSize="16dp"
                     android:background="@drawable/bg_btn_generate"
                     android:text="@string/text_schema"
                     android:textColor="@color/colorWhite" />
@@ -143,7 +142,6 @@
                     android:layout_marginHorizontal="20dp"
                     android:layout_marginTop="30dp"
                     android:gravity="center"
-                    android:textSize="16dp"
                     android:background="@drawable/bg_btn_generate"
                     android:text="@string/text_ping_test"
                     android:textColor="@color/colorWhite" />

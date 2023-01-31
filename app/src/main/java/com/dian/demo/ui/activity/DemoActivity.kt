@@ -14,11 +14,8 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityDemoBinding
 import com.dian.demo.ui.dialog.DebugDialog
-import com.dian.demo.utils.CacheUtil
-import com.dian.demo.utils.ResourcesUtil
-import com.dian.demo.utils.ScreenShotUtil
-import com.dian.demo.utils.SpannableStringUtil
-import com.dian.demo.utils.StatusBarUtil
+import com.dian.demo.utils.*
+import com.dian.demo.utils.aop.SingleClick
 import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.share.dialog.ShareDialog
 
@@ -83,7 +80,7 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
             super.onKeyDown(keyCode, event)
         }
     }
-
+    @SingleClick
     private fun exitApp() = if (System.currentTimeMillis() - mLastTime > mDuraction) {
         showToast(ResourcesUtil.getString(R.string.exit_app))
         mLastTime = System.currentTimeMillis()
@@ -93,6 +90,7 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
 
 
     fun clickView(view: View) {
+        if (FastClickUtil.isFastClick()) return
         when (view.id) {
             R.id.btn_share_text -> {
                 ShareDialog().setText(true, ResourcesUtil.getString(R.string.app_content))

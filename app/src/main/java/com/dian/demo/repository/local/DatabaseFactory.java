@@ -13,12 +13,16 @@ import androidx.room.RoomDatabase;
  */
 public abstract class DatabaseFactory extends RoomDatabase {
 
-    private static DatabaseFactory dataBase;
+    private static volatile DatabaseFactory dataBase;
 
-    public static synchronized DatabaseFactory getInstance(Context mContext) {
+    public static DatabaseFactory getInstance(Context mContext) {
         if (dataBase == null) {
-            dataBase = Room.databaseBuilder(mContext.getApplicationContext(), DatabaseFactory.class, "db_database_entity")
-                    .build();
+            synchronized (DatabaseFactory.class){
+                if (dataBase==null){
+                    dataBase = Room.databaseBuilder(mContext.getApplicationContext(), DatabaseFactory.class, "db_database_entity")
+                            .build();
+                }
+            }
         }
         return dataBase;
     }
