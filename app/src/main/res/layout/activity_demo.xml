@@ -4,9 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <import type="com.dian.demo.utils.CacheUtil"/>
-        <import type="com.dian.demo.utils.ResourcesUtils"/>
-        <import type="com.dian.demo.R"/>
+
+        <import type="com.dian.demo.utils.CacheUtil" />
+
+        <import type="com.dian.demo.utils.ResourcesUtils" />
+
+        <import type="com.dian.demo.R" />
 
 
         <variable
@@ -109,5 +112,15 @@
             android:paddingVertical="10dp"
             android:text="@{ResourcesUtils.INSTANCE.getString(R.string.cache_text,CacheUtil.INSTANCE.getTotalCacheSize(projectApplication.getAppContext()))}"
             android:textColor="@color/colorWhite" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_span"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp46"
+            android:layout_marginTop="30dp"
+            android:gravity="center"
+            android:onClick="clickView"
+            android:paddingVertical="10dp"
+            android:textColor="@color/text_sub_color" />
     </LinearLayout>
 </layout>

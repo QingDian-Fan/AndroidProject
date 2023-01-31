@@ -26,7 +26,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import androidx.annotation.DrawableRes;
+
 import com.dian.demo.R;
 
 /**
@@ -98,6 +100,7 @@ import com.dian.demo.R;
 @SuppressWarnings("ResourceType")
 public class CommonTitleBar extends RelativeLayout implements View.OnClickListener {
     private Context mContext;
+    private AttributeSet attrs;
     private View viewStatusBarFill;                     // 状态栏填充视图
     private View viewBottomLine;                        // 分隔线视图
     private View viewBottomShadow;                      // 底部阴影
@@ -118,7 +121,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
     private ImageView ivSearch;
     private ImageView ivVoice;
     private View centerCustomView;                      // 中间自定义视图
-
+    private boolean openStatusBar;
     private boolean fillStatusBar;                      // 是否撑起状态栏, true时,标题栏浸入状态栏
     private int titleBarColor;                          // 标题栏背景颜色
     private int titleBarHeight;                         // 标题栏高度
@@ -185,6 +188,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
         loadAttributes(context, attrs);
         initGlobalViews(context);
         initMainViews(context);
+        this.attrs = attrs;
         mContext = context;
     }
 
@@ -193,6 +197,8 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
         PADDING_12 = ScreenUtils.dp2PxInt(context, 12);
 
         TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CommonTitleBar);
+        openStatusBar = array.getBoolean(R.styleable.CommonTitleBar_openStatusBar, true);
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             // notice 未引入沉浸式标题栏之前,隐藏标题栏撑起布局
@@ -202,6 +208,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
         titleBarHeight = (int) array.getDimension(R.styleable.CommonTitleBar_titleBarHeight, ScreenUtils.dp2PxInt(context, 44));
         statusBarColor = array.getColor(R.styleable.CommonTitleBar_statusBarColor, Color.parseColor("#ffffff"));
         statusBarMode = array.getInt(R.styleable.CommonTitleBar_statusBarMode, 0);
+
 
         showBottomLine = array.getBoolean(R.styleable.CommonTitleBar_showBottomLine, true);
         bottomLineColor = array.getColor(R.styleable.CommonTitleBar_bottomLineColor, Color.parseColor("#dddddd"));
@@ -260,13 +267,14 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
      * @param context 上下文
      */
     private void initGlobalViews(Context context) {
+        if (rlMain != null) rlMain.removeAllViews();
         ViewGroup.LayoutParams globalParams = new ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         setLayoutParams(globalParams);
 
         boolean transparentStatusBar = StatusBarUtils.supportTransparentStatusBar();
 
         // 构建标题栏填充视图
-        if (fillStatusBar && transparentStatusBar) {
+        if (fillStatusBar && transparentStatusBar && openStatusBar) {
             int statusBarHeight = StatusBarUtils.getStatusBarHeight(context);
             viewStatusBarFill = new View(context);
             viewStatusBarFill.setId(StatusBarUtils.generateViewId());
@@ -281,9 +289,9 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
         rlMain.setId(StatusBarUtils.generateViewId());
         rlMain.setBackgroundColor(titleBarColor);
         LayoutParams mainParams = new LayoutParams(MATCH_PARENT, titleBarHeight);
-        if (fillStatusBar && transparentStatusBar) {
+        if (fillStatusBar && transparentStatusBar && openStatusBar) {
             mainParams.addRule(RelativeLayout.BELOW, viewStatusBarFill.getId());
-        } else {
+        } else if (openStatusBar) {
             mainParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         }
 
@@ -614,7 +622,9 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        setUpImmersionTitleBar();
+        if (openStatusBar) {
+            setUpImmersionTitleBar();
+        }
     }
 
     private void setUpImmersionTitleBar() {
@@ -741,6 +751,11 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
             viewStatusBarFill.setBackgroundColor(color);
         }
         rlMain.setBackgroundColor(color);
+    }
+
+    public void setOpenStatusBar(boolean openStatusBar) {
+        this.openStatusBar = openStatusBar;
+        removeView(viewStatusBarFill);
     }
 
     /**
@@ -967,11 +982,11 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
 
     public void setRightIcon(@DrawableRes int drawableRes) {
         if (rlMain == null) return;
-        if ( rightType == TYPE_RIGHT_IMAGEBUTTON){
+        if (rightType == TYPE_RIGHT_IMAGEBUTTON) {
             rlMain.removeView(btnRight);
-        }else if (rightType == TYPE_RIGHT_TEXTVIEW){
+        } else if (rightType == TYPE_RIGHT_TEXTVIEW) {
             rlMain.removeView(tvRight);
-        }else if (rightType==TYPE_RIGHT_CUSTOM_VIEW){
+        } else if (rightType == TYPE_RIGHT_CUSTOM_VIEW) {
             rlMain.removeView(viewCustomRight);
         }
         rightType = TYPE_RIGHT_IMAGEBUTTON;
@@ -981,11 +996,11 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
 
     public void setLeftIcon(@DrawableRes int drawableRes) {
         if (rlMain == null) return;
-        if ( leftType == TYPE_LEFT_IMAGEBUTTON){
+        if (leftType == TYPE_LEFT_IMAGEBUTTON) {
             rlMain.removeView(btnLeft);
-        }else if (leftType == TYPE_LEFT_TEXTVIEW){
+        } else if (leftType == TYPE_LEFT_TEXTVIEW) {
             rlMain.removeView(tvLeft);
-        }else if (leftType==TYPE_LEFT_CUSTOM_VIEW){
+        } else if (leftType == TYPE_LEFT_CUSTOM_VIEW) {
             rlMain.removeView(viewCustomLeft);
         }
         leftType = TYPE_LEFT_IMAGEBUTTON;

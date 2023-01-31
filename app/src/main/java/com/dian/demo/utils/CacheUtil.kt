@@ -29,7 +29,7 @@ object CacheUtil {
         }
     }
 
-    private fun deleteDir(dir: File?): Boolean {
+     fun deleteDir(dir: File?): Boolean {
         if (dir != null && dir.isDirectory) {
             val children = dir.list()
             for (i in children.indices) {

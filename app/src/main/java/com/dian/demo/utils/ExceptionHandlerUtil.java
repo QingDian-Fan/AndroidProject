@@ -8,6 +8,8 @@ import android.os.Looper;
 import android.os.Process;
 import android.view.Gravity;
 
+import androidx.core.content.FileProvider;
+
 import com.dian.demo.ProjectApplication;
 
 import java.io.File;
@@ -98,9 +100,9 @@ public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
             ToastUtils.showToast(ProjectApplication.getAppContext(),"木有找到日志文件",false, Gravity.CENTER);
             return;
         }
-        Uri logUri = Uri.parse(file.getAbsolutePath());
-       /* Uri logUri = FileProvider.getUriForFile(ProjectApplication.getAppInstance(),
-                ProjectApplication.getAppContext().getPackageName() + ".provider", file);*/
+        //Uri logUri = Uri.parse(file.getAbsolutePath());
+        Uri logUri = FileProvider.getUriForFile(ProjectApplication.getAppInstance(),
+                ProjectApplication.getAppContext().getPackageName() + ".provider", file);
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("subject", "DomeProject日志"); //

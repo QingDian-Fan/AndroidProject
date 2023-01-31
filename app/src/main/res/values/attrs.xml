@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="CommonTitleBar">
-        <!-- 标题栏背景 图片或颜色 -->
-        <attr name="titleBarColor" format="color" />
+        <attr name="openStatusBar" format="boolean"/>
         <!-- 填充状态栏 -->
         <attr name="fillStatusBar" format="boolean" />
         <!-- 状态栏颜色 -->
@@ -12,6 +11,9 @@
             <enum name="dark" value="0" />
             <enum name="light" value="1" />
         </attr>
+
+        <!-- 标题栏背景 图片或颜色 -->
+        <attr name="titleBarColor" format="color" />
         <!-- 标题栏高度 -->
         <attr name="titleBarHeight" format="dimension" />
         <!-- 显示标题栏分割线 -->

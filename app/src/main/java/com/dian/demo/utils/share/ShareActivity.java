@@ -8,12 +8,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Environment;
 
 
+import com.dian.demo.utils.CacheUtil;
 import com.tencent.connect.common.Constants;
 import com.tencent.tauth.Tencent;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.File;
 
 
 public class ShareActivity extends AppCompatActivity {
@@ -28,6 +33,8 @@ public class ShareActivity extends AppCompatActivity {
                 || requestCode == Constants.REQUEST_QZONE_SHARE
                 || requestCode == Constants.REQUEST_OLD_SHARE)) {
             Tencent.onActivityResultData(requestCode, resultCode, data, listener);
+            CacheUtil.INSTANCE.deleteDir(new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "share"));
+
         }
     }
 
@@ -52,7 +59,7 @@ public class ShareActivity extends AppCompatActivity {
             if (shareReceiver != null) {
                 unregisterReceiver(shareReceiver);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

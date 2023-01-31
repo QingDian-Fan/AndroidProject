@@ -4,9 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.view.KeyEvent
 import android.view.View
 import com.demo.project.utils.ext.gone
+import com.dian.demo.ProjectApplication
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityDemoBinding
@@ -14,6 +17,8 @@ import com.dian.demo.ui.dialog.DebugDialog
 import com.dian.demo.utils.CacheUtil
 import com.dian.demo.utils.ResourcesUtils
 import com.dian.demo.utils.ScreenShotUtils
+import com.dian.demo.utils.SpannableStringUtil
+import com.dian.demo.utils.StatusBarUtil
 import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.share.dialog.ShareDialog
 
@@ -31,11 +36,41 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
     override fun getLayoutId(): Int = R.layout.activity_demo
 
     override fun initialize(savedInstanceState: Bundle?) {
-        getTitleBarView().setCenterText(ResourcesUtils.getString(R.string.home_title_text))
+        getTitleBarView().setOpenStatusBar(false)
+        getTitleBarView().setCenterText(ResourcesUtils.getString(R.string.demo_title_text))
         getTitleBarView().leftImageButton.visibility = gone
+
+        StatusBarUtil.setColor(this@DemoActivity, ResourcesUtils.getColor(R.color.bg_common), 0)
+        StatusBarUtil.setLightMode(this@DemoActivity)
+
+        binding.tvSpan.text = SpannableStringUtil.Builder()
+            .append("您已同意")
+            .append("《用户协议》")
+            .setForegroundColor(ResourcesUtils.getColor(R.color.text_blue_color))
+            .setClickSpan(object : ClickableSpan() {
+                override fun onClick(mView: View) {
+                    WebExplorerActivity.start(
+                        this@DemoActivity,
+                        ResourcesUtils.getString(R.string.app_website)
+                    )
+                }
+            })
+            .append("和")
+            .append("《隐私政策》")
+            .setForegroundColor(ResourcesUtils.getColor(R.color.colorPink))
+            .setClickSpan(object : ClickableSpan() {
+                override fun onClick(mView: View) {
+                    WebExplorerActivity.start(
+                        this@DemoActivity,
+                        ResourcesUtils.getString(R.string.app_website)
+                    )
+                }
+            })
+            .create()
+        binding.tvSpan.movementMethod = LinkMovementMethod.getInstance()
     }
 
-    val mDuraction = 2000 // 两次返回键之间的时间差
+    private val mDuraction = 2000 // 两次返回键之间的时间差
 
     var mLastTime: Long = 0 // 最后一次按back键的时刻
 
@@ -92,6 +127,14 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
             }
             R.id.btn_clear_cache -> {
                 CacheUtil.clearAllCache(this@DemoActivity)
+                binding.btnClearCache.postDelayed({
+                    binding.btnClearCache.text = ResourcesUtils.getString(
+                        R.string.cache_text, CacheUtil.getTotalCacheSize(
+                            ProjectApplication.getAppContext()
+                        )
+                    )
+                }, 500)
+
             }
         }
     }

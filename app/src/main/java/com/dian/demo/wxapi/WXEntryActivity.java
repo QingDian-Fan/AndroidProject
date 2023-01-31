@@ -1,6 +1,7 @@
 package com.dian.demo.wxapi;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.Gravity;
 import android.view.WindowManager;
 
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.dian.demo.ProjectApplication;
 import com.dian.demo.R;
 import com.dian.demo.config.AppConfig;
+import com.dian.demo.utils.CacheUtil;
 import com.dian.demo.utils.ResourcesUtils;
 import com.dian.demo.utils.ToastUtils;
 import com.dian.demo.utils.share.ShareFactory;
@@ -20,6 +22,7 @@ import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHandler {
@@ -57,15 +60,16 @@ public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHan
                     break;
             }
         } else {
+            CacheUtil.INSTANCE.deleteDir(new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "share"));
             switch (baseResp.errCode) {
                 case BaseResp.ErrCode.ERR_OK://分享成功
                     ShareFactory.sendSuccessAction(Channel.WECHAT);
                     break;
                 case BaseResp.ErrCode.ERR_USER_CANCEL:
-                    ToastUtils.showToast(ProjectApplication.getAppContext(), ResourcesUtils.getString(R.string.share_cancel),false, Gravity.CENTER);
+                    ToastUtils.showToast(ProjectApplication.getAppContext(), ResourcesUtils.getString(R.string.share_cancel), false, Gravity.CENTER);
                     break;
                 case BaseResp.ErrCode.ERR_AUTH_DENIED:
-                    ToastUtils.showToast(ProjectApplication.getAppContext(),ResourcesUtils.getString(R.string.share_denied),false, Gravity.CENTER);
+                    ToastUtils.showToast(ProjectApplication.getAppContext(), ResourcesUtils.getString(R.string.share_denied), false, Gravity.CENTER);
                     break;
             }
         }
