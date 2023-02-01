@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+    </data>
+
+    <com.dian.demo.ui.img.RatioFrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:sizeRatio="1:1">
+
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/img_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <FrameLayout
+            android:id="@+id/fl_image_select_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="6dp"
+            android:padding="4dp">
+
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/cb_image_select_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:clickable="false"
+                android:focusableInTouchMode="false"
+                app:buttonCompat="@drawable/checkbox_selector" />
+        </FrameLayout>
+
+
+    </com.dian.demo.ui.img.RatioFrameLayout>
+</layout>

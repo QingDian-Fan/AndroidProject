@@ -7,8 +7,6 @@
     <string name="language">ch</string>
 
 
-
-
     <string name="share_qq">QQ</string>
     <string name="share_qzone">QQ空间</string>
     <string name="share_wechat">微信</string>
@@ -49,4 +47,7 @@
     <string name="choose_logo">选择图片</string>
     <string name="exit_app">再按一次退出程序</string>
     <string name="cache_text">当前缓存%s 清除缓存</string>
+    <string name="text_image_select">图片选择</string>
+    <string name="text_all_image">所有图片</string>
+    <string name="image_select_total">共 %d 张</string>
 </resources>

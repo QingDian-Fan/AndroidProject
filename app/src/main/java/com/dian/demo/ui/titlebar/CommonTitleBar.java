@@ -994,6 +994,23 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
         initMainRightViews(mContext);
     }
 
+    public void setRightText(String text, int textColor, int textSize) {
+        if (rlMain == null) return;
+        if (rightType == TYPE_RIGHT_IMAGEBUTTON) {
+            rlMain.removeView(btnRight);
+        } else if (rightType == TYPE_RIGHT_TEXTVIEW) {
+            rlMain.removeView(tvRight);
+        } else if (rightType == TYPE_RIGHT_CUSTOM_VIEW) {
+            rlMain.removeView(viewCustomRight);
+        }
+        rightType = TYPE_RIGHT_TEXTVIEW;
+        rightText = text;
+        rightTextColor = textColor;
+        rightTextSize = textSize;
+        initMainRightViews(mContext);
+    }
+
+
     public void setLeftIcon(@DrawableRes int drawableRes) {
         if (rlMain == null) return;
         if (leftType == TYPE_LEFT_IMAGEBUTTON) {

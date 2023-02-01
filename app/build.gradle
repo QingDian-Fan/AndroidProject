@@ -180,6 +180,10 @@ dependencies {
     implementation 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:6.6.4'
     /*==============================第三方App分享=============================================*/
 
+    implementation 'org.aspectj:aspectjrt:1.9.6'
+
+    implementation 'com.github.Baseflow:PhotoView:2.3.0'
+
     /*===============================二维码相关===============================================*/
     implementation 'com.google.zxing:core:3.3.2'
     /*===============================二维码相关===============================================*/

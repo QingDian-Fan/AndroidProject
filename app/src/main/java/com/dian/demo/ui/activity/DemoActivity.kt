@@ -14,6 +14,7 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityDemoBinding
 import com.dian.demo.ui.dialog.DebugDialog
+import com.dian.demo.ui.img.ImageSelectActivity
 import com.dian.demo.utils.*
 import com.dian.demo.utils.aop.SingleClick
 import com.dian.demo.utils.ext.showAllowStateLoss
@@ -80,7 +81,7 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
             super.onKeyDown(keyCode, event)
         }
     }
-    @SingleClick
+
     private fun exitApp() = if (System.currentTimeMillis() - mLastTime > mDuraction) {
         showToast(ResourcesUtil.getString(R.string.exit_app))
         mLastTime = System.currentTimeMillis()
@@ -133,6 +134,9 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
                     )
                 }, 500)
 
+            }
+            R.id.btn_image_select -> {
+                ImageSelectActivity.start(this@DemoActivity)
             }
         }
     }

@@ -97,4 +97,10 @@
         <!-- 中间自定义布局, 对应centerType_CustomView -->
         <attr name="centerCustomView" format="reference" />
     </declare-styleable>
+
+    <!-- 按照比例显示的 FrameLayout -->
+    <declare-styleable name="RatioFrameLayout">
+        <!-- 宽高比例 -->
+        <attr name="sizeRatio" format="string" />
+    </declare-styleable>
 </resources>

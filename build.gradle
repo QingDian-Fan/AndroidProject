@@ -6,7 +6,7 @@ buildscript {
     apply from: 'pgyer-upload.gradle'
     dependencies {
         classpath 'org.aspectj:aspectjtools:1.9.6'
-        //classpath 'org.aspectj:aspectjweaver:1.9.6'
+        classpath 'org.aspectj:aspectjweaver:1.9.6'
     }
 }
 
