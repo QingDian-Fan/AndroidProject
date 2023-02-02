@@ -17,20 +17,48 @@ import com.dian.demo.ui.titlebar.CommonTitleBar.ACTION_RIGHT_TEXT
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.ext.dpToPx
 import com.dian.demo.utils.ext.showAllowStateLoss
+import com.dian.demo.utils.ext.singleClick
 import java.io.File
 
 class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
 
     companion object {
-        private const val INTENT_KEY_IN_MAX_SELECT: String = "maxSelect"
-        private const val INTENT_KEY_OUT_IMAGE_LIST: String = "imageList"
-        fun start(mContext: Context,maxSelect: Int) {
+        private const val SELECT_IMAGE_MAX_SELECT: String = "maxSelect"
+        private const val SELECT_IMAGE_IMAGE_LIST: String = "selectImage"
+        private const val SELECT_IMAGE_COLUM: String = "column"
+        private var listener: ImageSelectListener? = null
+        private var cancelListener:ImageCancelListener?=null
+
+        private fun setSelectLister(listener: ImageSelectListener) {
+            this.listener = listener
+        }
+        private fun setCancelLister(cancelListener: ImageCancelListener) {
+            this.cancelListener = cancelListener
+        }
+
+        fun start(
+            mContext: Context,
+            maxSelect: Int,
+            column:Int,
+            selectList: ArrayList<String>? = null,
+            listener: ImageSelectListener? = null,
+            cancelListener:ImageCancelListener?=null
+        ) {
             val intent = Intent()
             intent.setClass(mContext, ImageSelectActivity::class.java)
-            intent.putExtra(INTENT_KEY_IN_MAX_SELECT,maxSelect)
+            intent.putExtra(SELECT_IMAGE_MAX_SELECT, maxSelect)
+            intent.putExtra(SELECT_IMAGE_COLUM,column)
+            intent.putExtra(SELECT_IMAGE_IMAGE_LIST, selectList)
+            if (listener != null) {
+                setSelectLister(listener)
+            }
+            if (cancelListener!=null){
+                setCancelLister(cancelListener)
+            }
             mContext.startActivity(intent)
         }
     }
+
 
     private val allImage = ArrayList<String>()
 
@@ -55,12 +83,28 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
                 initAlbum()
             }
         }
-        val maxSelect =intent.getIntExtra(INTENT_KEY_IN_MAX_SELECT,9)
+        val maxSelect = intent.getIntExtra(SELECT_IMAGE_MAX_SELECT, 9)
+        val selectList = intent.getStringArrayListExtra(SELECT_IMAGE_IMAGE_LIST)
+        val column = intent.getIntExtra(SELECT_IMAGE_COLUM,3)
+        if (selectList != null && selectList.isNotEmpty()) {
+            selectImage.addAll(selectList)
+        }
+
+        binding.btnConfirm.singleClick {
+            listener?.selectListener(selectImage)
+            finish()
+        }
 
         getAllImage()
 
-        mAdapter = ImageSelectAdapter(this@ImageSelectActivity, allImage, selectImage,maxSelect!=1,maxSelect)
-        binding.rvData.layoutManager = GridLayoutManager(this@ImageSelectActivity, 3)
+        mAdapter = ImageSelectAdapter(
+            this@ImageSelectActivity,
+            allImage,
+            selectImage,
+            maxSelect != 1,
+            maxSelect
+        )
+        binding.rvData.layoutManager = GridLayoutManager(this@ImageSelectActivity, column)
         binding.rvData.adapter = mAdapter
         with(mAdapter) {
             onSelectListener = { _, url ->
@@ -68,7 +112,7 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
                     selectImage.add(url)
             }
             unSelectListener = { _, url ->
-                if (selectImage.contains(url)){
+                if (selectImage.contains(url)) {
                     selectImage.remove(url)
                     notifyDataSetChanged()
                 }
@@ -201,6 +245,9 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         if (dialog?.dialog?.isShowing != null && dialog?.dialog?.isShowing!!) {
             dialog?.dismissAllowingStateLoss()
         } else {
+            if (cancelListener != null) {
+                cancelListener?.cancel()
+            }
             super.onBackPressed()
         }
     }

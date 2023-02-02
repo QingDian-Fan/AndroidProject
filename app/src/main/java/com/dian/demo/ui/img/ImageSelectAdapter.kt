@@ -78,7 +78,7 @@ class ImageSelectAdapter(
                     unSelectListener.invoke(position, dataList[position])
                 } else {
                     if (isMulti) {
-                        if (selectList.size >= 9){
+                        if (selectList.size >= maxSelect){
                             ToastUtil.showToast(mContext,ResourcesUtil.getString(R.string.text_max_select,maxSelect))
                             return@singleClick
                         }

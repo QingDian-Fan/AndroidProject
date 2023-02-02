@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import com.demo.project.utils.ext.gone
@@ -16,7 +17,10 @@ import com.dian.demo.base.BaseAppVMActivity
 import com.dian.demo.databinding.ActivityDemoBinding
 import com.dian.demo.di.vm.DemoViewModel
 import com.dian.demo.ui.dialog.DebugDialog
+import com.dian.demo.ui.img.ImageCancelListener
 import com.dian.demo.ui.img.ImageSelectActivity
+import com.dian.demo.ui.img.ImageSelectListener
+import com.dian.demo.ui.img.ImageSelectUtil
 import com.dian.demo.utils.*
 import com.dian.demo.utils.aop.SingleClick
 import com.dian.demo.utils.ext.showAllowStateLoss
@@ -34,6 +38,8 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding,DemoViewModel>() {
     }
 
     override fun getLayoutId(): Int = R.layout.activity_demo
+
+    val mSelectList = ArrayList<String>()
 
     override fun initialize(savedInstanceState: Bundle?) {
         getTitleBarView().setOpenStatusBar(false)
@@ -138,7 +144,27 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding,DemoViewModel>() {
 
             }
             R.id.btn_image_select -> {
-                ImageSelectActivity.start(this@DemoActivity,1)
+                ImageSelectUtil.getInstance().setActivity(this@DemoActivity)
+                    .setMaxSelect(5)
+                    .setSelectList(mSelectList)
+                    .setColumn(3)
+                    .setSelectListener(object :ImageSelectListener{
+                        override fun selectListener(selectList: ArrayList<String>) {
+                            mSelectList.clear()
+                           if (selectList.isNotEmpty()){
+                               selectList.forEach {
+                                   mSelectList.add(it)
+                               }
+                           }
+                        }
+                    })
+                    .setCancelListener(object :ImageCancelListener{
+                        override fun cancel() {
+                            mSelectList.clear()
+                            ToastUtil.showToast(this@DemoActivity,"取消了")
+                        }
+                    })
+                    .create()
             }
             R.id.btn_network_request->{
                 viewModel.getArticleList(0)
