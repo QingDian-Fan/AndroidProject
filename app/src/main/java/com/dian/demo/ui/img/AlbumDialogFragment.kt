@@ -43,7 +43,7 @@ class AlbumDialogFragment : BottomSheetDialogFragment() {
             onChooseAlbumListener.invoke(info)
             rvData?.postDelayed({
                 dismissAllowingStateLoss()
-            }, 100)
+            }, 150)
 
         }
     }

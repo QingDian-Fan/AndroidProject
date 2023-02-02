@@ -136,7 +136,7 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
 
             }
             R.id.btn_image_select -> {
-                ImageSelectActivity.start(this@DemoActivity)
+                ImageSelectActivity.start(this@DemoActivity,1)
             }
         }
     }

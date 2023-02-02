@@ -38,8 +38,11 @@ class AlbumAdapter(private val mContext: Context, private val dataList: ArrayLis
             cbAlbumCheck.isChecked = dataList[position].isSelect()
         }
         holder.itemView.singleClick {
+            dataList.forEach {
+                it.setSelect(it == dataList[position])
+            }
+            notifyDataSetChanged()
             onItemClickListener.invoke(position, dataList[position])
-            holder.binding.cbAlbumCheck.isChecked = !dataList[position].isSelect()
         }
     }
 

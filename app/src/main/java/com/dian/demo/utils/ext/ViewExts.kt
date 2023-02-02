@@ -31,6 +31,7 @@ fun <T : View> T.singleClick(interval: Long = 800L, action: ((T) -> Unit)?) {
 }
 
 private var lastClickTime = 0L
+private lateinit var mView: View
 
 class SingleClickListener<T : View>(
     private val interval: Long = 800L,
@@ -39,11 +40,12 @@ class SingleClickListener<T : View>(
 
     override fun onClick(v: View) {
         val nowTime = System.currentTimeMillis()
-        if (nowTime - lastClickTime > interval) {
-            LogUtil.e("当前时间(${nowTime})-上次时间(${lastClickTime}) = 间隔时间(${nowTime- lastClickTime})")
+        if (nowTime - lastClickTime > interval || mView != v) {
+            LogUtil.e("当前时间(${nowTime})-上次时间(${lastClickTime}) = 间隔时间(${nowTime - lastClickTime})")
             // 单次点击事件
             clickFunc?.invoke(v as T)
             lastClickTime = nowTime
+            mView = v
         }
     }
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -9,6 +10,7 @@
     <com.dian.demo.ui.img.RatioFrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:padding="2dp"
         app:sizeRatio="1:1">
 
 
@@ -28,13 +30,25 @@
             android:padding="4dp">
 
             <androidx.appcompat.widget.AppCompatCheckBox
-                android:id="@+id/cb_image_select_check"
+                android:id="@+id/cb_single_image_select_check"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@null"
                 android:clickable="false"
                 android:focusableInTouchMode="false"
+                android:visibility="gone"
                 app:buttonCompat="@drawable/checkbox_selector" />
+
+            <TextView
+                android:id="@+id/cb_multi_image_select_check"
+                android:layout_width="@dimen/dp24"
+                android:layout_height="@dimen/dp24"
+                android:background="@drawable/icon_multi_checkbox_checked"
+                android:gravity="center"
+                android:textColor="@color/colorWhite"
+                android:textSize="@dimen/dp16"
+                tools:text="1" />
+
         </FrameLayout>
 
 

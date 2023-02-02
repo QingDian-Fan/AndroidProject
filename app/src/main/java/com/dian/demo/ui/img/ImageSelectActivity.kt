@@ -3,33 +3,31 @@ package com.dian.demo.ui.img
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
+import com.demo.project.utils.ext.visible
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityImageSelectBinding
-import com.dian.demo.ui.activity.DemoActivity
 import com.dian.demo.ui.titlebar.CommonTitleBar.ACTION_RIGHT_TEXT
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.ext.dpToPx
 import com.dian.demo.utils.ext.showAllowStateLoss
 import java.io.File
-import java.util.ArrayList
-import java.util.HashMap
 
 class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
 
     companion object {
-        fun start(mContext: Context) {
+        private const val INTENT_KEY_IN_MAX_SELECT: String = "maxSelect"
+        private const val INTENT_KEY_OUT_IMAGE_LIST: String = "imageList"
+        fun start(mContext: Context,maxSelect: Int) {
             val intent = Intent()
             intent.setClass(mContext, ImageSelectActivity::class.java)
+            intent.putExtra(INTENT_KEY_IN_MAX_SELECT,maxSelect)
             mContext.startActivity(intent)
         }
     }
@@ -57,10 +55,11 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
                 initAlbum()
             }
         }
+        val maxSelect =intent.getIntExtra(INTENT_KEY_IN_MAX_SELECT,9)
 
         getAllImage()
 
-        mAdapter = ImageSelectAdapter(this@ImageSelectActivity, allImage, selectImage)
+        mAdapter = ImageSelectAdapter(this@ImageSelectActivity, allImage, selectImage,maxSelect!=1,maxSelect)
         binding.rvData.layoutManager = GridLayoutManager(this@ImageSelectActivity, 3)
         binding.rvData.adapter = mAdapter
         with(mAdapter) {
@@ -69,8 +68,11 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
                     selectImage.add(url)
             }
             unSelectListener = { _, url ->
-                if (selectImage.contains(url))
+                if (selectImage.contains(url)){
                     selectImage.remove(url)
+                    notifyDataSetChanged()
+                }
+
             }
             onClickListener = { position, url ->
                 ImagePreviewActivity.start(this@ImageSelectActivity, getDataList(), position)
@@ -78,6 +80,9 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         }
 
     }
+
+    private var dialog: AlbumDialogFragment? = null
+
 
     private fun initAlbum() {
         val albumList = arrayListOf<AlbumInfo>()
@@ -106,11 +111,11 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         }
         val bundle = Bundle()
         bundle.putParcelableArrayList("dataList", albumList)
-        val dialog = AlbumDialogFragment()
-        dialog.arguments = bundle
-        dialog.showAllowStateLoss(supportFragmentManager, "")
+        dialog = AlbumDialogFragment()
+        dialog?.arguments = bundle
+        dialog?.showAllowStateLoss(supportFragmentManager, "")
 
-        dialog.onChooseAlbumListener = {
+        dialog?.onChooseAlbumListener = {
             if (it.getName() == ResourcesUtil.getString(R.string.text_all_image) && (mAdapter.getData() != allImage)) {
                 mAdapter.setData(allImage)
                 getTitleBarView().setRightText(
@@ -190,6 +195,14 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
             cursor.close()
         }
 
+    }
+
+    override fun onBackPressed() {
+        if (dialog?.dialog?.isShowing != null && dialog?.dialog?.isShowing!!) {
+            dialog?.dismissAllowingStateLoss()
+        } else {
+            super.onBackPressed()
+        }
     }
 
 
