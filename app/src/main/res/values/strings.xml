@@ -51,4 +51,5 @@
     <string name="text_all_image">所有图片</string>
     <string name="image_select_total">共 %d 张</string>
     <string name="text_max_select">最多选择 %d 张</string>
+    <string name="text_video_loading">加载中...</string>
 </resources>

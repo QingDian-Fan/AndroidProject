@@ -11,8 +11,8 @@ import androidx.lifecycle.ViewModel
 import com.demo.project.base.ToastEvent
 import com.demo.project.base.ViewBehavior
 import com.dian.demo.ProjectApplication
-import com.dian.demo.repository.remote.DataRepoImpl
-import com.dian.demo.repository.local.DataBaseManager
+import com.dian.demo.di.repository.remote.DataRepoImpl
+import com.dian.demo.di.repository.local.DataBaseManager
 import kotlinx.coroutines.launch
 
 /**
@@ -23,8 +23,8 @@ import kotlinx.coroutines.launch
  * @since: 1.0.0
  */
 abstract class BaseViewModel : ViewModel(), ViewModelLifecycle, ViewBehavior {
-    val repo by lazy { DataRepoImpl() }
-    val localRepo by lazy { DataBaseManager.getInstance(ProjectApplication.getAppContext()) }
+    protected val repo by lazy { DataRepoImpl() }
+    protected val localRepo by lazy { DataBaseManager }
 
     // loading视图显示Event
     var _loadingEvent = MutableLiveData<Boolean>()

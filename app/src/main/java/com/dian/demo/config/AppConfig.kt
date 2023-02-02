@@ -1,7 +1,7 @@
 package com.dian.demo.config
 
 
-import com.demo.project.config.Constant.DEBUG_URL_CONFIG
+import com.dian.demo.config.Constant.DEBUG_URL_CONFIG
 import com.dian.demo.BuildConfig
 import com.dian.demo.R
 import com.dian.demo.utils.LogUtil

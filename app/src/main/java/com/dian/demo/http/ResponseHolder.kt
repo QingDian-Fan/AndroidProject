@@ -1,6 +1,5 @@
 package com.dian.demo.http
 
-import com.demo.project.http.HttpError
 import com.dian.demo.utils.LogUtil
 
 

@@ -68,6 +68,7 @@ open class HttpClientBase {
 
     /**
      * 构建Retrofit客户端
+     *
      */
     open fun buildRetrofit(): Retrofit {
         return Retrofit.Builder()

@@ -12,7 +12,9 @@ import com.demo.project.utils.ext.gone
 import com.dian.demo.ProjectApplication
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
+import com.dian.demo.base.BaseAppVMActivity
 import com.dian.demo.databinding.ActivityDemoBinding
+import com.dian.demo.di.vm.DemoViewModel
 import com.dian.demo.ui.dialog.DebugDialog
 import com.dian.demo.ui.img.ImageSelectActivity
 import com.dian.demo.utils.*
@@ -21,7 +23,7 @@ import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.share.dialog.ShareDialog
 
 
-class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
+class DemoActivity : BaseAppVMActivity<ActivityDemoBinding,DemoViewModel>() {
 
     companion object {
         fun start(mContext: Context) {
@@ -138,6 +140,11 @@ class DemoActivity : BaseAppBindActivity<ActivityDemoBinding>() {
             R.id.btn_image_select -> {
                 ImageSelectActivity.start(this@DemoActivity,1)
             }
+            R.id.btn_network_request->{
+                viewModel.getArticleList(0)
+            }
         }
     }
+
+    override fun createViewModel(): DemoViewModel =DemoViewModel()
 }

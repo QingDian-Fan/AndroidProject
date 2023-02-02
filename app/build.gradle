@@ -184,6 +184,8 @@ dependencies {
 
     implementation 'com.github.Baseflow:PhotoView:2.3.0'
 
+    implementation 'com.airbnb.android:lottie:4.1.0'
+
     /*===============================二维码相关===============================================*/
     implementation 'com.google.zxing:core:3.3.2'
     /*===============================二维码相关===============================================*/

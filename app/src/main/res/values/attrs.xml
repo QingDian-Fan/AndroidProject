@@ -103,4 +103,13 @@
         <!-- 宽高比例 -->
         <attr name="sizeRatio" format="string" />
     </declare-styleable>
+
+    <declare-styleable name="VideoPlayButton">
+        <!-- 线条颜色 -->
+        <attr name="pb_lineColor" format="color" />
+        <!-- 线条大小 -->
+        <attr name="pb_lineSize" format="integer" />
+        <!-- 动画时间 -->
+        <attr name="pb_animDuration" format="integer" />
+    </declare-styleable>
 </resources>

@@ -3,12 +3,15 @@ package com.dian.demo.http
 import android.content.Context
 import android.net.ParseException
 import android.text.TextUtils
+import android.util.Log
 import android.view.Gravity
 import android.webkit.MimeTypeMap
-import com.demo.project.http.*
 import com.dian.demo.ProjectApplication
 import com.dian.demo.utils.ToastUtil
 import com.google.gson.JsonParseException
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -240,12 +243,18 @@ open class HttpClient : HttpClientBase() {
 
     /**
      * 解析成功的网络请求返回的响应，InfoResponse形式
+     *   val moshi = Moshi.Builder()
+     *              .addLast(KotlinJsonAdapterFactory())
+     *              .build()
+     *  val jsonAdapter: JsonAdapter<PgyResp> = moshi.adapter(PgyResp::class.java)
+     *  val pgyResp: PgyResp? = jsonAdapter.fromJson(jsonString)
      */
     open fun <T> resolveInfoResponse(
         response: Response<String>,
         type: Type
     ): ResponseHolder<T> {
         val resp = getGson().fromJson<Result<T>>(response.body(), type)
+
         if (resp.isSuccessful()) {
             // 请求成功，返回成功响应
             return ResponseHolder.Success(resp.data)
@@ -294,6 +303,7 @@ open class HttpClient : HttpClientBase() {
      * 捕获异常
      */
     open fun catchException(cause: Throwable): HttpError {
+        Log.e("Error--->","网络请求：message:${cause.message}")
         return when (cause) {
             is ConnectException,
             is UnknownHostException -> HttpError(
