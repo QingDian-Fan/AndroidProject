@@ -112,4 +112,6 @@
         <!-- 动画时间 -->
         <attr name="pb_animDuration" format="integer" />
     </declare-styleable>
+
+
 </resources>

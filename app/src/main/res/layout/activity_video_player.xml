@@ -12,10 +12,9 @@
         android:layout_height="match_parent"
         tools:context=".ui.activity.VideoPlayerActivity">
 
-        <SurfaceView
-            android:id="@+id/surface_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center" />
+       <com.dian.demo.ui.view.video.VideoPlayerView
+           android:id="@+id/video_view"
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"/>
     </FrameLayout>
 </layout>

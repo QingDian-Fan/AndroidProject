@@ -19,18 +19,3 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
-# AOP
--adaptclassstrings
--keepattributes InnerClasses, EnclosingMethod, Signature, *Annotation*
-
--keepnames @org.aspectj.lang.annotation.Aspect class * {
-    public <methods>;
-}
-# OkHttp3
--keepattributes Signature
--keepattributes *Annotation*
--keep class okhttp3.** { *; }
--keep interface okhttp3.** { *; }
--dontwarn okhttp3.**
--dontwarn okio.**
--dontwarn org.conscrypt.**
