@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.Gravity
 import android.view.View
 import android.widget.Toast
+import com.dian.demo.ProjectApplication
 
 /**
  * @author:  QingDian_Fan
@@ -17,7 +18,7 @@ object ToastUtil {
 
     @JvmStatic
     fun showToast(
-        context: Context,
+        context: Context = ProjectApplication.getAppContext(),
         str: String,
         showLong: Boolean = false,
         gravity: Int = Gravity.CENTER

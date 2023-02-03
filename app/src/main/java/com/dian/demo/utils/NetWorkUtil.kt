@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import android.telephony.TelephonyManager
+import com.dian.demo.ProjectApplication
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.NetworkInterface
@@ -23,8 +24,9 @@ object NetWorkUtil {
      * @param context
      * @return
      */
-    fun isNetworkAvailable(context: Context): Boolean {
-        val manager = context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    fun isNetworkAvailable(context: Context = ProjectApplication.getAppContext()): Boolean {
+        val manager =
+            context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val info = manager.activeNetworkInfo
         return !(null == info || !info.isAvailable)
     }
@@ -35,8 +37,9 @@ object NetWorkUtil {
      * @param context
      * @return
      */
-    fun isNetworkConnected(context: Context): Boolean {
-        val manager = context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    fun isNetworkConnected(context: Context = ProjectApplication.getAppContext()): Boolean {
+        val manager =
+            context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val info = manager.activeNetworkInfo
         return !(null == info || !info.isConnected)
     }
@@ -96,7 +99,8 @@ object NetWorkUtil {
      */
     @JvmStatic
     fun is3G(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetInfo = connectivityManager.activeNetworkInfo
         return activeNetInfo != null && activeNetInfo.type == ConnectivityManager.TYPE_MOBILE
     }
@@ -109,7 +113,8 @@ object NetWorkUtil {
      */
     @JvmStatic
     fun isWifi(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetInfo = connectivityManager.activeNetworkInfo
         return activeNetInfo != null && activeNetInfo.type == ConnectivityManager.TYPE_WIFI
     }
@@ -122,7 +127,8 @@ object NetWorkUtil {
      */
     @JvmStatic
     fun is2G(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetInfo = connectivityManager.activeNetworkInfo
         return activeNetInfo != null &&
                 (activeNetInfo.subtype == TelephonyManager.NETWORK_TYPE_EDGE ||
@@ -144,7 +150,8 @@ object NetWorkUtil {
     fun isMobile(context: Context?): Boolean {
         if (context != null) {
             //获取手机所有连接管理对象(包括对wi-fi,net等连接的管理)
-            val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val manager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             //获取NetworkInfo对象
             val networkInfo = manager.activeNetworkInfo
             //判断NetworkInfo对象是否为空 并且类型是否为MOBILE

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.dian.demo.ui.activity.DemoActivity
 import com.dian.demo.utils.ActivityManager
+import com.dian.demo.utils.LogUtil
 import com.dian.demo.utils.permissions.LivePermissions
 import com.dian.demo.utils.permissions.PermissionResult
 import com.dian.demo.utils.permissions.PermissionsUtil
@@ -28,7 +29,7 @@ class CheckPermissionsAspect {
     @Around("methodPermissions()")
     @Throws(Throwable::class)
     fun aroundJoinPermissions(joinPoint: ProceedingJoinPoint) {
-        Log.e("TAGTAG", "AOP-CheckPermissions")
+        LogUtil.e("TAGTAG", "AOP-CheckPermissions")
         var mActivity: AppCompatActivity? = null
         for (arg in joinPoint.args) {
             if (arg is AppCompatActivity) {
@@ -37,7 +38,7 @@ class CheckPermissionsAspect {
             }
         }
         if ((mActivity == null) || mActivity.isFinishing || mActivity.isDestroyed) {
-            Log.e("TAGTAG", "AOP-CheckPermissions-mActivity is null")
+            LogUtil.e("TAGTAG", "AOP-CheckPermissions-mActivity is null")
             mActivity = ActivityManager.getInstance().getTopActivity() as AppCompatActivity
         }
         val methodSignature = joinPoint.signature as MethodSignature
@@ -47,7 +48,7 @@ class CheckPermissionsAspect {
         }
         val checkPermissions = method.getAnnotation(CheckPermissions::class.java)
         val permissionList: Array<out String> = checkPermissions.value
-        Log.e("TAGTAG", "AOP-CheckPermissions-do it")
+        LogUtil.e("TAGTAG", "AOP-CheckPermissions-do it")
         if (PermissionsUtil.hasAopPermission(mActivity, permissionList)) {
             joinPoint.proceed()
         } else {
@@ -64,13 +65,13 @@ class CheckPermissionsAspect {
             .observe(mActivity) {
                 when (it) {
                     is PermissionResult.Grant -> {  //权限允许
-                        Log.e("TAGTAG", "AOP-CheckPermissions-权限允许")
+                        LogUtil.e("TAGTAG", "AOP-CheckPermissions-权限允许")
                     }
                     is PermissionResult.Rationale -> {  //权限拒绝
-                        Log.e("TAGTAG", "AOP-CheckPermissions-权限拒绝")
+                        LogUtil.e("TAGTAG", "AOP-CheckPermissions-权限拒绝")
                     }
                     is PermissionResult.Deny -> {   //权限拒绝，且勾选了不再询问
-                        Log.e("TAGTAG", "AOP-CheckPermissions-权限拒绝，且勾选了不再询问")
+                        LogUtil.e("TAGTAG", "AOP-CheckPermissions-权限拒绝，且勾选了不再询问")
                     }
                 }
                 joinPoint.proceed()

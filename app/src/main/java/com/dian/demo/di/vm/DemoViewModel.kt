@@ -3,9 +3,11 @@ package com.dian.demo.di.vm
 import com.dian.demo.base.BaseViewModel
 import com.dian.demo.di.model.ArticleEntity
 import com.dian.demo.di.repository.local.DataBaseManager
+import com.dian.demo.utils.aop.CheckNet
 
 class DemoViewModel : BaseViewModel() {
 
+    @CheckNet
     fun getArticleList(page: Int){
         launchOnUI {
             repo.getArticleList(page)
