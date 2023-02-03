@@ -104,7 +104,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation fileTree(dir: "libs", include: ["*.aar"])
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
@@ -180,62 +180,86 @@ dependencies {
     implementation 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:6.6.4'
     /*==============================第三方App分享=============================================*/
 
+    /*==================================AOP相关==============================================*/
     implementation 'org.aspectj:aspectjrt:1.9.6'
+    /*==================================AOP相关==============================================*/
 
+    /*==================================图片查看器============================================*/
     implementation 'com.github.Baseflow:PhotoView:2.3.0'
-
-    implementation 'com.airbnb.android:lottie:4.1.0'
+    /*==================================图片查看器============================================*/
 
     /*===============================二维码相关===============================================*/
     implementation 'com.google.zxing:core:3.3.2'
     /*===============================二维码相关===============================================*/
 
-
+    /*===============================ijkPlayer===============================================*/
+    implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
+    implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
+    implementation 'tv.danmaku.ijk.media:ijkplayer-arm64:0.8.8'
+    /*===============================ijkPlayer===============================================*/
 }
+
 
 import org.aspectj.bridge.IMessage
 import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
 
+android.applicationVariants.all { variant ->
+
+// add the versionName & versionCode to the apk file name
+    variant.outputs.all { output ->
+        def newPath = outputFileName.replace(".apk", "-${variant.versionName}.${variant.versionCode}.apk")
+        outputFileName = new File(outputFileName, newPath)
 
 
-final def log = project.logger
-final def variants = project.android.applicationVariants
+        def fullName = ""
+        output.name.tokenize('-').eachWithIndex { token, index ->
+            fullName = fullName + (index == 0 ? token : token.capitalize())
+        }
 
-variants.all { variant ->
-    if (!variant.buildType.isDebuggable()) {
-        log.debug("Skipping non-debuggable build type '${variant.buildType.name}'.")
-        return;
-    }
-    JavaCompile javaCompile = variant.javaCompile
-    javaCompile.doLast {
-        String[] args = ["-showWeaveInfo",
-                         "-1.8",
-                         "-inpath", javaCompile.destinationDir.toString(),
-                         "-aspectpath", javaCompile.classpath.asPath,
-                         "-d", javaCompile.destinationDir.toString(),
-                         "-classpath", javaCompile.classpath.asPath,
-                         "-bootclasspath", project.android.bootClasspath.join(File.pathSeparator)]
-        log.debug "ajc args: " + Arrays.toString(args)
-        MessageHandler handler = new MessageHandler(true);
-        new Main().run(args, handler);
-        for (IMessage message : handler.getMessages(null, true)) {
-            switch (message.getKind()) {
-                case IMessage.ABORT:
-                case IMessage.ERROR:
-                case IMessage.FAIL:
-                    log.error message.message, message.thrown
-                    break;
-                case IMessage.WARNING:
-                    log.warn message.message, message.thrown
-                    break;
-                case IMessage.INFO:
-                    log.info message.message, message.thrown
-                    break;
-                case IMessage.DEBUG:
-                    log.debug message.message, message.thrown
-                    break;
+        JavaCompile javaCompile = variant.javaCompiler
+
+        MessageHandler handler = new MessageHandler(true)
+        javaCompile.doLast {
+            String[] javaArgs = ["-showWeaveInfo",
+                                 "-1.8",
+                                 "-inpath", javaCompile.destinationDir.toString(),
+                                 "-aspectpath", javaCompile.classpath.asPath,
+                                 "-d", javaCompile.destinationDir.toString(),
+                                 "-classpath", javaCompile.classpath.asPath,
+                                 "-bootclasspath", project.android.bootClasspath.join(
+                    File.pathSeparator)]
+
+            String[] kotlinArgs = ["-showWeaveInfo",
+                                   "-1.8",
+                                   "-inpath", project.buildDir.path + "/tmp/kotlin-classes/" + fullName,
+                                   "-aspectpath", javaCompile.classpath.asPath,
+                                   "-d", project.buildDir.path + "/tmp/kotlin-classes/" + fullName,
+                                   "-classpath", javaCompile.classpath.asPath,
+                                   "-bootclasspath", project.android.bootClasspath.join(
+                    File.pathSeparator)]
+
+            new Main().run(javaArgs, handler)
+            new Main().run(kotlinArgs, handler)
+
+            def log = project.logger
+            for (IMessage message : handler.getMessages(null, true)) {
+                switch (message.getKind()) {
+                    case IMessage.ABORT:
+                    case IMessage.ERROR:
+                    case IMessage.FAIL:
+                        log.error message.message, message.thrown
+                        break
+                    case IMessage.WARNING:
+                    case IMessage.INFO:
+                        log.info message.message, message.thrown
+                        break
+                    case IMessage.DEBUG:
+                        log.debug message.message, message.thrown
+                        break
+                }
             }
         }
     }
+
 }

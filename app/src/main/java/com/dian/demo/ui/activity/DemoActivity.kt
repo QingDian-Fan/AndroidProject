@@ -27,7 +27,7 @@ import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.share.dialog.ShareDialog
 
 
-class DemoActivity : BaseAppVMActivity<ActivityDemoBinding,DemoViewModel>() {
+class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
 
     companion object {
         fun start(mContext: Context) {
@@ -98,8 +98,8 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding,DemoViewModel>() {
     }
 
 
+    @SingleClick
     fun clickView(view: View) {
-        if (FastClickUtil.isFastClick()) return
         when (view.id) {
             R.id.btn_share_text -> {
                 ShareDialog().setText(true, ResourcesUtil.getString(R.string.app_content))
@@ -148,29 +148,32 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding,DemoViewModel>() {
                     .setMaxSelect(5)
                     .setSelectList(mSelectList)
                     .setColumn(3)
-                    .setSelectListener(object :ImageSelectListener{
+                    .setSelectListener(object : ImageSelectListener {
                         override fun selectListener(selectList: ArrayList<String>) {
                             mSelectList.clear()
-                           if (selectList.isNotEmpty()){
-                               selectList.forEach {
-                                   mSelectList.add(it)
-                               }
-                           }
+                            if (selectList.isNotEmpty()) {
+                                selectList.forEach {
+                                    mSelectList.add(it)
+                                }
+                            }
                         }
                     })
-                    .setCancelListener(object :ImageCancelListener{
+                    .setCancelListener(object : ImageCancelListener {
                         override fun cancel() {
                             mSelectList.clear()
-                            ToastUtil.showToast(this@DemoActivity,"取消了")
+                            ToastUtil.showToast(this@DemoActivity, "取消了")
                         }
                     })
                     .create()
             }
-            R.id.btn_network_request->{
+            R.id.btn_network_request -> {
                 viewModel.getArticleList(0)
+            }
+            R.id.btn_video_play -> {
+                VideoPlayerActivity.start(this@DemoActivity)
             }
         }
     }
 
-    override fun createViewModel(): DemoViewModel =DemoViewModel()
+    override fun createViewModel(): DemoViewModel = DemoViewModel()
 }

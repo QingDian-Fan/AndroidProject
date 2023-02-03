@@ -25,6 +25,14 @@
         android:theme="@style/AppTheme.Normal"
         tools:targetApi="31">
         <activity
+            android:name=".ui.activity.VideoPlayerActivity"
+            android:screenOrientation="landscape"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
             android:name=".ui.img.ImageSelectActivity"
             android:exported="false">
             <meta-data
