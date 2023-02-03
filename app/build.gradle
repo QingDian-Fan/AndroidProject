@@ -197,6 +197,8 @@ dependencies {
     implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
     implementation 'tv.danmaku.ijk.media:ijkplayer-arm64:0.8.8'
     /*===============================ijkPlayer===============================================*/
+
+    implementation 'com.github.getActivity:XXPermissions:12.3'
 }
 
 

@@ -11,6 +11,7 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivitySplashBinding
 import com.dian.demo.utils.ShortCutUtil
+import com.dian.demo.utils.aop.CheckPermissions
 import com.dian.demo.utils.permissions.LivePermissions
 import com.dian.demo.utils.permissions.PermissionResult
 import com.dian.demo.utils.permissions.PermissionsUtil
@@ -39,39 +40,21 @@ class SplashActivity : BaseAppBindActivity<ActivitySplashBinding>() {
             }, 500)
             return
         }
-        LivePermissions(this@SplashActivity)
-            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
-            .observe(this) {
-                when (it) {
-                    is PermissionResult.Grant -> {  //权限允许
-                        getTitleBarView().postDelayed({
-                            DemoActivity.start(this@SplashActivity)
-                            finish()
-                        }, 500)
-                    }
-                    is PermissionResult.Rationale -> {  //权限拒绝
-                        showToast("权限拒绝")
-                        getTitleBarView().postDelayed({
-                            DemoActivity.start(this@SplashActivity)
-                            finish()
-                        }, 500)
-                    }
-                    is PermissionResult.Deny -> {   //权限拒绝，且勾选了不再询问
-                        showToast("权限拒绝，且勾选了不再询问")
-                        getTitleBarView().postDelayed({
-                            DemoActivity.start(this@SplashActivity)
-                            finish()
-                        }, 500)
-                    }
-                }
-            }
 
-
+        toPage()
     }
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)
     private fun initShortCut() {
         val shortcutManager = getSystemService(ShortcutManager::class.java)
         shortcutManager.dynamicShortcuts = ShortCutUtil().createShortCut(this@SplashActivity)
+    }
+
+    @CheckPermissions(Manifest.permission.CAMERA,Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    fun toPage() {
+        getTitleBarView().postDelayed({
+            DemoActivity.start(this@SplashActivity)
+            finish()
+        }, 500)
     }
 }
