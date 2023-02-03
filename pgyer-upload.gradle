@@ -10,8 +10,8 @@ ext {
 
     // Apk输出路劲
     apk_path = "${project.rootDir}/app/build/outputs/apk/"
-    debug_apk_path = "${project.rootDir}/app/build/outputs/apk/debug/"
-    release_apk_path = "${project.rootDir}/app/build/outputs/apk/release/"
+    debug_apk_path = "${project.rootDir}/app/build/outputs/apk/debug/玩Android/"
+    release_apk_path = "${project.rootDir}/app/build/outputs/apk/release/玩Android/"
 }
 
 static def isOpenWeChatMsg() {

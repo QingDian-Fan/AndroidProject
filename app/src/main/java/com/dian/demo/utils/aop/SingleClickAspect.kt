@@ -46,7 +46,7 @@ class SingleClickAspect {
         // 取出方法的注解
         val methodSignature = joinPoint.signature as MethodSignature
         val method = methodSignature.method
-        if (!method.isAnnotationPresent(SingleClick::class.java)) {
+        if (method == null || !method.isAnnotationPresent(SingleClick::class.java)) {
             return
         }
         val singleClick = method.getAnnotation(SingleClick::class.java)

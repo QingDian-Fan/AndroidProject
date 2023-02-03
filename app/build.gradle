@@ -80,13 +80,12 @@ android {
 
     android.applicationVariants.all { variant ->
         variant.outputs.all {
-            def buildTime = project.hasProperty('BUILD_TIME') ? BUILD_TIME : new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08:00"))
 
             if (variant.buildType.name == 'debug') {
-                outputFileName = "玩Android-${variant.baseName}-${versionName}-${buildTime}.apk"
+                outputFileName = "玩Android-${variant.baseName}.apk"
             }
             if (variant.buildType.name == 'release') {
-                outputFileName = "玩Android-${variant.baseName}-${versionName}-${buildTime}.apk"
+                outputFileName = "玩Android-${variant.baseName}.apk"
             }
         }
     }
@@ -210,8 +209,10 @@ android.applicationVariants.all { variant ->
 
 // add the versionName & versionCode to the apk file name
     variant.outputs.all { output ->
-        def newPath = outputFileName.replace(".apk", "-${variant.versionName}.${variant.versionCode}.apk")
-        outputFileName = new File(outputFileName, newPath)
+        def buildTime = project.hasProperty('BUILD_TIME') ? BUILD_TIME : new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08:00"))
+
+        def newPath = outputFileName.replace(".apk", "-${variant.versionName}-${buildTime}.apk")
+        outputFileName = new File("玩Android", newPath)
 
 
         def fullName = ""

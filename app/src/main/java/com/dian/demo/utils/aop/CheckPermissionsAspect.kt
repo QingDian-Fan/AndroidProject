@@ -43,11 +43,11 @@ class CheckPermissionsAspect {
         }
         val methodSignature = joinPoint.signature as MethodSignature
         val method = methodSignature.method
-        if (!method.isAnnotationPresent(CheckPermissions::class.java)) {
+        if (method === null || !method.isAnnotationPresent(CheckPermissions::class.java)) {
             return
         }
         val checkPermissions = method.getAnnotation(CheckPermissions::class.java)
-        val permissionList: Array<out String> = checkPermissions.value
+        val permissionList: Array<out String> = checkPermissions?.value ?: arrayOf()
         LogUtil.e("TAGTAG", "AOP-CheckPermissions-do it")
         if (PermissionsUtil.hasAopPermission(mActivity, permissionList)) {
             joinPoint.proceed()
