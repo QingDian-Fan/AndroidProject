@@ -1,16 +1,13 @@
 package com.dian.demo.ui.activity
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.view.View
-import android.view.WindowManager
 import com.demo.project.utils.ext.gone
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityVideoPlayerBinding
+import com.dian.demo.ui.view.video.VideoScaleType
 import com.dian.demo.utils.StatusBarUtil
 
 
@@ -33,6 +30,7 @@ class VideoPlayerActivity : BaseAppBindActivity<ActivityVideoPlayerBinding>() {
         StatusBarUtil.hideStatusBar(this)
         binding.videoView.initData()
         binding.videoView.setVideoPath("http://vfx.mtime.cn/Video/2019/03/09/mp4/190309153658147087.mp4")
+        binding.videoView.setScaleType(VideoScaleType.RATIO_FILL_SIZE)
         binding.videoView.start()
 
         binding.videoView.onActionBack = {

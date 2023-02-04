@@ -1,16 +1,19 @@
 package com.dian.demo.ui.view.video
 
 import android.animation.ValueAnimator
-import android.animation.ValueAnimator.*
+import android.animation.ValueAnimator.ofInt
 import android.content.Context
+import android.content.res.Resources
 import android.media.AudioManager
 import android.provider.Settings
 import android.util.AttributeSet
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.view.View.OnClickListener
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.SeekBar
 import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.AppCompatImageView
@@ -18,15 +21,17 @@ import androidx.appcompat.widget.AppCompatSeekBar
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import com.demo.project.utils.ext.visible
+import com.demo.project.utils.ext.centerInParent
+import com.demo.project.utils.ext.center_horizontal
+import com.demo.project.utils.ext.layout_gravity
 import com.dian.demo.R
-import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.aop.SingleClick
 import tv.danmaku.ijk.media.player.IMediaPlayer
-import tv.danmaku.ijk.media.player.IMediaPlayer.OnBufferingUpdateListener
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import java.util.*
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 
 class VideoPlayerView @JvmOverloads constructor(
@@ -35,7 +40,8 @@ class VideoPlayerView @JvmOverloads constructor(
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr, defStyleRes), OnClickListener,
-    IMediaPlayer.OnPreparedListener, SeekBar.OnSeekBarChangeListener {
+    IMediaPlayer.OnPreparedListener, SeekBar.OnSeekBarChangeListener,
+    IMediaPlayer.OnVideoSizeChangedListener {
 
     private val player by lazy { IjkMediaPlayer() }
 
@@ -55,6 +61,7 @@ class VideoPlayerView @JvmOverloads constructor(
     private val messageLayout: CardView by lazy { findViewById<CardView>(R.id.cv_player_view_message) }
     private val ivMessage: AppCompatImageView by lazy { findViewById<AppCompatImageView>(R.id.iv_message) }
     private val tvMessage: AppCompatTextView by lazy { findViewById<AppCompatTextView>(R.id.tv_message) }
+    private val pbLoading: ProgressBar by lazy { findViewById<ProgressBar>(R.id.pb_loading) }
 
 
     /** 是否锁定 */
@@ -107,6 +114,13 @@ class VideoPlayerView @JvmOverloads constructor(
     /** 提示对话框隐藏间隔 */
     private val DIALOG_TIME: Int = 500
 
+    private val STATUS_LOADING = 1
+    private val STATUS_PLAYING = 2
+
+    private var VIDEO_STATUS = STATUS_LOADING
+
+    private var scaleType: VideoScaleType = VideoScaleType.RATIO_FILL_SIZE
+
 
     init {
         LayoutInflater.from(getContext()).inflate(R.layout.view_video_player, this, true)
@@ -122,11 +136,14 @@ class VideoPlayerView @JvmOverloads constructor(
     //IJKplayer 部分
     fun initData() {
         surfaceView.holder.addCallback(callback)
-        post(mShowControllerRunnable)
     }
 
     fun setTitle(title: String) {
         tvTitle.text = title
+    }
+
+    fun setScaleType(scaleType: VideoScaleType) {
+        this.scaleType = scaleType
     }
 
     fun setVideoPath(urlString: String) {
@@ -136,13 +153,43 @@ class VideoPlayerView @JvmOverloads constructor(
     fun start(isStart: Boolean = true) {
         if (isStart) {
             player.prepareAsync()
+            player.setOnPreparedListener(this)
+            player.setOnVideoSizeChangedListener(this)
+            player.setOnInfoListener { iMediaPlayer, what, arg2 ->
+                when (what) {
+                    IMediaPlayer.MEDIA_INFO_BUFFERING_START -> {
+                        setState(STATUS_LOADING)
+                    }
+                    IMediaPlayer.MEDIA_INFO_BUFFERING_END,
+                    IMediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START -> {
+                        setState(STATUS_PLAYING)
+                    }
+                }
+                false
+            }
         }
         player.start()
-        player.setOnPreparedListener(this)
         viewControl.play()
-        // 延迟隐藏控制面板
-        removeCallbacks(mHideControllerRunnable)
-        postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
+        setState(STATUS_LOADING)
+
+    }
+
+    private fun setState(state: Int) {
+        VIDEO_STATUS = state
+        when (state) {
+            STATUS_LOADING -> {
+                pbLoading.visibility = View.VISIBLE
+                topLayout.visibility = View.GONE
+                bottomLayout.visibility = View.GONE
+                ivLock.visibility = View.GONE
+                viewControl.visibility = View.GONE
+                Log.e("video-status", "loading")
+            }
+            STATUS_PLAYING -> {
+                pbLoading.visibility = View.GONE
+                Log.e("video-status", "playing")
+            }
+        }
     }
 
 
@@ -163,6 +210,10 @@ class VideoPlayerView @JvmOverloads constructor(
     fun destroy() {
         player.reset()
         player.release()
+        removeCallbacks(mHideControllerRunnable)
+        removeCallbacks(mShowControllerRunnable)
+        removeCallbacks(mHideMessageRunnable)
+        removeCallbacks(mShowMessageRunnable)
     }
 
 
@@ -195,13 +246,13 @@ class VideoPlayerView @JvmOverloads constructor(
             viewControl.pause()
             onCompletion?.invoke(it)
         }
+
         player.setOnBufferingUpdateListener { _, progress ->
             sbPlayerViewProgress.secondaryProgress = (progress * player.duration / 100).toInt()
         }
     }
 
     //  UI部分
-    @SingleClick
     override fun onClick(mView: View) {
         when (mView) {
             this -> {
@@ -315,16 +366,23 @@ class VideoPlayerView @JvmOverloads constructor(
             if (viewControl.visibility == VISIBLE) {
                 viewControl.visibility = INVISIBLE
             }
-
         }
         alphaAnimator.start()
     }
 
     private fun showControlPanel() {
-        if (isControlPanelShow) {
+        if (isControlPanelShow || VIDEO_STATUS == STATUS_LOADING) {
             return
         }
         isControlPanelShow = true
+
+        if (topLayout.visibility == View.GONE) {
+            topLayout.visibility = View.VISIBLE
+            bottomLayout.visibility = View.VISIBLE
+            ivLock.visibility = View.VISIBLE
+            viewControl.visibility = View.VISIBLE
+        }
+
 
         val topAnimator: ValueAnimator = ofInt(-topLayout.height, 0)
         topAnimator.duration = ANIM_TIME.toLong()
@@ -628,6 +686,44 @@ class VideoPlayerView @JvmOverloads constructor(
         player.seekTo(finalProgress.toLong())
         sbPlayerViewProgress.progress = finalProgress
         if (!player.isPlaying) start(false)
+    }
+
+    override fun onVideoSizeChanged(
+        p0: IMediaPlayer?,
+        videoWidth: Int,
+        videoHeight: Int,
+        p3: Int,
+        p4: Int
+    ) {
+        when (scaleType) {
+            VideoScaleType.ORIGINAL_SIZE -> {
+                val originWidth = if (videoWidth > width) {
+                    width
+                } else {
+                    videoWidth
+                }
+                val originHeight = if (videoHeight > height) {
+                    height
+                } else {
+                    videoHeight
+                }
+                val layoutPrams = LayoutParams(originWidth, originHeight)
+                layoutPrams.gravity = 0x11
+                surfaceView.layoutParams = layoutPrams
+            }
+            VideoScaleType.FULL_SIZE -> {
+                val layoutPrams = LayoutParams(width, height)
+                layoutPrams.gravity = 0x11
+                surfaceView.layoutParams = layoutPrams
+            }
+            else -> {
+                val width = height * videoWidth / videoHeight
+                val layoutPrams = LayoutParams(width, height)
+                layoutPrams.gravity = 0x11
+                surfaceView.layoutParams = layoutPrams
+            }
+        }
+
     }
 
 
