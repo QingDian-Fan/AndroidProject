@@ -46,13 +46,18 @@ class VideoPlayerActivity : BaseAppBindActivity<ActivityVideoPlayerBinding>() {
         binding.videoView.pause()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (!binding.videoView.isPlaying() && binding.videoView.isPrepare()) {
+            binding.videoView.resume()
+        }
+
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         binding.videoView.destroy()
     }
-
-
-
 
 
 }
