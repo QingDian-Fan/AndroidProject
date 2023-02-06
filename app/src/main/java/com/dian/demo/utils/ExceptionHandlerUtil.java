@@ -1,6 +1,7 @@
 package com.dian.demo.utils;
 
 
+import android.Manifest;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
@@ -11,6 +12,7 @@ import android.view.Gravity;
 import androidx.core.content.FileProvider;
 
 import com.dian.demo.ProjectApplication;
+import com.dian.demo.utils.aop.CheckPermissions;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -64,7 +66,7 @@ public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
         }
     }
 
-
+    @CheckPermissions(value = Manifest.permission.WRITE_EXTERNAL_STORAGE,isMust = true)
     private void saveCrashToFile(final Throwable ex) {
         createDir();
         FileOutputStream fileOutputStream = null;

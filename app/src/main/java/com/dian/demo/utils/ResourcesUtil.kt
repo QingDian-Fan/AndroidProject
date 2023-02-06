@@ -18,12 +18,13 @@ object ResourcesUtil {
         return ProjectApplication.getAppContext().resources
     }
 
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun getDrawable(@DrawableRes id: Int): Drawable? {
         return ContextCompat.getDrawable(ProjectApplication.getAppContext(), id)
     }
 
-    @kotlin.jvm.JvmStatic
+
+    @JvmStatic
     fun getString(@StringRes id: Int): String {
         return getResources().getString(id)
     }
@@ -32,7 +33,7 @@ object ResourcesUtil {
         return getResources().getString(id, *params)
     }
 
-    @kotlin.jvm.JvmStatic
+
     fun getColor(@ColorRes id: Int): Int {
         return ContextCompat.getColor(ProjectApplication.getAppContext(), id)
     }

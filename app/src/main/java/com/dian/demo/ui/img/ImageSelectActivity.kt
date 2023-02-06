@@ -1,5 +1,6 @@
 package com.dian.demo.ui.img
 
+import android.Manifest
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -7,14 +8,13 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.TextUtils
-import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
-import com.demo.project.utils.ext.visible
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityImageSelectBinding
 import com.dian.demo.ui.titlebar.CommonTitleBar.ACTION_RIGHT_TEXT
 import com.dian.demo.utils.ResourcesUtil
+import com.dian.demo.utils.aop.CheckPermissions
 import com.dian.demo.utils.ext.dpToPx
 import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.ext.singleClick
@@ -35,15 +35,8 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         private fun setCancelLister(cancelListener: ImageCancelListener) {
             this.cancelListener = cancelListener
         }
-
-        fun start(
-            mContext: Context,
-            maxSelect: Int,
-            column:Int,
-            selectList: ArrayList<String>? = null,
-            listener: ImageSelectListener? = null,
-            cancelListener:ImageCancelListener?=null
-        ) {
+        @CheckPermissions(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, isMust = true)
+        fun start(mContext: Context, maxSelect: Int, column:Int, selectList: ArrayList<String>? = null, listener: ImageSelectListener? = null, cancelListener:ImageCancelListener?=null) {
             val intent = Intent()
             intent.setClass(mContext, ImageSelectActivity::class.java)
             intent.putExtra(SELECT_IMAGE_MAX_SELECT, maxSelect)

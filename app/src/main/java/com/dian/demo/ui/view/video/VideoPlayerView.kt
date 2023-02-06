@@ -5,6 +5,7 @@ import android.animation.ValueAnimator.ofInt
 import android.content.Context
 import android.content.res.Resources
 import android.media.AudioManager
+import android.os.Build
 import android.provider.Settings
 import android.util.AttributeSet
 import android.util.DisplayMetrics
@@ -146,12 +147,22 @@ class VideoPlayerView @JvmOverloads constructor(
         this.scaleType = scaleType
     }
 
+    fun setSpeed(speed: Float) {
+        player.setSpeed(speed)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "soundtouch", 0)
+        } else {
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "soundtouch", 1)
+        }
+    }
+
     fun setVideoPath(urlString: String) {
         player.dataSource = urlString
     }
 
     fun start(isStart: Boolean = true) {
         if (isStart) {
+            setState(STATUS_LOADING)
             player.prepareAsync()
             player.setOnPreparedListener(this)
             player.setOnVideoSizeChangedListener(this)
@@ -167,10 +178,22 @@ class VideoPlayerView @JvmOverloads constructor(
                 }
                 false
             }
+            player.setOnErrorListener { iMediaPlayer, i, i2 ->
+                onError?.invoke(iMediaPlayer, i, i2)
+                false
+            }
+            player.setOnCompletionListener {
+                viewControl.pause()
+                onCompletion?.invoke(it)
+            }
+
+            player.setOnBufferingUpdateListener { _, progress ->
+                sbPlayerViewProgress.secondaryProgress = (progress * player.duration / 100).toInt()
+            }
         }
         player.start()
         viewControl.play()
-        setState(STATUS_LOADING)
+
 
     }
 
@@ -184,9 +207,11 @@ class VideoPlayerView @JvmOverloads constructor(
                 ivLock.visibility = View.GONE
                 viewControl.visibility = View.GONE
                 Log.e("video-status", "loading")
+                removeCallbacks(mRefreshRunnable)
             }
             STATUS_PLAYING -> {
                 pbLoading.visibility = View.GONE
+                postDelayed(mRefreshRunnable, (REFRESH_TIME / 2).toLong())
                 Log.e("video-status", "playing")
             }
         }
@@ -237,19 +262,6 @@ class VideoPlayerView @JvmOverloads constructor(
         tvPlayerViewPlayTime.text = conversionTime(0)
         tvPlayerViewTotalTime.text = conversionTime(player.duration)
         sbPlayerViewProgress.max = player.duration.toInt()
-        postDelayed(mRefreshRunnable, (REFRESH_TIME / 2).toLong())
-        player.setOnErrorListener { iMediaPlayer, i, i2 ->
-            onError?.invoke(iMediaPlayer, i, i2)
-            false
-        }
-        player.setOnCompletionListener {
-            viewControl.pause()
-            onCompletion?.invoke(it)
-        }
-
-        player.setOnBufferingUpdateListener { _, progress ->
-            sbPlayerViewProgress.secondaryProgress = (progress * player.duration / 100).toInt()
-        }
     }
 
     //  UI部分
@@ -376,7 +388,7 @@ class VideoPlayerView @JvmOverloads constructor(
         }
         isControlPanelShow = true
 
-        if (topLayout.visibility == View.GONE) {
+        if (topLayout.visibility == View.GONE && !isLock) {
             topLayout.visibility = View.VISIBLE
             bottomLayout.visibility = View.VISIBLE
             ivLock.visibility = View.VISIBLE
@@ -582,7 +594,8 @@ class VideoPlayerView @JvmOverloads constructor(
                     adjustSecond = 0
                 }
                 postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
-                postDelayed(mHideMessageRunnable, DIALOG_TIME.toLong())
+                post(mHideMessageRunnable)
+                // postDelayed(mHideMessageRunnable, DIALOG_TIME.toLong())
             }
             MotionEvent.ACTION_CANCEL -> {
                 touchOrientation = -1
@@ -592,7 +605,9 @@ class VideoPlayerView @JvmOverloads constructor(
                     adjustSecond = 0
                 }
                 postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
-                postDelayed(mHideMessageRunnable, DIALOG_TIME.toLong())
+                post(mHideMessageRunnable)
+
+                // postDelayed(mHideMessageRunnable, DIALOG_TIME.toLong())
             }
         }
         return true

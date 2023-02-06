@@ -41,6 +41,19 @@ object IntentUtil {
     }
 
     /**
+     * 应用详情信息也
+     */
+    fun goToAppSetting(context: Context){
+        val mIntent = Intent()
+        mIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mIntent.action = "android.settings.APPLICATION_DETAILS_SETTINGS";
+        mIntent.data = Uri.fromParts("package", context.packageName, null);
+        context.startActivity(mIntent);
+
+
+    }
+
+    /**
      * 浏览器打开
      */
     fun openBrowser(context: Context, url: String?) {

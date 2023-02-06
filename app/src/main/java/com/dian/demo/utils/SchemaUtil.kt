@@ -2,6 +2,7 @@ package com.dian.demo.utils
 
 import android.content.Context
 import android.net.Uri
+import android.provider.Settings
 import android.text.TextUtils
 import com.dian.demo.R
 import com.dian.demo.ui.activity.DemoActivity
@@ -14,7 +15,9 @@ object SchemaUtil {
 
     private const val PAGE_WEB_VIEW = "webview" //H5界面
 
-    const val PAGE_HOME = "home"
+    private const val PAGE_HOME = "home"
+
+    private const val PAGE_SETTING ="setting"
 
     //msg = "dian://webview?link_url=https://wanandroid.com/"
     fun schemaToPage(
@@ -39,6 +42,9 @@ object SchemaUtil {
             }
             PAGE_HOME -> {
                 DemoActivity.start(mContext)
+            }
+            PAGE_SETTING->{
+                IntentUtil.goToAppSetting(mContext)
             }
         }
 

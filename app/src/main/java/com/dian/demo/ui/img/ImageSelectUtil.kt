@@ -5,23 +5,8 @@ import android.content.Context
 import androidx.room.Room
 import com.dian.demo.di.repository.local.DatabaseFactory
 
-class ImageSelectUtil private constructor() {
+class ImageSelectUtil {
 
-    companion object {
-        @Volatile
-        private var instance: ImageSelectUtil? = null
-
-        fun getInstance(): ImageSelectUtil {
-            if (instance == null) {
-                synchronized(DatabaseFactory::class.java) {
-                    if (instance == null) {
-                        instance = ImageSelectUtil()
-                    }
-                }
-            }
-            return instance!!
-        }
-    }
 
     private var mActivity: Activity? = null
     private var maxSelect: Int = 9

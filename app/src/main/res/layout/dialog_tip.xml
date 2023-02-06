@@ -28,18 +28,18 @@
             android:textSize="16dp"
             android:textStyle="bold" />
 
-        <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/et_input"
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_title"
             android:layout_marginHorizontal="15dp"
             android:layout_marginTop="20dp"
-            android:background="@drawable/bg_debug_input"
-            android:hint="@string/input_content"
+            android:gravity="center"
+            android:maxLines="2"
             android:paddingVertical="7dp"
             android:paddingStart="15dp"
-            android:singleLine="true"
+            android:textColor="@color/text_sub_color"
             android:textSize="15dp" />
 
         <View
@@ -56,31 +56,15 @@
             android:orientation="horizontal">
 
             <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/tv_cancel"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:textSize="@dimen/dp15"
-                android:paddingVertical="8dp"
-                android:text="@string/cancel"
-                android:textColor="@color/colorRed" />
-
-            <View
-                android:layout_width="2px"
-                android:layout_height="match_parent"
-                android:background="@color/color_line" />
-
-            <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/tv_confirm"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:textSize="@dimen/dp15"
                 android:paddingVertical="8dp"
                 android:text="@string/confirm"
-                android:textColor="@color/text_blue_color" />
+                android:textColor="@color/text_blue_color"
+                android:textSize="@dimen/dp15" />
         </LinearLayout>
     </RelativeLayout>
 

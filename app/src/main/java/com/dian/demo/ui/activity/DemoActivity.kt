@@ -1,5 +1,6 @@
 package com.dian.demo.ui.activity
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -22,6 +23,7 @@ import com.dian.demo.ui.img.ImageSelectActivity
 import com.dian.demo.ui.img.ImageSelectListener
 import com.dian.demo.ui.img.ImageSelectUtil
 import com.dian.demo.utils.*
+import com.dian.demo.utils.aop.CheckPermissions
 import com.dian.demo.utils.aop.SingleClick
 import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.share.dialog.ShareDialog
@@ -144,7 +146,10 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
 
             }
             R.id.btn_image_select -> {
-                ImageSelectUtil.getInstance().setActivity(this@DemoActivity)
+
+
+                ImageSelectUtil()
+                    .setActivity(this@DemoActivity)
                     .setMaxSelect(5)
                     .setSelectList(mSelectList)
                     .setColumn(3)

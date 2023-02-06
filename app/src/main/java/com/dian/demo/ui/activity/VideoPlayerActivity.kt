@@ -31,6 +31,7 @@ class VideoPlayerActivity : BaseAppBindActivity<ActivityVideoPlayerBinding>() {
         binding.videoView.initData()
         binding.videoView.setVideoPath("http://vfx.mtime.cn/Video/2019/03/09/mp4/190309153658147087.mp4")
         binding.videoView.setScaleType(VideoScaleType.RATIO_FILL_SIZE)
+        binding.videoView.setSpeed(3f)
         binding.videoView.start()
 
         binding.videoView.onActionBack = {

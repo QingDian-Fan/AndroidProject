@@ -1,5 +1,6 @@
 package com.dian.demo.ui.activity
 
+import android.Manifest
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
@@ -19,6 +20,7 @@ import com.dian.demo.databinding.ActivityGenerateBinding
 import com.dian.demo.utils.BitmapUtil
 import com.dian.demo.utils.PictureSelector
 import com.dian.demo.utils.ResourcesUtil
+import com.dian.demo.utils.aop.CheckPermissions
 import com.dian.demo.utils.code.generate.GenerateCodeUtils
 import com.dian.demo.utils.ext.singleClick
 import java.io.File
@@ -28,8 +30,7 @@ import java.io.IOException
 class GenerateActivity : BaseAppBindActivity<ActivityGenerateBinding>() {
 
     companion object {
-
-        @JvmStatic
+        @CheckPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE, isMust = true)
         fun start(mActivity: Activity) {
             val intent = Intent()
             intent.setClass(mActivity, GenerateActivity::class.java)

@@ -13,5 +13,6 @@ annotation class CheckPermissions constructor(
     /**
      * 需要申请权限的集合
      */
-    vararg  val value: String
+    vararg  val value: String,
+    val isMust:Boolean = false
 )

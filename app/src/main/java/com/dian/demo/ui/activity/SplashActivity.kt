@@ -50,8 +50,7 @@ class SplashActivity : BaseAppBindActivity<ActivitySplashBinding>() {
         shortcutManager.dynamicShortcuts = ShortCutUtil().createShortCut(this@SplashActivity)
     }
 
-    @CheckPermissions(Manifest.permission.CAMERA,Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    fun toPage() {
+    private fun toPage() {
         getTitleBarView().postDelayed({
             DemoActivity.start(this@SplashActivity)
             finish()

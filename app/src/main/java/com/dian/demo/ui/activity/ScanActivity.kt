@@ -1,5 +1,7 @@
 package com.dian.demo.ui.activity
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -15,6 +17,7 @@ import com.dian.demo.databinding.ActivityScanBinding
 import com.dian.demo.utils.BitmapUtil
 import com.dian.demo.utils.PictureSelector
 import com.dian.demo.utils.ResourcesUtil
+import com.dian.demo.utils.aop.CheckPermissions
 import com.dian.demo.utils.code.core.QRCodeView
 import com.dian.demo.utils.code.decoder.QRCodeDecoder
 import com.dian.demo.utils.ext.singleClick
@@ -25,7 +28,7 @@ import java.util.concurrent.Executors
 class ScanActivity : BaseAppBindActivity<ActivityScanBinding>(), QRCodeView.Delegate {
     companion object {
         private const val REQ_CODE_SELECT_PIC = 3
-        @JvmStatic
+        @CheckPermissions(Manifest.permission.CAMERA,Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE, isMust = false)
         fun start(mContext: Context) {
             val intent = Intent()
             intent.setClass(mContext, ScanActivity::class.java)
@@ -109,6 +112,7 @@ class ScanActivity : BaseAppBindActivity<ActivityScanBinding>(), QRCodeView.Dele
 
     }
 
+    @SuppressLint("SuspiciousIndentation")
     private fun decodeQrCode(bitmap: Bitmap?) {
         if (bitmap==null){
             showToast(ResourcesUtil.getString(R.string.decode_qr_code_fail))
