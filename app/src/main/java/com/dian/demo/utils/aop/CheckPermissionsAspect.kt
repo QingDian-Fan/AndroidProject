@@ -57,7 +57,7 @@ class CheckPermissionsAspect {
         if (PermissionsUtil.hasAopPermission(mActivity, permissionList)) {
             joinPoint.proceed()
         } else {
-            requestPermissions(joinPoint, mActivity, permissionList,isMustPermission?:false)
+            requestPermissions(joinPoint, mActivity, permissionList, isMustPermission ?: false)
         }
     }
 
@@ -65,7 +65,7 @@ class CheckPermissionsAspect {
         joinPoint: ProceedingJoinPoint,
         mActivity: AppCompatActivity,
         permissions: Array<out String>,
-        isMustPermission:Boolean
+        isMustPermission: Boolean
     ) {
         LivePermissions(mActivity).requestArray(permissions)
             .observe(mActivity) {
@@ -75,18 +75,21 @@ class CheckPermissionsAspect {
                     }
                     is PermissionResult.Rationale -> {  //权限拒绝
                         LogUtil.e("TAGTAG", "AOP-CheckPermissions-权限拒绝")
-                        if (isMustPermission){
-                                val dialog= TipDialog.getDialog("提示","请到设置中打开权限，否则无法使用该功能")
-                                dialog.showAllowStateLoss(mActivity.supportFragmentManager, "")
-                            } else {
-                                joinPoint.proceed()
-                            }
-
+                        if (isMustPermission) {
+                            val dialog = TipDialog.getDialog("提示", "请到设置中打开权限，否则无法使用该功能")
+                            dialog.showAllowStateLoss(mActivity.supportFragmentManager, "")
+                        } else {
+                            joinPoint.proceed()
+                        }
                     }
                     is PermissionResult.Deny -> {   //权限拒绝，且勾选了不再询问
                         LogUtil.e("TAGTAG", "AOP-CheckPermissions-权限拒绝，且勾选了不再询问")
-                        if (isMustPermission){
-                            val dialog= ConfirmDialog.getDialog("提示","请到设置中打开权限，否则无法使用该功能","dian://setting")
+                        if (isMustPermission) {
+                            val dialog = ConfirmDialog.getDialog(
+                                "提示",
+                                "请到设置中打开权限，否则无法使用该功能",
+                                "dian://setting"
+                            )
                             dialog.showAllowStateLoss(mActivity.supportFragmentManager, "")
                         } else {
                             joinPoint.proceed()
