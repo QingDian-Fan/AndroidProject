@@ -7,10 +7,15 @@ import android.util.Log
 import android.view.Gravity
 import android.webkit.MimeTypeMap
 import com.dian.demo.ProjectApplication
+import com.dian.demo.di.model.ArticleBean
+import com.dian.demo.di.model.ListData
+import com.dian.demo.utils.MoshiUtil
 import com.dian.demo.utils.ToastUtil
 import com.google.gson.JsonParseException
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.adapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -82,11 +87,11 @@ open class HttpClient : HttpClientBase() {
         type: Type,
         isInfoResponse: Boolean = true
     ): ResponseHolder<T> {
-        var ct = ""
+        var contentString = ""
         if (!content.isNullOrEmpty()) {
-            ct = getGson().toJson(content)
+          contentString =MoshiUtil.objectsMapToJson(String::class.java,Any::class.java,content)
         }
-        return postJsonString(url, headers, ct, type, isInfoResponse)
+        return postJsonString(url, headers, contentString, type, isInfoResponse)
     }
 
     @JvmOverloads
@@ -243,20 +248,13 @@ open class HttpClient : HttpClientBase() {
 
     /**
      * 解析成功的网络请求返回的响应，InfoResponse形式
-     *   val moshi = Moshi.Builder()
-     *              .addLast(KotlinJsonAdapterFactory())
-     *              .build()
-     *  val jsonAdapter: JsonAdapter<PgyResp> = moshi.adapter(PgyResp::class.java)
-     *  val pgyResp: PgyResp? = jsonAdapter.fromJson(jsonString)
      */
     open fun <T> resolveInfoResponse(
         response: Response<String>,
         type: Type
     ): ResponseHolder<T> {
-        val resp = getGson().fromJson<Result<T>>(response.body(), type)
-
+        val resp = getMoshi().adapter<Result<T>>(type).fromJson(response.body()!!)!!
         if (resp.isSuccessful()) {
-            // 请求成功，返回成功响应
             return ResponseHolder.Success(resp.data)
         } else {
             // 请求成功，返回失败响应
@@ -281,8 +279,8 @@ open class HttpClient : HttpClientBase() {
         response: Response<String>,
         type: Type
     ): ResponseHolder<T> {
-        val resp = getGson().fromJson<T>(response.body(), type)
-        return ResponseHolder.Success(resp)
+        val resp = getMoshi().adapter<Result<T>>(type).fromJson(response.body()!!)!!
+        return ResponseHolder.Success(resp.data)
     }
 
     /**
@@ -303,7 +301,7 @@ open class HttpClient : HttpClientBase() {
      * 捕获异常
      */
     open fun catchException(cause: Throwable): HttpError {
-        Log.e("Error--->","网络请求：message:${cause.message}")
+        Log.e("Error--->", "网络请求：message:${cause.message}")
         return when (cause) {
             is ConnectException,
             is UnknownHostException -> HttpError(
@@ -345,4 +343,9 @@ open class HttpClient : HttpClientBase() {
             )
         }
     }
+}
+
+inline fun <reified T> String.toResult(): Result<T>? {
+    val newParameterizedType = Types.newParameterizedType(Result::class.java, T::class.java)
+    return MoshiUtil.fromJson<Result<T>>(this, newParameterizedType)
 }

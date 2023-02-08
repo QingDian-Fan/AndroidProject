@@ -62,7 +62,7 @@ open class HttpClientBase {
                     builder.addNetworkInterceptor(logInterceptor)
                 }
             }
-            .hostnameVerifier({ hostname, session -> true })
+            .hostnameVerifier { hostname, session -> true }
             .build()
     }
 
@@ -75,11 +75,7 @@ open class HttpClientBase {
             .baseUrl(config.baseUrl)
             .client(okHttpClient)
             .addConverterFactory(ScalarsConverterFactory.create())
-            .addConverterFactory(
-                MoshiConverterFactory.create(
-                    Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
-                )
-            )
+            .addConverterFactory(MoshiConverterFactory.create(getMoshi()))
             .build()
     }
 
@@ -105,8 +101,6 @@ open class HttpClientBase {
      */
     fun getRequestService() = requestService
 
-    /**
-     * 获取Gson实例
-     */
-    fun getGson() = config.gson
+
+    fun getMoshi() = config.moshi
 }

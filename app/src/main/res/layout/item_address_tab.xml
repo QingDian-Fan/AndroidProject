@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+    </data>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:paddingHorizontal="@dimen/dp10">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_tab_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="@dimen/dp5"
+            android:paddingVertical="@dimen/dp12"
+            android:textSize="@dimen/dp14"
+            android:text="请选择"
+            android:textColor="@color/text_light_color" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_tab_indicator"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="@dimen/dp5"
+            app:cardBackgroundColor="@color/text_blue_color" />
+
+    </FrameLayout>
+</layout>

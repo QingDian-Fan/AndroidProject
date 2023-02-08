@@ -7,13 +7,15 @@ import com.dian.demo.http.ResponseHolder
 import com.google.gson.reflect.TypeToken
 import okhttp3.internal.format
 import com.dian.demo.http.Result
+import com.squareup.moshi.Types
 
 
 class DataRepoImpl : DataRepo {
     override suspend fun getArticleList(page: Int): ResponseHolder<ListData<ArticleBean>> {
+
         return HttpUtils.getInstance().get(
             url = format("article/list/%d/json",page),
-            type = object : TypeToken<Result<ListData<ArticleBean>>>() {}.type
+            type = Types.newParameterizedType(Result::class.java, Types.newParameterizedType(ListData::class.java, ArticleBean::class.java))
         )
     }
 }

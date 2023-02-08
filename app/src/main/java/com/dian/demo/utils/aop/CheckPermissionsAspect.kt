@@ -72,6 +72,7 @@ class CheckPermissionsAspect {
                 when (it) {
                     is PermissionResult.Grant -> {  //权限允许
                         LogUtil.e("TAGTAG", "AOP-CheckPermissions-权限允许")
+                        joinPoint.proceed()
                     }
                     is PermissionResult.Rationale -> {  //权限拒绝
                         LogUtil.e("TAGTAG", "AOP-CheckPermissions-权限拒绝")

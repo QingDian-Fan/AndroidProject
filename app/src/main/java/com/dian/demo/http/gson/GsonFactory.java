@@ -19,6 +19,7 @@ import com.google.gson.TypeAdapterFactory;
 import com.google.gson.internal.ConstructorConstructor;
 import com.google.gson.internal.Excluder;
 import com.google.gson.internal.bind.TypeAdapters;
+import com.squareup.moshi.Moshi;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -38,6 +39,7 @@ public final class GsonFactory {
     private static volatile Gson sGson;
 
     private GsonFactory() {}
+
 
     /**
      * 获取单例的 Gson 对象

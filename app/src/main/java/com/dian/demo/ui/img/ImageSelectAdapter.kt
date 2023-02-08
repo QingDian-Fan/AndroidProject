@@ -42,6 +42,7 @@ class ImageSelectAdapter(
         with(holder) {
 
 
+
             if (isMulti) {
                 binding.cbSingleImageSelectCheck.visibility = gone
                 binding.cbMultiImageSelectCheck.visibility = visible

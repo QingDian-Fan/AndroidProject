@@ -3,6 +3,8 @@ package com.dian.demo.http
 import com.dian.demo.config.AppConfig.getBaseUrl
 import com.dian.demo.http.gson.GsonFactory
 import com.google.gson.Gson
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Cache
 import okhttp3.Dns
 import okhttp3.Interceptor
@@ -18,7 +20,7 @@ import java.util.concurrent.TimeUnit
  */
 data class HttpClientConfig(
     // BaseUrl
-    var baseUrl:String = getBaseUrl(),
+    var baseUrl: String = getBaseUrl(),
     // 连接超时时间
     var connectTimeout: Pair<Long, TimeUnit> = Pair(60L, TimeUnit.SECONDS),
     // 读取超时时间
@@ -56,8 +58,8 @@ data class HttpClientConfig(
     var openLog: Boolean = false,
     // 自定义日志打印
     var logger: HttpLoggingInterceptor.Logger? = null,
-    // Gson
-    var gson: Gson = GsonFactory.getSingletonGson(),
+    //moshi
+    var moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
 ) {
     companion object {
         @JvmStatic
@@ -129,8 +131,8 @@ class HttpClientConfigBuilder {
         return this
     }
 
-    fun setGson(gson: Gson): HttpClientConfigBuilder {
-        config.gson = gson
+    fun setMoshi(moshi: Moshi): HttpClientConfigBuilder {
+        config.moshi = moshi
         return this
     }
 

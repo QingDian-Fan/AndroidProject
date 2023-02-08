@@ -13,7 +13,7 @@ import com.sina.weibo.sdk.openapi.SdkListener
 import com.sina.weibo.sdk.openapi.WBAPIFactory
 
 /**
- * 1.视频播放器
+ * 1.视频播放器                    √
  * 2.地址选择器
  * 3.日期选择器
  * 4.封装图片选择器                 √
@@ -22,10 +22,10 @@ import com.sina.weibo.sdk.openapi.WBAPIFactory
  */
 class ProjectApplication : Application() {
     companion object {
-        @Volatile
+
         private var mContext: Context? = null
 
-        @Volatile
+
         private var instance: Application? = null
 
         @JvmStatic
