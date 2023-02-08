@@ -17,6 +17,7 @@ import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.base.BaseAppVMActivity
 import com.dian.demo.databinding.ActivityDemoBinding
 import com.dian.demo.di.vm.DemoViewModel
+import com.dian.demo.ui.dialog.AddressDialog
 import com.dian.demo.ui.dialog.DebugDialog
 import com.dian.demo.ui.img.ImageCancelListener
 import com.dian.demo.ui.img.ImageSelectActivity
@@ -176,6 +177,9 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
             }
             R.id.btn_video_play -> {
                 VideoPlayerActivity.start(this@DemoActivity)
+            }
+            R.id.btn_address_dialog -> {
+                AddressDialog.getDialog().showAllowStateLoss(supportFragmentManager,"")
             }
         }
     }

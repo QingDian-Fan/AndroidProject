@@ -345,7 +345,3 @@ open class HttpClient : HttpClientBase() {
     }
 }
 
-inline fun <reified T> String.toResult(): Result<T>? {
-    val newParameterizedType = Types.newParameterizedType(Result::class.java, T::class.java)
-    return MoshiUtil.fromJson<Result<T>>(this, newParameterizedType)
-}

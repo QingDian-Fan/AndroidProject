@@ -14,10 +14,10 @@ import com.sina.weibo.sdk.openapi.WBAPIFactory
 
 /**
  * 1.视频播放器                    √
- * 2.地址选择器
+ * 2.地址选择器                    √
  * 3.日期选择器
  * 4.封装图片选择器                 √
- * 5.网络请求使用moshi代替gson
+ * 5.网络请求使用moshi代替gson      √
  * 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
  */
 class ProjectApplication : Application() {

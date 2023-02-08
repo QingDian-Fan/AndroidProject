@@ -1,11 +1,16 @@
 package com.dian.demo.di.model
 
-data class ProvinceData(
-    val name: String,
-    val city: List<String>
-)
+import org.json.JSONObject
 
 data class CityData(
-    val name: String,
-    val area: List<String>
-)
+    private val name: String,
+    private val next: JSONObject?
+){
+    fun getName(): String {
+        return name
+    }
+
+    fun getNext(): JSONObject? {
+        return next
+    }
+}

@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom"
+    android:background="@drawable/bg_top_circle"
     android:orientation="vertical">
+
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -16,12 +18,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:gravity="center" />
+            android:gravity="center"
+            android:textSize="16dp"
+            android:text="区域选择器"
+            android:textColor="@color/text_color" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_close"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_gravity="end"
             app:srcCompat="@drawable/icon_close" />
     </FrameLayout>
@@ -30,11 +35,10 @@
         android:id="@+id/rv_address_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="@dimen/dp10"/>
+        android:paddingHorizontal="@dimen/dp10" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/vp_address_page"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
+        android:layout_height="300dp" />
 </LinearLayout>

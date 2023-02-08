@@ -10,13 +10,13 @@ import android.webkit.WebView
 import androidx.core.view.NestedScrollingChild
 import androidx.core.view.NestedScrollingChildHelper
 import androidx.core.view.ViewCompat
+import com.dian.demo.http.gson.GsonFactory
 import com.dian.demo.utils.webview.WebCommandDispatcher
 import com.dian.demo.utils.webview.bean.JsParam
 import com.dian.demo.utils.webview.callback.WebViewCallBack
 import com.dian.demo.utils.webview.webset.DefaultWebChromeClient
 import com.dian.demo.utils.webview.webset.DefaultWebSetting
 import com.dian.demo.utils.webview.webset.DefaultWebViewClient
-import com.dian.demo.http.gson.GsonFactory
 import com.dian.demo.utils.LogUtil
 
 /**

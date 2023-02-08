@@ -151,6 +151,16 @@
                     android:paddingVertical="10dp"
                     android:text="视频播放"
                     android:textColor="@color/colorWhite" />
+                <Button
+                    android:id="@+id/btn_address_dialog"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp46"
+                    android:layout_marginTop="30dp"
+                    android:background="@drawable/bg_btn_generate"
+                    android:onClick="clickView"
+                    android:paddingVertical="10dp"
+                    android:text="区域选择器"
+                    android:textColor="@color/colorWhite" />
 
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/tv_span"

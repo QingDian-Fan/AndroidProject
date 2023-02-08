@@ -1,8 +1,6 @@
 package com.dian.demo.http
 
 import com.dian.demo.config.AppConfig.getBaseUrl
-import com.dian.demo.http.gson.GsonFactory
-import com.google.gson.Gson
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Cache
