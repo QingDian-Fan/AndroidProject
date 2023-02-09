@@ -18,7 +18,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="bottom|center_horizontal"
             android:layout_marginBottom="@dimen/dp5"
-            android:paddingVertical="@dimen/dp12"
+            android:paddingVertical="@dimen/dp10"
             android:textSize="@dimen/dp14"
             android:text="请选择"
             android:textColor="@color/text_light_color" />

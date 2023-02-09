@@ -61,7 +61,7 @@ class AddressDialog : AppCompatDialogFragment() {
 
         var province: String? = null
         var city: String? = null
-        var area: String? = null
+        var area: String?
 
 
         ivClose.singleClick {
@@ -82,8 +82,8 @@ class AddressDialog : AppCompatDialogFragment() {
         val tabAdapter = AddressTabAdapter(tabList)
         rvAddressData.adapter = tabAdapter
         tabAdapter.onItemClick = {
-            for (i in it until tabList.size) {
-                tabList.removeAt(i)
+            while (it < tabList.size) {
+                tabList.removeAt(it)
             }
             tabAdapter.notifyDataSetChanged()
             vpAddressPage.setCurrentItem(it, true)
@@ -110,6 +110,7 @@ class AddressDialog : AppCompatDialogFragment() {
                 AddressType.AREA -> {
                     area = name
                     ToastUtil.showToast(str = "$province-$city-$area")
+                    dismissAllowingStateLoss()
                 }
             }
         }
@@ -163,7 +164,7 @@ class AddressDialog : AppCompatDialogFragment() {
      *
      * @param jsonObject        区域 Json
      */
-    fun getAreas(jsonObject: JSONObject): ArrayList<CityData> {
+    private fun getAreas(jsonObject: JSONObject): ArrayList<CityData> {
         val listArea = jsonObject.getJSONArray("area")
         val length = listArea.length()
         val list: ArrayList<CityData> = ArrayList(length)
