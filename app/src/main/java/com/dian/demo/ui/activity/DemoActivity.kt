@@ -18,6 +18,7 @@ import com.dian.demo.base.BaseAppVMActivity
 import com.dian.demo.databinding.ActivityDemoBinding
 import com.dian.demo.di.vm.DemoViewModel
 import com.dian.demo.ui.dialog.AddressDialog
+import com.dian.demo.ui.dialog.DatePickDialog
 import com.dian.demo.ui.dialog.DebugDialog
 import com.dian.demo.ui.img.ImageCancelListener
 import com.dian.demo.ui.img.ImageSelectActivity
@@ -180,6 +181,16 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
             }
             R.id.btn_address_dialog -> {
                 AddressDialog.getDialog().showAllowStateLoss(supportFragmentManager,"")
+            }
+            R.id.btn_date_dialog ->{
+                val dialog = DatePickDialog.getDialog()
+                dialog.showAllowStateLoss(supportFragmentManager,"")
+                dialog.onSelected={year,month,day,timeInMillis->
+                    ToastUtil.showToast(str ="$year 年-$month 月-$day 日,时间戳:$timeInMillis")
+                }
+                dialog.onCancel = {
+                    ToastUtil.showToast(str="取消了")
+                }
             }
         }
     }
