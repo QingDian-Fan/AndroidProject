@@ -6,8 +6,12 @@ import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import androidx.annotation.RequiresPermission
+import androidx.core.content.FileProvider
+import com.dian.demo.BuildConfig
+import java.io.File
 
 object IntentUtil {
 
@@ -63,6 +67,22 @@ object IntentUtil {
         } catch (e: ActivityNotFoundException) {
             e.printStackTrace()
         }
+    }
+
+    fun installedApp(context: Context,filePath: String){
+        val apkFile = File(filePath)
+        val intent = Intent()
+        intent.action = Intent.ACTION_VIEW
+        val uri: Uri?
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            uri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", apkFile)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        } else {
+            uri = Uri.fromFile(apkFile)
+        }
+        intent.setDataAndType(uri, "application/vnd.android.package-archive")
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
     }
 
     @JvmStatic

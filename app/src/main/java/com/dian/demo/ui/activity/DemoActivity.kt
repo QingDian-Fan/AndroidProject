@@ -20,6 +20,7 @@ import com.dian.demo.di.vm.DemoViewModel
 import com.dian.demo.ui.dialog.AddressDialog
 import com.dian.demo.ui.dialog.DatePickDialog
 import com.dian.demo.ui.dialog.DebugDialog
+import com.dian.demo.ui.dialog.UpdateDialog
 import com.dian.demo.ui.img.ImageCancelListener
 import com.dian.demo.ui.img.ImageSelectActivity
 import com.dian.demo.ui.img.ImageSelectListener
@@ -149,7 +150,6 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
             }
             R.id.btn_image_select -> {
 
-
                 ImageSelectUtil()
                     .setActivity(this@DemoActivity)
                     .setMaxSelect(5)
@@ -180,17 +180,20 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 VideoPlayerActivity.start(this@DemoActivity)
             }
             R.id.btn_address_dialog -> {
-                AddressDialog.getDialog().showAllowStateLoss(supportFragmentManager,"")
+                AddressDialog.getDialog().showAllowStateLoss(supportFragmentManager, "")
             }
-            R.id.btn_date_dialog ->{
+            R.id.btn_date_dialog -> {
                 val dialog = DatePickDialog.getDialog()
-                dialog.showAllowStateLoss(supportFragmentManager,"")
-                dialog.onSelected={year,month,day,timeInMillis->
-                    ToastUtil.showToast(str ="$year 年-$month 月-$day 日,时间戳:$timeInMillis")
+                dialog.showAllowStateLoss(supportFragmentManager, "")
+                dialog.onSelected = { year, month, day, timeInMillis ->
+                    ToastUtil.showToast(str = "$year 年-$month 月-$day 日,时间戳:$timeInMillis")
                 }
                 dialog.onCancel = {
-                    ToastUtil.showToast(str="取消了")
+                    ToastUtil.showToast(str = "取消了")
                 }
+            }
+            R.id.btn_update_dialog -> {
+                UpdateDialog.getDialog().showAllowStateLoss(supportFragmentManager,"")
             }
         }
     }
