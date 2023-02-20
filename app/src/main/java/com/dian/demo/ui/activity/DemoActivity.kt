@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.Environment
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.util.Log
@@ -15,12 +16,10 @@ import com.dian.demo.ProjectApplication
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.base.BaseAppVMActivity
+import com.dian.demo.config.Constant.apkPath
 import com.dian.demo.databinding.ActivityDemoBinding
 import com.dian.demo.di.vm.DemoViewModel
-import com.dian.demo.ui.dialog.AddressDialog
-import com.dian.demo.ui.dialog.DatePickDialog
-import com.dian.demo.ui.dialog.DebugDialog
-import com.dian.demo.ui.dialog.UpdateDialog
+import com.dian.demo.ui.dialog.*
 import com.dian.demo.ui.img.ImageCancelListener
 import com.dian.demo.ui.img.ImageSelectActivity
 import com.dian.demo.ui.img.ImageSelectListener
@@ -30,6 +29,7 @@ import com.dian.demo.utils.aop.CheckPermissions
 import com.dian.demo.utils.aop.SingleClick
 import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.share.dialog.ShareDialog
+import java.io.File
 
 
 class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
@@ -193,7 +193,20 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 }
             }
             R.id.btn_update_dialog -> {
-                UpdateDialog.getDialog().showAllowStateLoss(supportFragmentManager,"")
+
+                val apkName = "玩Android.apk"
+                val apkFile = File(apkPath, apkName)
+                if (apkFile.exists()) {
+                    TipDialog.getDialog(
+                        "提示",
+                        "文件已下载，是否安装",
+                        "dian://install?filePath=$apkPath$apkName"
+                    ).showAllowStateLoss(supportFragmentManager, "")
+                    return
+                }
+                UpdateDialog.getDialog(
+                    "https://cdn.mytoken.org/app_download/MT-mytoken-hk-release-3.3.4_mytoken_aligned_signed.apk",
+                    "玩Android.apk").showAllowStateLoss(supportFragmentManager, "")
             }
         }
     }

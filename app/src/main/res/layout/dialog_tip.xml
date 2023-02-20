@@ -38,7 +38,6 @@
             android:gravity="center"
             android:maxLines="2"
             android:paddingVertical="7dp"
-            android:paddingStart="15dp"
             android:textColor="@color/text_sub_color"
             android:textSize="15dp" />
 

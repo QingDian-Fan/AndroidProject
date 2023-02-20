@@ -19,6 +19,8 @@ object SchemaUtil {
 
     private const val PAGE_SETTING ="setting"
 
+    private const val PAGE_INSTALL = "install"
+
     //msg = "dian://webview?link_url=https://wanandroid.com/"
     fun schemaToPage(
         mContext: Context,
@@ -45,6 +47,12 @@ object SchemaUtil {
             }
             PAGE_SETTING->{
                 IntentUtil.goToAppSetting(mContext)
+            }
+            PAGE_INSTALL->{
+                val filePath = uri.getQueryParameter("filePath")
+                filePath?.let {
+                    IntentUtil.installedApp(mContext,filePath)
+                }
             }
         }
 

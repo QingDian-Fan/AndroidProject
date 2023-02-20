@@ -2,19 +2,23 @@ package com.dian.demo.ui.dialog
 
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
+import androidx.fragment.app.DialogFragment
 import com.demo.project.utils.ext.gone
 import com.demo.project.utils.ext.invisible
 import com.demo.project.utils.ext.visible
+import com.dian.demo.R
+import com.dian.demo.config.Constant.apkPath
 import com.dian.demo.databinding.DialogUpdateBinding
 import com.dian.demo.http.HttpUtils
 import com.dian.demo.http.SingleDownloader
+import com.dian.demo.utils.ExceptionHandlerUtil
 import com.dian.demo.utils.IntentUtil
+import com.dian.demo.utils.LogUtil
 import com.dian.demo.utils.ext.singleClick
 import java.io.File
 
@@ -22,17 +26,21 @@ import java.io.File
 class UpdateDialog : AppCompatDialogFragment() {
 
     companion object {
-        fun getDialog(): AppCompatDialogFragment {
-            return UpdateDialog()
+        fun getDialog(downloadUrl: String, apkName: String): AppCompatDialogFragment {
+            val dialog = UpdateDialog()
+            val bundle = Bundle()
+            bundle.putString("url", downloadUrl)
+            bundle.putString("apkName", apkName)
+            dialog.arguments = bundle
+            return dialog
         }
     }
 
     private lateinit var binding: DialogUpdateBinding
-    private val downloadUrl =
-        "https://cdn.mytoken.org/app_download/MT-mytoken-hk-release-3.3.4_mytoken_aligned_signed.apk"
-    private val apkPath =
-        Environment.getExternalStorageDirectory().path + "/DomeProject/apk/"
-    private val apkName = "玩Android.apk"
+
+    private lateinit var downloadUrl: String
+    private lateinit var apkName: String
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,7 +48,10 @@ class UpdateDialog : AppCompatDialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = DialogUpdateBinding.inflate(LayoutInflater.from(context), container, false)
-
+        arguments?.let {
+            downloadUrl = it.getString("url", "https://cdn.mytoken.org/app_download/MT-mytoken-hk-release-3.3.4_mytoken_aligned_signed.apk")
+            apkName = it.getString("apkName","玩Android.apk")
+        }
         initData()
         return binding.root
 
@@ -64,20 +75,20 @@ class UpdateDialog : AppCompatDialogFragment() {
             createDir()
             SingleDownloader(HttpUtils.getInstance().getClient())
                 .onProgress { currentLength, totalLength, progress ->
-                    Log.e("SingleDownloader", "--->onProgress:$progress")
+                    LogUtil.e("SingleDownloader", "--->onProgress:$progress")
                     binding.pbUpdateProgress.progress = progress
                     binding.tvConfirm.text = "下载中 $progress%"
 
                 }
                 .onCompletion { url, filePath ->
-                    Log.e("SingleDownloader", "--->onCompletion")
+                    LogUtil.e("SingleDownloader", "--->onCompletion")
                     IntentUtil.installedApp(requireContext(), filePath)
                 }
                 .onError { url, cause ->
-                    Log.e("SingleDownloader", "--->onError${cause.message}")
+                    LogUtil.e("SingleDownloader", "--->onError${cause.message}")
                 }
                 .onSuccess { url, file ->
-                    Log.e("SingleDownloader", "--->onSuccess")
+                    LogUtil.e("SingleDownloader", "--->onSuccess")
                 }
                 .excute(downloadUrl, "$apkPath$apkName")
         }

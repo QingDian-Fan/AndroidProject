@@ -4,6 +4,7 @@ import android.content.Context
 import com.dian.demo.BuildConfig
 import com.dian.demo.ProjectApplication
 import com.dian.demo.http.interceptor.*
+import com.dian.demo.http.interceptor.CurlInterceptor
 import com.dian.demo.utils.LogUtil
 import com.readystatesoftware.chuck.ChuckInterceptor
 import okhttp3.Cache
@@ -37,13 +38,14 @@ class HttpUtils {
 
     fun init(context: Context) {
         val config = HttpClientConfig.builder()
-            .addInterceptor(ChuckInterceptor(ProjectApplication.getAppContext()))
+            .addInterceptor(ChuckInterceptor(ProjectApplication.getAppContext()), true)
             .addInterceptor(AddCookieInterceptor())
             .addInterceptor(SaveCookieInterceptor())
             .addInterceptor(CacheInterceptor())
             .addInterceptor(NetCacheInterceptor())
             .addInterceptor(OfflineCacheInterceptor())
             .addInterceptor(ParamsInterceptor())
+            .addInterceptor(CurlInterceptor(), true)
             .openLog(BuildConfig.DEBUG)
             .setLogger(object : HttpLoggingInterceptor.Logger {
                 override fun log(message: String) {

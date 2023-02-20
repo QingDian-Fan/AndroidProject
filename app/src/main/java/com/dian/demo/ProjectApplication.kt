@@ -12,14 +12,7 @@ import com.sina.weibo.sdk.auth.AuthInfo
 import com.sina.weibo.sdk.openapi.SdkListener
 import com.sina.weibo.sdk.openapi.WBAPIFactory
 
-/**
- * 1.视频播放器                    √
- * 2.地址选择器                    √
- * 3.日期选择器
- * 4.封装图片选择器                 √
- * 5.网络请求使用moshi代替gson      √
- * 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
- */
+
 class ProjectApplication : Application() {
     companion object {
 

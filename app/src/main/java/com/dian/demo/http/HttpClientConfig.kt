@@ -1,5 +1,6 @@
 package com.dian.demo.http
 
+import com.dian.demo.BuildConfig
 import com.dian.demo.config.AppConfig.getBaseUrl
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -104,7 +105,10 @@ class HttpClientConfigBuilder {
         return this
     }
 
-    fun addInterceptor(interceptor: Interceptor): HttpClientConfigBuilder {
+    fun addInterceptor(interceptor: Interceptor, isDebug: Boolean=false): HttpClientConfigBuilder {
+        if (isDebug && !BuildConfig.DEBUG) {
+            return this
+        }
         config.interceptors.add(interceptor)
         return this
     }

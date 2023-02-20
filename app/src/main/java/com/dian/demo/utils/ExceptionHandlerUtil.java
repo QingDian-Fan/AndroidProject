@@ -26,7 +26,7 @@ import java.lang.Thread.UncaughtExceptionHandler;
 public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
 
 
-    private static final String LOG_PATH_SDCARD_DIR =  Environment.getExternalStorageDirectory().getPath()+"/DomeProject/crash";         // 日志文件在sdcard中的路径
+    private static final String LOG_PATH_SDCARD_DIR =  Environment.getExternalStorageDirectory().getPath()+"/AndroidProject/crash";         // 日志文件在sdcard中的路径
 
     private static final String LOG_NAME = "crash.txt";
 
