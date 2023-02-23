@@ -33,4 +33,14 @@ class DemoViewModel : BaseViewModel() {
 
     }
 
+    @CheckNet
+    fun doLogin(username:String,password:String){
+        launchOnUI {
+            repo.doLogin(username,password)
+                .onSuccess {
+                    showToast("请求成功")
+                }
+        }
+    }
+
 }

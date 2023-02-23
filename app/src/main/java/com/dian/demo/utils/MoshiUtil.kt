@@ -1,10 +1,12 @@
 package com.dian.demo.utils
 
+import android.util.Log
+import com.dian.demo.http.moshi.NullSafeKotlinJsonAdapterFactory
+import com.dian.demo.http.moshi.NullSafeStandardJsonAdapters
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
-import com.squareup.moshi.adapter
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import java.lang.reflect.Type
 import java.lang.reflect.ParameterizedType
 
 /**
@@ -16,7 +18,9 @@ import java.lang.reflect.ParameterizedType
 
 object MoshiUtil {
 
-     val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
+    val moshi: Moshi = Moshi.Builder()
+        .add(NullSafeStandardJsonAdapters.FACTORY)
+        .add(NullSafeKotlinJsonAdapterFactory()).build()
 
      fun <K, V> objectsMapToJson(key: Class<K>, value: Class<V>, map: Map<K,V>): String {
         return moshi
@@ -74,7 +78,9 @@ object MoshiUtil {
      * @return T?
      */
     inline fun <reified T> fromJson(jsonStr: String): T? {
+        Log.e("TAGTAG","TEST1")
         val adapter = moshi.adapter(T::class.java)
+        Log.e("TAGTAG","TEST"+adapter.toString())
         return this.fromJson(adapter, jsonStr)
     }
 
@@ -94,7 +100,7 @@ object MoshiUtil {
      * @param parameterizedType ParameterizedType
      * @return T?
      */
-    inline fun <reified T> fromJson(jsonStr: String, parameterizedType: ParameterizedType): T? {
+    inline fun <reified T> fromJson(jsonStr: String, parameterizedType: Type): T? {
         val adapter = moshi.adapter<T>(parameterizedType)
         return this.fromJson(adapter = adapter, jsonStr = jsonStr)
     }

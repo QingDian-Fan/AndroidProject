@@ -25,6 +25,16 @@
         <item name="android:windowBackground">@drawable/bg_splash</item>
     </style>
 
+    <style name="AppTheme.Splash_Test">
+        <item name="android:statusBarColor">@color/transparent</item>
+        <item name="android:windowBackground">@color/transparent</item>
+    </style>
+
+    <style name="AppTheme.SplashGray">
+        <item name="android:statusBarColor">@color/colorGray</item>
+        <item name="android:windowBackground">@drawable/bg_splash_gray</item>
+    </style>
+
     <style name="BottomSheetDialogStyle" parent="Theme.Design.BottomSheetDialog">
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">true</item>

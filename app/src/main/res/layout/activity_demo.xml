@@ -23,8 +23,6 @@
         android:layout_height="match_parent"
         tools:context=".ui.activity.DemoActivity">
 
-
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -139,7 +137,17 @@
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
                     android:paddingVertical="10dp"
-                    android:text="网络请求"
+                    android:text="网络请求:Get"
+                    android:textColor="@color/colorWhite" />
+                <Button
+                    android:id="@+id/btn_network_request_post"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp46"
+                    android:layout_marginTop="30dp"
+                    android:background="@drawable/bg_btn_generate"
+                    android:onClick="clickView"
+                    android:paddingVertical="10dp"
+                    android:text="网络请求:Post"
                     android:textColor="@color/colorWhite" />
                 <Button
                     android:id="@+id/btn_video_play"
@@ -180,6 +188,26 @@
                     android:onClick="clickView"
                     android:paddingVertical="10dp"
                     android:text="更新对话框"
+                    android:textColor="@color/colorWhite" />
+                <Button
+                    android:id="@+id/btn_gray"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp46"
+                    android:layout_marginTop="30dp"
+                    android:background="@drawable/bg_btn_generate"
+                    android:onClick="clickView"
+                    android:paddingVertical="10dp"
+                    android:text="灰白屏:"
+                    android:textColor="@color/colorWhite" />
+                <Button
+                    android:id="@+id/btn_parse"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp46"
+                    android:layout_marginTop="30dp"
+                    android:background="@drawable/bg_btn_generate"
+                    android:onClick="clickView"
+                    android:paddingVertical="10dp"
+                    android:text="解析数据"
                     android:textColor="@color/colorWhite" />
 
                 <androidx.appcompat.widget.AppCompatTextView

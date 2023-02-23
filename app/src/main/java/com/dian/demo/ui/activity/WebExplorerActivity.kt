@@ -3,6 +3,7 @@ package com.dian.demo.ui.activity
 
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.text.TextUtils
@@ -32,6 +33,7 @@ open class WebExplorerActivity : BaseAppBindActivity<ActivityWebExplorerBinding>
             intent.setClass(mContext, WebExplorerActivity::class.java)
             intent.putExtra(EXTRA_URL, urlString)
             intent.putExtra(EXTRA_TITLE, titleString)
+            intent.flags = FLAG_ACTIVITY_NEW_TASK
             mContext.startActivity(intent)
         }
     }

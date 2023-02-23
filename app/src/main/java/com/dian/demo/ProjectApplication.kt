@@ -8,6 +8,8 @@ import com.dian.demo.config.AppConfig.WB_SCOPE
 import com.dian.demo.http.HttpUtils
 import com.dian.demo.utils.ActivityManager
 import com.dian.demo.utils.ExceptionHandlerUtil
+import com.dian.demo.utils.PreferenceUtil
+import com.dian.demo.utils.gray.GlobalGray
 import com.sina.weibo.sdk.auth.AuthInfo
 import com.sina.weibo.sdk.openapi.SdkListener
 import com.sina.weibo.sdk.openapi.WBAPIFactory
@@ -35,6 +37,7 @@ class ProjectApplication : Application() {
         initWeiBoSdk()
         HttpUtils.getInstance().init(this)
 
+
     }
 
   private fun initWeiBoSdk() {
@@ -53,6 +56,9 @@ class ProjectApplication : Application() {
     private fun init() {
         mContext = this
         instance = this
+        if (PreferenceUtil.getBoolean("isGray", false)){
+            GlobalGray.hook()
+        }
         ExceptionHandlerUtil.init()
         ActivityManager.getInstance().init(this)
     }

@@ -18,6 +18,9 @@ import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.base.BaseAppVMActivity
 import com.dian.demo.config.Constant.apkPath
 import com.dian.demo.databinding.ActivityDemoBinding
+import com.dian.demo.di.model.ArticleBean
+import com.dian.demo.di.model.BannerBean
+import com.dian.demo.di.model.ListData
 import com.dian.demo.di.vm.DemoViewModel
 import com.dian.demo.ui.dialog.*
 import com.dian.demo.ui.img.ImageCancelListener
@@ -28,8 +31,17 @@ import com.dian.demo.utils.*
 import com.dian.demo.utils.aop.CheckPermissions
 import com.dian.demo.utils.aop.SingleClick
 import com.dian.demo.utils.ext.showAllowStateLoss
+import com.dian.demo.utils.gray.GlobalGray
 import com.dian.demo.utils.share.dialog.ShareDialog
+import java.io.BufferedReader
 import java.io.File
+import java.io.InputStreamReader
+import kotlin.system.exitProcess
+import com.dian.demo.http.Result
+import com.dian.demo.http.moshi.NullSafeKotlinJsonAdapterFactory
+import com.dian.demo.http.moshi.NullSafeStandardJsonAdapters
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 
 
 class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
@@ -50,6 +62,9 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
         getTitleBarView().setOpenStatusBar(false)
         getTitleBarView().setCenterText(ResourcesUtil.getString(R.string.demo_title_text))
         getTitleBarView().leftImageButton.visibility = gone
+
+        val isGray = PreferenceUtil.getBoolean("isGray", false)
+        binding.btnGray.text = "黑白屏：${isGray}"
 
         StatusBarUtil.setColor(this@DemoActivity, ResourcesUtil.getColor(R.color.bg_common), 0)
         StatusBarUtil.setLightMode(this@DemoActivity)
@@ -99,7 +114,8 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
         showToast(ResourcesUtil.getString(R.string.exit_app))
         mLastTime = System.currentTimeMillis()
     } else {
-        onBackPressed()
+        //onBackPressed()
+        exitProcess(0)
     }
 
 
@@ -173,8 +189,12 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                     })
                     .create()
             }
+
             R.id.btn_network_request -> {
                 viewModel.getArticleList(0)
+            }
+            R.id.btn_network_request_post -> {
+                viewModel.doLogin("QingDian_Fan", "dian3426")
             }
             R.id.btn_video_play -> {
                 VideoPlayerActivity.start(this@DemoActivity)
@@ -206,7 +226,30 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 }
                 UpdateDialog.getDialog(
                     "https://cdn.mytoken.org/app_download/MT-mytoken-hk-release-3.3.4_mytoken_aligned_signed.apk",
-                    "玩Android.apk").showAllowStateLoss(supportFragmentManager, "")
+                    "玩Android.apk"
+                ).showAllowStateLoss(supportFragmentManager, "")
+            }
+            R.id.btn_gray -> {
+                val isGray = PreferenceUtil.getBoolean("isGray", false)
+                PreferenceUtil.putBoolean("isGray", !isGray)
+            }
+            R.id.btn_parse -> {
+                val stringBuilder = StringBuilder()
+                val bufferedReader = BufferedReader(InputStreamReader(assets.open("banner.json")))
+                var lineString: String?
+                while (bufferedReader.readLine().also { lineString = it } != null) {
+                    stringBuilder.append(lineString)
+                }
+                val jsonString = stringBuilder.toString()
+                Log.e("TAGTAG", "jsonString--->$jsonString")
+                val type = Types.newParameterizedType(
+                    Result::class.java,
+                    Types.newParameterizedType(List::class.java, BannerBean::class.java)
+                )
+               // val result = MoshiUtil.moshi.adapter<Result<List<BannerBean>>>(type).fromJson(jsonString)
+                val result = MoshiUtil.fromJson<Result<List<BannerBean>>>(jsonString,type)
+
+                Log.e("TAGTAG", "result--->" + result.toString())
             }
         }
     }

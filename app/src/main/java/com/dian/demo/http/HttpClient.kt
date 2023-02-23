@@ -7,16 +7,10 @@ import android.util.Log
 import android.view.Gravity
 import android.webkit.MimeTypeMap
 import com.dian.demo.ProjectApplication
-import com.dian.demo.di.model.ArticleBean
-import com.dian.demo.di.model.ListData
 import com.dian.demo.utils.MoshiUtil
+import com.dian.demo.utils.SchemaUtil
 import com.dian.demo.utils.ToastUtil
 import com.google.gson.JsonParseException
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
-import com.squareup.moshi.adapter
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -253,14 +247,13 @@ open class HttpClient : HttpClientBase() {
         response: Response<String>,
         type: Type
     ): ResponseHolder<T> {
-        val resp = getMoshi().adapter<Result<T>>(type).fromJson(response.body()!!)!!
+        val resp =MoshiUtil.fromJson<Result<T>>(response.body()!!,type)!!
         if (resp.isSuccessful()) {
             return ResponseHolder.Success(resp.data)
         } else {
             // 请求成功，返回失败响应
             if (resp.isNotLogin()) {
-
-                //SchemaUtils.toStart(ProjectApplication.getAppContext(), "dian://login")
+                SchemaUtil.schemaToPage(ProjectApplication.getAppContext(), "dian://login")
                 ToastUtil.showToast(
                     ProjectApplication.getAppContext(),
                     resp.errorMsg,
@@ -279,7 +272,7 @@ open class HttpClient : HttpClientBase() {
         response: Response<String>,
         type: Type
     ): ResponseHolder<T> {
-        val resp = getMoshi().adapter<Result<T>>(type).fromJson(response.body()!!)!!
+        val resp = MoshiUtil.fromJson<Result<T>>(response.body()!!,type)!!
         return ResponseHolder.Success(resp.data)
     }
 

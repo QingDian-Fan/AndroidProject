@@ -1,4 +1,4 @@
-package com.dian.demo.http.interceptor
+package com.dian.demo.http.interceptor.curl
 
 
 import com.dian.demo.http.interceptor.curl.Configuration

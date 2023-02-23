@@ -2,6 +2,8 @@ package com.dian.demo.http
 
 import com.dian.demo.BuildConfig
 import com.dian.demo.config.AppConfig.getBaseUrl
+import com.dian.demo.http.moshi.NullSafeKotlinJsonAdapterFactory
+import com.dian.demo.http.moshi.NullSafeStandardJsonAdapters
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Cache
@@ -58,7 +60,10 @@ data class HttpClientConfig(
     // 自定义日志打印
     var logger: HttpLoggingInterceptor.Logger? = null,
     //moshi
-    var moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
+    var moshi: Moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .add(NullSafeStandardJsonAdapters.FACTORY)
+        .add(NullSafeKotlinJsonAdapterFactory()).build()
 ) {
     companion object {
         @JvmStatic
@@ -105,7 +110,10 @@ class HttpClientConfigBuilder {
         return this
     }
 
-    fun addInterceptor(interceptor: Interceptor, isDebug: Boolean=false): HttpClientConfigBuilder {
+    fun addInterceptor(
+        interceptor: Interceptor,
+        isDebug: Boolean = false
+    ): HttpClientConfigBuilder {
         if (isDebug && !BuildConfig.DEBUG) {
             return this
         }
@@ -113,7 +121,13 @@ class HttpClientConfigBuilder {
         return this
     }
 
-    fun addNetworkInterceptor(interceptor: Interceptor): HttpClientConfigBuilder {
+    fun addNetworkInterceptor(
+        interceptor: Interceptor,
+        isDebug: Boolean = false
+    ): HttpClientConfigBuilder {
+        if (isDebug && !BuildConfig.DEBUG) {
+            return this
+        }
         config.netInterceptors.add(interceptor)
         return this
     }
