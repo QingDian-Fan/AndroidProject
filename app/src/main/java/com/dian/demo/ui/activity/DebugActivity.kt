@@ -15,8 +15,8 @@ import com.dian.demo.ui.dialog.DebugDialog
 import com.dian.demo.ui.titlebar.CommonTitleBar
 import com.dian.demo.utils.DomainUtil
 import com.dian.demo.utils.ExceptionHandlerUtil
-import com.dian.demo.utils.PreferenceUtil
 import com.dian.demo.utils.ResourcesUtil
+import com.dian.demo.utils.datastore.AppDataStore
 import com.dian.demo.utils.ext.singleClick
 import java.io.BufferedReader
 import java.io.InputStream
@@ -74,7 +74,7 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
             thread {
                 pingAddress(
                     DomainUtil.getDomainMedium(
-                        PreferenceUtil.getString(
+                        AppDataStore.getData(
                             DEBUG_URL_CONFIG,
                             debugUrl
                         )
@@ -85,12 +85,12 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
         binding.cvDebug.singleClick {
             binding.ivDebugCheck.setImageResource(R.mipmap.icon_selected)
             binding.ivReleaseCheck.setImageResource(R.mipmap.icon_unselected)
-            PreferenceUtil.putString(DEBUG_URL_CONFIG, debugUrl)
+            AppDataStore.putData(DEBUG_URL_CONFIG, debugUrl)
         }
         binding.cvRelease.singleClick {
             binding.ivDebugCheck.setImageResource(R.mipmap.icon_unselected)
             binding.ivReleaseCheck.setImageResource(R.mipmap.icon_selected)
-            PreferenceUtil.putString(DEBUG_URL_CONFIG, releaseUrl)
+            AppDataStore.putData(DEBUG_URL_CONFIG, releaseUrl)
         }
         binding.btnSchema.singleClick {
               val debugDialog = DebugDialog()

@@ -19,12 +19,7 @@ import com.dian.demo.utils.webview.webset.DefaultWebSetting
 import com.dian.demo.utils.webview.webset.DefaultWebViewClient
 import com.dian.demo.utils.LogUtil
 
-/**
- * @ClassName: BaseWebView
- * @Description: java类作用描述
- * @Author: liyihuan
- * @Date: 2021/7/15 22:09
- */
+
 class BaseWebView : WebView, NestedScrollingChild {
 
     private var mChildHelper: NestedScrollingChildHelper? = null

@@ -5,14 +5,11 @@ import com.dian.demo.config.Constant.DEBUG_URL_CONFIG
 import com.dian.demo.BuildConfig
 import com.dian.demo.R
 import com.dian.demo.utils.LogUtil
-import com.dian.demo.utils.PreferenceUtil
 import com.dian.demo.utils.ResourcesUtil
+import com.dian.demo.utils.datastore.AppDataStore
 
 
 object AppConfig {
-
-
-
 
     const val QQ_APPID ="101828096"
     const val QQ_APPKEY = "9dfd3300c3aa3c4596a07796c64914b2"
@@ -31,8 +28,8 @@ object AppConfig {
 
     fun getBaseUrl(): String{
         return if (BuildConfig.DEBUG) {
-            LogUtil.e("------>", PreferenceUtil.getString(DEBUG_URL_CONFIG, BASE_URL))
-            PreferenceUtil.getString(DEBUG_URL_CONFIG, BASE_URL)
+            LogUtil.e("------>", AppDataStore.getData(DEBUG_URL_CONFIG, BASE_URL))
+            AppDataStore.getData(DEBUG_URL_CONFIG, BASE_URL)
         } else BASE_URL
 
     }

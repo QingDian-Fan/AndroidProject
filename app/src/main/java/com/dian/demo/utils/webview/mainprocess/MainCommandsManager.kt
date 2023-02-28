@@ -6,11 +6,7 @@ import com.google.gson.Gson
 import com.dian.demo.utils.webview.command.Command
 import java.util.*
 
-/**
- * @author created by liyihuanx
- * @date 2021/11/10
- * @description: 类的描述
- */
+
 class MainCommandsManager private constructor() : WebToMainInterface.Stub() {
     private val mCommands: HashMap<String, Command> = HashMap<String, Command>()
 

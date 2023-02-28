@@ -12,11 +12,7 @@ import com.dian.demo.WebToMainInterface
 import com.dian.demo.utils.webview.mainprocess.MainCommandService
 import com.dian.demo.utils.webview.webview.BaseWebView
 
-/**
- * @author created by liyihuanx
- * @date 2021/11/10
- * @description: 类的描述
- */
+
 class WebCommandDispatcher private constructor() : ServiceConnection {
     private var iWebviewProcessToMainProcessInterface: WebToMainInterface? = null
 

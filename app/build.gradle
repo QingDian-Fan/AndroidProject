@@ -1,9 +1,9 @@
-
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-android-extensions'
     id 'kotlin-kapt'
+    id 'com.google.protobuf'
 }
 
 
@@ -30,6 +30,16 @@ android {
             }
         }
     }
+
+    sourceSets {
+        main {
+            //实际测试指不指定无所谓，不影响 Java 文件生成
+            proto {
+                srcDir 'src/main/proto'
+            }
+        }
+    }
+
 
     def releaseFile = file(build_key.keystoreReleaseFilepath)
     def debugFile = file(build_key.keystoreDebugFilepath)
@@ -65,7 +75,7 @@ android {
 
         debug {
             minifyEnabled false
-            applicationIdSuffix '.debug'
+            //applicationIdSuffix '.debug'
             resValue "string", "app_name", "玩Android-Debug"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (debugFile.exists()) {
@@ -193,6 +203,12 @@ dependencies {
     implementation 'tv.danmaku.ijk.media:ijkplayer-arm64:0.8.8'
     /*===============================ijkPlayer===============================================*/
 
+    /*===============================datastore===============================================*/
+    implementation "androidx.datastore:datastore:1.0.0"
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+    implementation  "com.google.protobuf:protobuf-javalite:3.14.0"
+    /*===============================datastore===============================================*/
+
 
     /*=================================网络检查==============================================*/
     /* debugImplementation 'com.readystatesoftware.chuck:library:1.1.0' */
@@ -204,14 +220,34 @@ dependencies {
     /*================================leakcanary============================================*/
 }
 
+protobuf {
+    protoc {
+        if (osdetector.os == "osx") {
+            artifact = 'com.google.protobuf:protoc:3.14.0:osx-x86_64'
+        } else {
+            artifact = 'com.google.protobuf:protoc:3.14.0'
+        }
+    }
 
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java {
+                    option 'lite'
+                }
+            }
+        }
+    }
+}
+
+
+//aop aspectj
 import org.aspectj.bridge.IMessage
 import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
 
 android.applicationVariants.all { variant ->
 
-// add the versionName & versionCode to the apk file name
     variant.outputs.all { output ->
         def buildTime = project.hasProperty('BUILD_TIME') ? BUILD_TIME : new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08:00"))
 

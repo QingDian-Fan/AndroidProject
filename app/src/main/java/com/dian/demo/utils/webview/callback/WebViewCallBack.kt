@@ -3,12 +3,7 @@ package com.dian.demo.utils.webview.callback
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 
-/**
- * @ClassName: WebViewCallBack
- * @Description: 打开WebActivity时的回调
- * @Author: liyihuan
- * @Date: 2021/7/15 22:22
- */
+
 interface WebViewCallBack {
 
     fun pageStarted(url: String?)

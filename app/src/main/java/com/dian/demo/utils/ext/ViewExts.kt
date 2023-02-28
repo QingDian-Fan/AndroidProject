@@ -3,13 +3,7 @@ package com.dian.demo.utils.ext
 import android.view.View
 import com.dian.demo.utils.LogUtil
 
-/**
- * @author: Albert Li
- * @contact: albertlii@163.com
- * @time: 2020/6/7 5:32 PM
- * @description: View相关扩展
- * @since: 1.0.0
- */
+
 
 fun <T : View> T.click(action: (T) -> Unit) {
     setOnClickListener {

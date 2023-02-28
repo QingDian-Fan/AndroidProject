@@ -6,9 +6,7 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
 
-/**
- * Created by chenxz on 2018/6/6.
- */
+
 class OkHttpCookies : Serializable {
 
     private lateinit var cookies: Cookie

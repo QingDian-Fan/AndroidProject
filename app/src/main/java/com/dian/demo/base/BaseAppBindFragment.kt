@@ -13,8 +13,8 @@ import com.dian.demo.R
 import com.dian.demo.databinding.FragmentRootLayoutBinding
 
 /**
- * @author: Albert Li
- * @contact: albertlii@163.com
+ * @author: QingDian_Fan
+ * @contact: dian.work@foxmail.com
  * @time: 2021/9/3 6:19 下午
  * @description: -
  * @since: 1.0.0

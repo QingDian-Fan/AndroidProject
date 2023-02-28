@@ -6,13 +6,7 @@ import android.graphics.drawable.Drawable
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 
-/**
- * @author: Albert Li
- * @contact: albertlii@163.com
- * @time: 2021/8/16 7:28 下午
- * @description: kit相关扩展
- * @since: 1.0.0
- */
+
 
 /**
  * dp 转 px

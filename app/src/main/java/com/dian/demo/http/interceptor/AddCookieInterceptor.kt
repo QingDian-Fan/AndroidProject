@@ -1,15 +1,11 @@
 package com.dian.demo.http.interceptor
 
 import com.dian.demo.http.cookie.HttpConstant
-import com.dian.demo.utils.Preference
+import com.dian.demo.utils.datastore.AppDataStore
 import okhttp3.Interceptor
 import okhttp3.Response
 
-/**
- * @author chenxz
- * @date 2018/9/26
- * @desc HeaderInterceptor: 设置请求头
- */
+
 class AddCookieInterceptor : Interceptor {
 
 
@@ -28,8 +24,9 @@ class AddCookieInterceptor : Interceptor {
                     || url.contains(HttpConstant.TODO_WEBSITE)
                     || url.contains(HttpConstant.COIN_WEBSITE))
         ) {
-            val spDomain: String by Preference(domain, "")
-            val cookie: String = if (spDomain.isNotEmpty()) spDomain else ""
+
+            val cookies = AppDataStore.getData(domain,"")
+            val cookie: String = cookies.ifEmpty { "" }
             if (cookie.isNotEmpty()) {
                 // 将 Cookie 添加到请求头
                 builder.addHeader(HttpConstant.COOKIE_NAME, cookie)

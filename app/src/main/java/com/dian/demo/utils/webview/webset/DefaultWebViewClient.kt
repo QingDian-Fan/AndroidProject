@@ -7,12 +7,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.dian.demo.utils.webview.callback.WebViewCallBack
 
-/**
- * @ClassName: WebViewClient
- * @Description: java类作用描述
- * @Author: liyihuan
- * @Date: 2021/7/12 23:24
- */
+
 class DefaultWebViewClient(private val webViewCallBack: WebViewCallBack) : WebViewClient() {
 
 

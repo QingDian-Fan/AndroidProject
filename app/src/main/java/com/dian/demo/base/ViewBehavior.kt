@@ -1,4 +1,4 @@
-package com.demo.project.base
+package com.dian.demo.base
 
 /**
  * @author: QingDian_Fan

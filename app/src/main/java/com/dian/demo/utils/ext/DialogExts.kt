@@ -5,10 +5,9 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 
 /**
- * @author: Albert Li
- * @contact: albertlii@163.com
  * @time: 2021/9/6 7:48 下午
  * @description: Dialog相关扩展
+ * @since: 1.0.0
  * <p>
  * 1、DialogFragment是继承于Fragment，在内部创建了一个Dialog对象
  * 2、在show和dismiss方法中通过对Fragment的add和remove来显示Dialog
@@ -16,7 +15,6 @@ import androidx.fragment.app.FragmentManager
  * 4、每次dismiss时，Fragment会一直执行完整个生命周期（onDetach），所以每次show的时候，生命周期会重新走一遍
  * 5、生命周期执行顺序：onAttach-->onCreate-->onCreateDialog-->onCreateView-->onViewCreated-->onActivityCreated-->onStart
  * </p>
- * @since: 1.0.0
  */
 
 

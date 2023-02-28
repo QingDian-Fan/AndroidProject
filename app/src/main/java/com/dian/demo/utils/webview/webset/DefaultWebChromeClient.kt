@@ -8,12 +8,7 @@ import android.webkit.WebView
 import com.dian.demo.utils.webview.callback.LoadProgressCallBack
 import com.dian.demo.utils.webview.callback.WebViewCallBack
 
-/**
- * @ClassName: DefaultWebChromeClient
- * @Description: java类作用描述
- * @Author: liyihuan
- * @Date: 2021/7/12 23:36
- */
+
 class DefaultWebChromeClient(private val webViewCallBack: WebViewCallBack) : WebChromeClient() {
 
     private var progressCallBack: LoadProgressCallBack? = null

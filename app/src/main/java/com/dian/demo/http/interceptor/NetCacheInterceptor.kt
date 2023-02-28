@@ -6,11 +6,7 @@ import com.dian.demo.utils.NetWorkUtil
 import okhttp3.Interceptor
 import okhttp3.Response
 
-/**
- * @author chenxz
- * @date 2018/11/15
- * @desc NetCacheInterceptor: 有网的时候缓存
- */
+
 class NetCacheInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {

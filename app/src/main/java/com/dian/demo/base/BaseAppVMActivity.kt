@@ -7,8 +7,8 @@ import com.dian.demo.utils.ext.observeNullable
 
 
 /**
- * @author: Albert Li
- * @contact: albertlii@163.com
+ * @author: QingDian_Fan
+ * @contact: dian.work@foxmail.comom
  * @time: 2020/6/11 7:47 PM
  * @description: --
  * @since: 1.0.0

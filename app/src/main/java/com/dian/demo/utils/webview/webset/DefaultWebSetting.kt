@@ -5,12 +5,7 @@ import android.os.Build
 import android.webkit.WebSettings
 import android.webkit.WebView
 
-/**
- * @ClassName: WebDefaultSetting
- * @Description: java类作用描述
- * @Author: liyihuan
- * @Date: 2021/7/12 23:00
- */
+
 object DefaultWebSetting {
 
     lateinit var mWebSettings: WebSettings

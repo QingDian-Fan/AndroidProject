@@ -1,6 +1,5 @@
 package com.dian.demo.http
 
-import android.util.Log
 import com.dian.demo.utils.LogUtil
 import okhttp3.OkHttpClient
 import okhttp3.Request

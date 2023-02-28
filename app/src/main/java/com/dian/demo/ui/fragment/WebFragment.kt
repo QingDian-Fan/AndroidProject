@@ -15,13 +15,7 @@ import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.databinding.FragmentWebBinding
 
 
-/**
- * @ClassName: WebFragment
- * @Description: java类作用描述
- * @Author: liyihuan
- * @Date: 2021/11/9 23:07
- * https://github.com/liyihuanx/NewWebView
- */
+//https://github.com/liyihuanx/NewWebView
 class WebFragment : BaseAppBindFragment<FragmentWebBinding>(), WebViewCallBack {
 
     private lateinit var urlString: String

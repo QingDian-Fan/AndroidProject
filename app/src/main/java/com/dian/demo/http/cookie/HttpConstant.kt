@@ -1,6 +1,6 @@
 package com.dian.demo.http.cookie
 
-import com.dian.demo.utils.Preference
+import com.dian.demo.utils.datastore.AppDataStore
 
 
 object HttpConstant {
@@ -44,13 +44,9 @@ object HttpConstant {
 
     fun saveCookie(url: String?, domain: String?, cookies: String) {
         url ?: return
-        var spUrl: String by Preference(url, cookies)
-        @Suppress("UNUSED_VALUE")
-        spUrl = cookies
+        AppDataStore.putData(url,cookies)
         domain ?: return
-        var spDomain: String by Preference(domain, cookies)
-        @Suppress("UNUSED_VALUE")
-        spDomain = cookies
+        AppDataStore.putData(domain,cookies)
     }
 
 }

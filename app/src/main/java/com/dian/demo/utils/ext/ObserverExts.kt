@@ -15,18 +15,18 @@ import androidx.lifecycle.LiveData
  * 简化LiveData的订阅操作，参数可为null
  */
 fun <T> LiveData<T>.observeNullable(owner: LifecycleOwner, block: (T) -> Unit) {
-    this.observe(owner, {
+    this.observe(owner) {
         block(it)
-    })
+    }
 }
 
 /**
  * 简化LiveData的订阅操作，参数不为null
  */
 fun <T> LiveData<T>.observeNonNull(owner: LifecycleOwner, block: (T) -> Unit) {
-    this.observe(owner, {
+    this.observe(owner) {
         if (it != null) {
             block(it)
         }
-    })
+    }
 }

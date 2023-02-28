@@ -40,6 +40,7 @@ import kotlin.system.exitProcess
 import com.dian.demo.http.Result
 import com.dian.demo.http.moshi.NullSafeKotlinJsonAdapterFactory
 import com.dian.demo.http.moshi.NullSafeStandardJsonAdapters
+import com.dian.demo.utils.datastore.AppDataStore
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 
@@ -63,7 +64,7 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
         getTitleBarView().setCenterText(ResourcesUtil.getString(R.string.demo_title_text))
         getTitleBarView().leftImageButton.visibility = gone
 
-        val isGray = PreferenceUtil.getBoolean("isGray", false)
+        val isGray = AppDataStore.getData("isGray", false)
         binding.btnGray.text = "黑白屏：${isGray}"
 
         StatusBarUtil.setColor(this@DemoActivity, ResourcesUtil.getColor(R.color.bg_common), 0)
@@ -230,8 +231,8 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 ).showAllowStateLoss(supportFragmentManager, "")
             }
             R.id.btn_gray -> {
-                val isGray = PreferenceUtil.getBoolean("isGray", false)
-                PreferenceUtil.putBoolean("isGray", !isGray)
+                val isGray = AppDataStore.getData("isGray", false)
+                AppDataStore.putData("isGray", !isGray)
             }
             R.id.btn_parse -> {
                 val stringBuilder = StringBuilder()
@@ -246,7 +247,6 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                     Result::class.java,
                     Types.newParameterizedType(List::class.java, BannerBean::class.java)
                 )
-               // val result = MoshiUtil.moshi.adapter<Result<List<BannerBean>>>(type).fromJson(jsonString)
                 val result = MoshiUtil.fromJson<Result<List<BannerBean>>>(jsonString,type)
 
                 Log.e("TAGTAG", "result--->" + result.toString())

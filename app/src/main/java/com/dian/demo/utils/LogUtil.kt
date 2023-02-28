@@ -3,11 +3,6 @@ package com.dian.demo.utils
 import android.util.Log
 import com.dian.demo.BuildConfig
 
-/**
- * @time: 2021/7/21 4:51 下午
- * @description: Log相关工具类
- * @since: 1.0.0
- */
 object LogUtil {
     @JvmField
     var tag = "TAG----->"

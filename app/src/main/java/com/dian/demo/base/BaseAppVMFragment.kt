@@ -10,8 +10,8 @@ import com.demo.project.base.ILazyLoad
 import com.dian.demo.utils.ext.observeNonNull
 
 /**
- * @author: Albert Li
- * @contact: albertlii@163.com
+ * @author: QingDian_Fan
+ * @contact: dian.work@foxmail.com
  * @time: 2021/9/3 4:18 下午
  * @description: -
  * @since: 1.0.0

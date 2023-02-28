@@ -7,24 +7,7 @@ import androidx.room.RoomDatabase
 import com.dian.demo.di.model.ArticleEntity
 
 
-/**
- *
-private static volatile DatabaseFactory dataBase;
 
-public static DatabaseFactory getInstance(Context mContext) {
-if (dataBase == null) {
-synchronized (DatabaseFactory.class){
-if (dataBase==null){
-dataBase = Room.databaseBuilder(mContext.getApplicationContext(), DatabaseFactory.class, "db_article_entity")
-.build();
-}
-}
-}
-return dataBase;
-}
-
-public abstract ArticleDao getArticle();
- */
 @Database(entities = [ArticleEntity::class], version = 1, exportSchema = false)
 abstract class DatabaseFactory: RoomDatabase() {
 

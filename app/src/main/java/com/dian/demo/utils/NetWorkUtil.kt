@@ -11,9 +11,7 @@ import java.net.NetworkInterface
 import java.net.SocketException
 import java.net.URL
 
-/**
- * Created by chenxz on 2018/4/21.
- */
+
 object NetWorkUtil {
 
     private const val TIMEOUT = 3000 // TIMEOUT

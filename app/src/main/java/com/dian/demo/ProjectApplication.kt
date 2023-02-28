@@ -8,12 +8,11 @@ import com.dian.demo.config.AppConfig.WB_SCOPE
 import com.dian.demo.http.HttpUtils
 import com.dian.demo.utils.ActivityManager
 import com.dian.demo.utils.ExceptionHandlerUtil
-import com.dian.demo.utils.PreferenceUtil
+import com.dian.demo.utils.datastore.AppDataStore
 import com.dian.demo.utils.gray.GlobalGray
 import com.sina.weibo.sdk.auth.AuthInfo
 import com.sina.weibo.sdk.openapi.SdkListener
 import com.sina.weibo.sdk.openapi.WBAPIFactory
-
 
 class ProjectApplication : Application() {
     companion object {
@@ -21,13 +20,13 @@ class ProjectApplication : Application() {
         private var mContext: Context? = null
 
 
-        private var instance: Application? = null
+        private var instance: ProjectApplication? = null
 
         @JvmStatic
         fun getAppContext(): Context = mContext!!
 
         @JvmStatic
-        fun getAppInstance(): Application = instance!!
+        fun getAppInstance(): ProjectApplication = instance!!
 
     }
 
@@ -56,7 +55,7 @@ class ProjectApplication : Application() {
     private fun init() {
         mContext = this
         instance = this
-        if (PreferenceUtil.getBoolean("isGray", false)){
+        if (AppDataStore.getData("isGray", false)){
             GlobalGray.hook()
         }
         ExceptionHandlerUtil.init()

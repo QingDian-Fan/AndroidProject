@@ -2,11 +2,7 @@ package com.dian.demo.utils.code.core;
 
 import android.graphics.PointF;
 
-/**
- * 作者:王浩
- * 创建时间:2018/6/15
- * 描述:
- */
+
 public class ScanResult {
     String result;
     PointF[] resultPoints;
