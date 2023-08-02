@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/sv_share"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/ll_share_platform"
+        android:layout_alignParentTop="true"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="10dp"
+        android:scrollbars="none">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_share"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="fitXY"
+            android:adjustViewBounds="true"
+            android:visibility="invisible" />
+    </androidx.core.widget.NestedScrollView>
+
+    <LinearLayout
+        android:id="@+id/ll_share_platform"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/bg_common"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_share_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@color/bg_default"
+            android:gravity="center"
+            android:paddingHorizontal="15dp"
+            android:paddingVertical="5dp"
+            tools:text="分享title"
+            android:textColor="@color/text_color"
+            android:textSize="14dp" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_share_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@color/bg_default"
+            android:gravity="center"
+            android:paddingHorizontal="15dp"
+            android:paddingVertical="5dp"
+            android:textColor="#546E7A"
+            android:textSize="12dp"
+            tools:text="分享Content" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_share_platform"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_default"
+            app:layoutManager="GridLayoutManager"
+            tools:itemCount="5"
+            tools:layoutAnimation="@null"
+            tools:listitem="@layout/item_share_view"
+            tools:spanCount="5" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#50aaaaaa" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_share_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@color/bg_default"
+            android:gravity="center"
+            android:text="@string/cancel"
+            android:textSize="16dp" />
+    </LinearLayout>
+</RelativeLayout>

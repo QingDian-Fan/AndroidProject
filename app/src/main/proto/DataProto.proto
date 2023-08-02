@@ -1,0 +1,15 @@
+//指定proto 版本号
+syntax = "proto3";
+
+//生成文件包名
+package com.dian.demo;
+
+//定义一个类
+message DataProto{
+  //string
+  string name = 1;
+  //int
+  int32 age = 2;
+  //list<string>
+  repeated string course = 4;
+}
