@@ -183,7 +183,7 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
             }
             R.id.btn_update_dialog -> {
 
-                val apkName = "玩Android.apk"
+                val apkName = "AndroidProject.apk"
                 val apkFile = File(apkPath, apkName)
                 if (apkFile.exists()) {
                     TipDialog.getDialog(
@@ -195,7 +195,7 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 }
                 UpdateDialog.getDialog(
                     "https://cdn.mytoken.org/app_download/MT-mytoken-hk-release-3.3.4_mytoken_aligned_signed.apk",
-                    "玩Android.apk"
+                    "AndroidProject.apk"
                 ).showAllowStateLoss(supportFragmentManager, "")
             }
             R.id.btn_gray -> {

@@ -50,7 +50,7 @@ class UpdateDialog : AppCompatDialogFragment() {
         binding = DialogUpdateBinding.inflate(LayoutInflater.from(context), container, false)
         arguments?.let {
             downloadUrl = it.getString("url", "https://cdn.mytoken.org/app_download/MT-mytoken-hk-release-3.3.4_mytoken_aligned_signed.apk")
-            apkName = it.getString("apkName", "玩Android.apk")
+            apkName = it.getString("apkName", "AndroidProject.apk")
         }
         initData()
         return binding.root

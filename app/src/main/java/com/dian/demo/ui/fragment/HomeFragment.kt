@@ -65,10 +65,7 @@ class HomeFragment : BaseAppVMFragment<FragmentHomeBinding, HomeViewModel>() {
         SmartRefreshUtil.with(binding.layoutRefresh).setLoadMoreListener {
             viewModel.getArticleList(page++)
         }
-        Log.e(
-            "TAG--->",
-            "size:" + ("玩Android-release-1.0.0-20230707_legu_zipalign_sign_samsung.apk".length)
-        )
+
         viewModel.articleData.observeNonNull(this) {
             binding.layoutRefresh.finishRefresh()
             binding.layoutRefresh.finishLoadMore()

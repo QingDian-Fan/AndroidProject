@@ -10,8 +10,8 @@ ext {
 
     // Apk输出路劲
     apk_path = "${project.rootDir}/app/build/outputs/apk/"
-    debug_apk_path = "${project.rootDir}/app/build/outputs/apk/debug/玩Android/"
-    release_apk_path = "${project.rootDir}/app/build/outputs/apk/release/玩Android/"
+    debug_apk_path = "${project.rootDir}/app/build/outputs/apk/debug/"
+    release_apk_path = "${project.rootDir}/app/build/outputs/apk/release/"
 
     //更新文案
     version_description = "测试更新文案是否设置成功.嗯？就这样，对，是的"
@@ -170,7 +170,7 @@ def sendMsgToDing(def fileSize, def data) {
     def _title = "蒲公英机器人"
     def _content = new StringBuffer()
     _content.append("\n\n### android构建成功,已上传蒲公英")
-    _content.append("\n\n**构建应用**:\n\n玩Android App")
+    _content.append("\n\n**构建应用**:\n\nAndroidProject App")
     _content.append("\n\n**构建时间**:\n\n${data.buildUpdated}")
     _content.append("\n\n**构建描述**:\n\n${data.buildUpdateDescription}")
     _content.append("\n\n**蒲公英版本号**:\n\nbuild${data.buildBuildVersion}")
@@ -222,7 +222,7 @@ def sendMsgToWeChat(def fileSize, def data) {
     def _title = "蒲公英机器人"
     def _content = new StringBuffer()
     _content.append("\n\n### Android构建成功,已上传蒲公英")
-    _content.append("\n\n**构建应用**:\n\n玩Android App")
+    _content.append("\n\n**构建应用**:\n\nAndroidProject App")
     _content.append("\n\n**构建时间**:\n\n${data.buildUpdated}")
     _content.append("\n\n**构建描述**:\n\n${data.buildUpdateDescription}")
     _content.append("\n\n**蒲公英版本号**:\n\nbuild${data.buildBuildVersion}")
