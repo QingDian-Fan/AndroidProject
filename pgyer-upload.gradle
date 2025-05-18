@@ -1,0 +1,367 @@
+import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
+import org.apache.tools.ant.taskdefs.condition.Os
+
+//https://www.pgyer.com/doc/view/api#uploadApp
+ext {
+    api_key = "37a40d3a5e9480169aefe5f7b4e854da"
+    user_key = "8df05dc4980b0b7418a439b0722aa63b"
+    upload_url = "https://www.pgyer.com/apiv2/app/upload"
+
+    // Apk输出路劲
+    apk_path = "${project.rootDir}/app/build/outputs/apk/"
+    debug_apk_path = "${project.rootDir}/app/build/outputs/apk/debug/玩Android/"
+    release_apk_path = "${project.rootDir}/app/build/outputs/apk/release/玩Android/"
+
+    //Webhook路径配置
+    wechat_webhook = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8cd7442f-480d-4160-895d-fde121bb7117"
+    ding_webhook = "https://oapi.dingtalk.com/robot/send?access_token=fcd6622e5d4791e2e5a1b7dc868cfa70d4b392210261b12807acb4ffe26b50af"
+    feishu_webhook = "https://open.feishu.cn/open-apis/bot/v2/hook/4d98b18d-944b-4440-92d8-c44212c29155"
+
+
+    //更新文案
+    version_description = "测试更新文案-pgyer"
+}
+
+/**
+ * 注释：是否为发送企业微信通知
+ */
+static def getMsgChannel() {
+    return "dingding"
+}
+
+/**
+ * 注释：打包Debug包并上传蒲公英
+ */
+task pgyerBuildDebug() {
+    group 'pgyer'
+    dependsOn('app:assembleDebug')
+    doLast {
+        def apkDir = new File(debug_apk_path)
+        if (!apkDir.exists()) {
+            throw new RuntimeException("apk output path not exists!")
+        }
+        def apk = null
+        for (int i = apkDir.listFiles().length - 1; i >= 0; i--) {
+            File file = apkDir.listFiles()[i]
+            if (file.name.endsWith(".apk")) {
+                apk = file
+                break
+            }
+        }
+        if (apk == null) {
+            throw new RuntimeException("apk file not exists!")
+        }
+        uploadApp(apk, "[Debug]${version_description}")
+    }
+}
+
+/**
+ * 注释：打包Release并上传蒲公英
+ */
+task pgyerBuildRelease() {
+    group 'pgyer'
+    dependsOn('app:assembleRelease')
+    doLast {
+        def apkDir = new File(release_apk_path)
+        if (!apkDir.exists()) {
+            throw new RuntimeException("apk output path not exists!")
+        }
+        def apk = null
+        for (int i = apkDir.listFiles().length - 1; i >= 0; i--) {
+            File file = apkDir.listFiles()[i]
+            if (file.name.endsWith(".apk")) {
+                apk = file
+                break
+            }
+        }
+        if (apk == null) {
+            throw new RuntimeException("apk file not exists!")
+        }
+        uploadApp(apk, "[Release]${version_description}")
+    }
+}
+
+/**
+ * 注释：获取Git分支
+ */
+def loadGitBranch() {
+    try {
+        def config = file("${project.rootDir}/.git/HEAD")
+        String content = ""
+        config.eachLine { line ->
+            content = line
+        }
+        return content.replaceAll("ref: refs/heads/", "")
+    } catch (Exception e) {
+        println "Failed to load git branch: ${e.message}"
+        return "unknown" // 或者 return null，根据你需要处理的逻辑
+    }
+}
+
+/**
+ * 注释：删除apk输出文件夹
+ */
+task deleteApkPath() {
+    doLast {
+        delete apk_path
+        println("*******************APK输出目录已删除***********************")
+    }
+}
+
+/**
+ * 注释：打包Task任务依赖注入deleteApkPath
+ */
+project.tasks.whenTaskAdded { Task currentTask ->
+    if (currentTask.name == "assembleDebug" || currentTask.name == "assembleRelease") {
+        currentTask.dependsOn('deleteApkPath')
+        currentTask.mustRunAfter('deleteApkPath')
+    }
+}
+
+
+/**
+ * 注释：上传App至蒲公英
+ */
+def uploadApp(File file, String description) {
+    def out = new ByteArrayOutputStream()
+    exec {
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            ExecSpec execSpec = commandLine "cmd", "/c", "curl -F _api_key=${api_key} -F file=@${file.absolutePath} -F buildUpdateDescription=${description} ${upload_url}"
+            execSpec.standardOutput = out
+        } else {
+            ExecSpec execSpec = commandLine "bash", "-c", "curl -F _api_key=${api_key} -F file=@${file.absolutePath} -F buildUpdateDescription=${description} ${upload_url}"
+            execSpec.standardOutput = out
+        }
+    }
+    println("蒲公英上传结果：\n${out.toString()}")
+    def uploadResult = new JsonSlurper().parseText(out.toString())
+    if (uploadResult.code == 0) {
+        if (getMsgChannel()=="wechat") {
+            sendMsgToWeChat(getFileSize(file), uploadResult.data)
+        } else  if (getMsgChannel()=="dingding"){
+            sendMsgToDing(getFileSize(file), uploadResult.data)
+        }else {
+            sendMsgToFeishu(getFileSize(file), uploadResult.data)
+        }
+
+    } else {
+        println("蒲公英上传失败原因:${uploadResult.message}")
+    }
+}
+
+/**
+ * 注释：获取文件大小
+ * @param file
+ */
+static def getFileSize(File file) {
+    long size = file.size()
+    if (size < 1024) {
+        return "${new BigDecimal(size).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()}B"
+    } else if (size < 1024 * 1024) {
+        return "${new BigDecimal(size / 1024).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()}KB"
+    } else if (size < 1024 * 1024 * 1024) {
+        return "${new BigDecimal(size / 1024 / 1024).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()}MB"
+    }
+}
+
+
+/**
+ * 注释：发企业微信通知
+ * @param fileSize
+ * @param data
+ * @return
+ */
+def sendMsgToWeChat(def fileSize, def data) {
+    println("*************** 企业微信消息开始发送 ***************")
+
+    def conn = new URL(wechat_webhook).openConnection()
+    conn.setRequestMethod('POST')
+    conn.setRequestProperty("Connection", "Keep-Alive")
+    conn.setRequestProperty("Content-type", "application/json;charset=UTF-8")
+    conn.setConnectTimeout(30000)
+    conn.setReadTimeout(30000)
+    conn.setDoInput(true)
+    conn.setDoOutput(true)
+    def dos = new DataOutputStream(conn.getOutputStream())
+    def _title = "蒲公英机器人"
+    def _content = new StringBuffer()
+    _content.append("\n\n### Android构建成功,已上传蒲公英")
+    _content.append("\n\n**构建应用**:\n\n玩Android App")
+    _content.append("\n\n**构建时间**:\n\n${data.buildUpdated}")
+    _content.append("\n\n**构建描述**:\n\n${data.buildUpdateDescription}")
+    _content.append("\n\n**蒲公英版本号**:\n\nbuild${data.buildBuildVersion}")
+    _content.append("\n\n**Android包大小**:\n\n${fileSize}")
+    _content.append("\n\n**Android版本号**:\n\n${data.buildVersion}")
+    _content.append("\n\n**Git分支**:\n\n${loadGitBranch()}")
+    _content.append("\n\n**下载地址**:\n\n[https://www.pgyer.com/${data.buildKey}](https://www.pgyer.com/${data.buildKey})")
+    //_content.append("\n\n**安装密码**:\n\ncarzone123")
+    def qrCodeUrl = "![image](${data.buildQRCodeURL})"
+    _content.append("\n\n" + qrCodeUrl)
+    def json = new JsonBuilder()
+    json {
+        msgtype "markdown"
+        markdown {
+            title _title
+            content _content.toString()
+        }
+        at {
+            isAtAll true
+        }
+    }
+    println(json.toString())
+    dos.writeBytes(json.toString())
+    dos.flush()
+    dos.close()
+    conn.connect()
+    def result = conn.getContent().text
+    println(result)
+    println("*************** 企业微信消息已发送 ***************")
+}
+
+/**
+ * 注释：发送钉钉通知
+ * @param data
+ * @return
+ */
+def sendMsgToDing(def fileSize, def data) {
+    println("*************** 钉钉消息开始发送 ***************")
+
+    def conn = new URL(ding_webhook).openConnection()
+    conn.setRequestMethod('POST')
+    conn.setRequestProperty("Connection", "Keep-Alive")
+    conn.setRequestProperty("Content-type", "application/json;charset=UTF-8")
+    conn.setConnectTimeout(30000)
+    conn.setReadTimeout(30000)
+    conn.setDoInput(true)
+    conn.setDoOutput(true)
+    def dos = new DataOutputStream(conn.getOutputStream())
+    def qrCodeUrl = "![](" + data.buildQRCodeURL + ")"
+    def _title = "蒲公英机器人"
+    def _content = new StringBuffer()
+    _content.append("\n\n### android构建成功,已上传蒲公英")
+    _content.append("\n\n**构建应用**:\n\n玩Android App")
+    _content.append("\n\n**构建时间**:\n\n${data.buildUpdated}")
+    _content.append("\n\n**构建描述**:\n\n${data.buildUpdateDescription}")
+    _content.append("\n\n**蒲公英版本号**:\n\nbuild${data.buildBuildVersion}")
+    _content.append("\n\n**Android包大小**:\n\n${fileSize}")
+    _content.append("\n\n**Android版本号**:\n\n${data.buildVersion}")
+    _content.append("\n\n**Git分支**:\n\n${loadGitBranch()}")
+    _content.append("\n\n**下载地址**:\n\nhttps://www.pgyer.com/${data.buildKey}")
+    //_content.append("\n\n**安装密码**:\n\ncarzone123")
+    _content.append("\n\n" + qrCodeUrl)
+    def json = new JsonBuilder()
+    json {
+        msgtype "markdown"
+        markdown {
+            title _title
+            text _content.toString()
+        }
+        at {
+            isAtAll true
+        }
+    }
+    dos.writeBytes(json.toString())
+    def input = new BufferedReader(new InputStreamReader(conn.getInputStream()))
+    String line = ""
+    String result = ""
+    while ((line = input.readLine()) != null) {
+        result += line
+    }
+    dos.flush()
+    dos.close()
+    input.close()
+    conn.connect()
+    println("钉钉发送通知结果:\n${result}")
+
+    println("*************** 钉钉消息已发送 ***************")
+}
+
+/**
+ * 注释：发送飞书通知
+ * @param data
+ * @return
+ */
+def sendMsgToFeishu(def fileSize, def data) {
+    println("*************** 飞书消息开始发送 ***************")
+
+    def conn = new URL(feishu_webhook).openConnection()
+    conn.setRequestMethod("POST")
+    conn.setRequestProperty("Content-Type", "application/json")
+    conn.setDoOutput(true)
+    def dos = new DataOutputStream(conn.getOutputStream())
+
+    def _content = new StringBuffer()
+    _content.append("**构建应用**:\nAndroid工具包 App")
+    _content.append("\n**构建时间**:\n${data.buildUpdated}")
+    _content.append("\n**构建描述**:\n${data.buildUpdateDescription}")
+    _content.append("\n**蒲公英版本号**:\nbuild${data.buildBuildVersion}")
+    _content.append("\n**Android包大小**:\n${fileSize}")
+    _content.append("\n**Android版本号**:\n${data.buildVersion}")
+    _content.append("\n**Git分支**:\n${loadGitBranch()}")
+    _content.append("\n**下载地址**:\n[https://www.pgyer.com/${data.buildKey}](https://www.pgyer.com/${data.buildKey})")
+    def qrCodeUrl = "${data.buildQRCodeURL}"
+
+    def message = [
+            msg_type: "interactive",
+            card    : [
+                    elements: [
+                            [
+                                    tag : "div",
+                                    text: [
+                                            content: _content.toString(),
+                                            tag    : "lark_md"
+                                    ]
+                            ],
+                            [
+                                    "actions": [[
+                                                        "tag"  : "button",
+                                                        "text" : [
+                                                                "content": "下载二维码",
+                                                                "tag"    : "lark_md"
+                                                        ],
+                                                        "url"  : qrCodeUrl.toString(),
+                                                        "type" : "default",
+                                                        "value": []
+                                                ]],
+                                    "tag"    : "action"
+                            ],
+                            [
+                                    "tag" : "div",
+                                    "text": [
+                                            "content": "<at id=7174239942351290372></at>",
+                                            "tag"    : "lark_md"
+                                    ]
+                            ]
+                    ],
+                    header  : [
+                            title:
+                                    [
+                                            content: "Android构建成功,已上传蒲公英",
+                                            tag    : "plain_text"
+                                    ]
+                    ]
+            ]
+    ]
+
+    def jsonMessage = new JsonBuilder(message).toString()
+    println(jsonMessage.toString())
+    dos.write(jsonMessage.getBytes("UTF-8"))
+    def input = new BufferedReader(new InputStreamReader(conn.getInputStream()))
+    String result = input.text
+    dos.flush()
+    dos.close()
+    input.close()
+    conn.connect()
+
+    def responseCode = conn.getResponseCode()
+    println("FeiShu Response Code: $responseCode")
+
+    if (responseCode == HttpURLConnection.HTTP_OK) {
+        println("FeiShu Response: $result")
+    } else {
+        println("Failed to send message to Feishu: ${conn.responseMessage}")
+    }
+    println("*************** 飞书消息已发送 ***************")
+
+}

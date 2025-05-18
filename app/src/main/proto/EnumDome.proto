@@ -1,0 +1,14 @@
+//指定版本号
+syntax = "proto3";
+
+//指定报名
+package com.dian.demo;
+
+
+enum Season{
+  //枚举里面的 = 操作是对常量进行赋值操作
+  SPRING = 0;
+  SUMMER = 1;
+  FALL = 2;
+  WINTER = 3;
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/tab_home"
+        android:icon="@mipmap/icon_tab_home"
+        android:title="首页"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/tab_setting"
+        android:icon="@mipmap/icon_tab_setting"
+        android:title="设置"
+        app:showAsAction="always"/>
+</menu>

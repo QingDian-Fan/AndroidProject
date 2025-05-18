@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.demo.project.ui.activity.ScanActivity">
+
+        <com.dian.demo.utils.code.decoder.ZXingView
+            android:id="@+id/zxing_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:qrcv_borderSize="0dp"
+            app:qrcv_cornerColor="@color/transparent"
+            app:qrcv_maskColor="@color/transparent"
+            app:qrcv_scanLineColor="@color/transparent" />
+
+        <View
+            android:id="@+id/line_scan"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_below="@+id/iv_close"
+            android:layout_marginHorizontal="@dimen/dp54"
+            android:layout_marginTop="@dimen/dp95"
+            android:background="@mipmap/qrcode_default_scan_line" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_torch"
+            android:layout_width="@dimen/dp44"
+            android:layout_height="@dimen/dp44"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="@dimen/dp45"
+            android:layout_marginBottom="@dimen/dp54"
+            android:background="@drawable/bg_scan_circle"
+            android:scaleType="centerInside"
+            android:src="@drawable/selector_flush" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivAlbum"
+            android:layout_width="@dimen/dp44"
+            android:layout_height="@dimen/dp44"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="@dimen/dp45"
+            android:layout_marginBottom="@dimen/dp54"
+            android:background="@drawable/bg_scan_circle"
+            android:scaleType="centerInside"
+            android:src="@mipmap/icon_album"
+            tools:ignore="UseAppTint" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_close"
+            android:layout_width="@dimen/dp24"
+            android:layout_height="@dimen/dp24"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/dp23"
+            android:layout_marginTop="@dimen/dp35"
+            android:background="@drawable/bg_scan_circle"
+            android:padding="4dp"
+            android:scaleType="centerInside"
+            android:src="@mipmap/ic_close" />
+
+    </RelativeLayout>
+</layout>
