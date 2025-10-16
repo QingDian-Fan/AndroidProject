@@ -30,12 +30,12 @@ object DefaultWebSetting {
             // 数据库存储API是否可用
             databaseEnabled = true
             // 应用缓存API是否可用,结合setAppCachePath(String)使用
-            setAppCacheEnabled(true)
+           // setAppCacheEnabled(true)
             // 缓存路径
             databasePath = appCacheDir
-            setAppCachePath(appCacheDir)
+           // setAppCachePath(appCacheDir)
             // 设置应用缓存内容的最大值
-            setAppCacheMaxSize(1024 * 1024 * 80.toLong())
+           // setAppCacheMaxSize(1024 * 1024 * 80.toLong())
             // WebView是否下载图片资源，默认为true
             loadsImagesAutomatically = true
             // 设置WebView是否支持多窗口

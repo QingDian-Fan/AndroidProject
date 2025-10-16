@@ -2,6 +2,7 @@ package com.dian.demo.utils;
 
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
@@ -26,16 +27,18 @@ import java.lang.Thread.UncaughtExceptionHandler;
 public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
 
 
-    private static final String LOG_PATH_SDCARD_DIR =  Environment.getExternalStorageDirectory().getPath()+"/AndroidProject/crash";         // 日志文件在sdcard中的路径
+    private static String LOG_PATH_SDCARD_DIR;
 
     private static final String LOG_NAME = "crash.txt";
 
-    private static final long MAX_SIZE = 1024 * 1024;
+    private static final long MAX_SIZE = 1024 * 1024 * 10;
 
-    private ExceptionHandlerUtil() { }
+    private ExceptionHandlerUtil() {
+    }
 
 
-    public static void init() {
+    public static void init(Context mContext) {
+        LOG_PATH_SDCARD_DIR = mContext.getFilesDir() + File.separator + "crash";
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandlerUtil());
     }
 
@@ -66,10 +69,10 @@ public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
         }
     }
 
-    @CheckPermissions(value = Manifest.permission.WRITE_EXTERNAL_STORAGE,isMust = true)
+    @CheckPermissions(value = Manifest.permission.WRITE_EXTERNAL_STORAGE, isMust = true)
     private void saveCrashToFile(final Throwable ex) {
         createDir();
-        FileOutputStream fileOutputStream = null;
+        FileOutputStream fileOutputStream;
         File crashFile = new File(LOG_PATH_SDCARD_DIR, LOG_NAME);
         try {
             if (crashFile.exists() && crashFile.length() > MAX_SIZE) {
@@ -99,7 +102,7 @@ public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
     public static void doShareFile() {
         File file = new File(LOG_PATH_SDCARD_DIR, LOG_NAME);
         if (!file.exists()) {
-            ToastUtil.showToast(ProjectApplication.getAppContext(),"木有找到日志文件",false, Gravity.CENTER);
+            ToastUtil.showToast(ProjectApplication.getAppContext(), "木有找到日志文件", false, Gravity.CENTER);
             return;
         }
         //Uri logUri = Uri.parse(file.getAbsolutePath());

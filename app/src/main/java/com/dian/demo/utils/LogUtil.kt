@@ -6,10 +6,12 @@ import com.dian.demo.BuildConfig
 
 object LogUtil {
     @JvmField
-    var tag = "TAG----->"
+    var tag = "TAG--->"
 
     @JvmField
     var isDebug = BuildConfig.DEBUG
+
+    var isWriteFile = false
 
     private lateinit var className: String
     private lateinit var methodName: String
@@ -73,48 +75,73 @@ object LogUtil {
 
     @JvmStatic
     fun i(sElements: Array<StackTraceElement>, tag: String, message: String) {
-        if (isDebug) {
+        if (isDebug || isWriteFile) {
             getMethodNames(sElements)
-            Log.i(tag, "($className#$methodName()#$lineNumber)  $message")
+            if (isDebug) {
+                Log.i(tag, "($className#$methodName()#$lineNumber)  $message")
+            }
+            if (isWriteFile) {
+                LogFileUtil.writeMessage("($className#$methodName()#$lineNumber)  $message")
+            }
         }
     }
 
     @JvmStatic
     fun d(sElements: Array<StackTraceElement>, tag: String, message: String) {
-        if (isDebug) {
+        if (isDebug || isWriteFile) {
             getMethodNames(sElements)
-            Log.d(tag, "($className#$methodName()#$lineNumber)  $message")
+            if (isDebug) {
+                Log.d(tag, "($className#$methodName()#$lineNumber)  $message")
+            }
+            if (isWriteFile) {
+                LogFileUtil.writeMessage("($className#$methodName()#$lineNumber)  $message")
+            }
         }
     }
 
     @JvmStatic
     fun v(sElements: Array<StackTraceElement>, tag: String, message: String) {
-        if (isDebug) {
+        if (isDebug || isWriteFile) {
             getMethodNames(sElements)
-            Log.v(tag, "($className#$methodName()#$lineNumber)  $message")
+            if (isDebug) {
+                Log.v(tag, "($className#$methodName()#$lineNumber)  $message")
+            }
+            if (isWriteFile) {
+                LogFileUtil.writeMessage("($className#$methodName()#$lineNumber)  $message")
+            }
         }
     }
 
     @JvmStatic
     fun w(sElements: Array<StackTraceElement>, tag: String, message: String) {
-        if (isDebug) {
+        if (isDebug || isWriteFile) {
             getMethodNames(sElements)
-            Log.w(tag, "($className#$methodName()#$lineNumber)  $message")
+            if (isDebug) {
+                Log.w(tag, "($className#$methodName()#$lineNumber)  $message")
+            }
+            if (isWriteFile) {
+                LogFileUtil.writeMessage("($className#$methodName()#$lineNumber)  $message")
+            }
         }
     }
 
     @JvmStatic
     fun e(sElements: Array<StackTraceElement>, tag: String, message: String) {
-        if (isDebug) {
+        if (isDebug || isWriteFile) {
             getMethodNames(sElements)
-            Log.e(tag, "($className#$methodName()#$lineNumber)  $message")
+            if (isDebug) {
+                Log.e(tag, "($className#$methodName()#$lineNumber)  $message")
+            }
+            if (isWriteFile) {
+                LogFileUtil.writeMessage("($className#$methodName()#$lineNumber)  $message")
+            }
         }
     }
 
 
     @JvmStatic
     fun e(className: String, methodName: String, message: String?) {
-        Log.e("$className#$methodName()", message ?: "")
+        e("$className#$methodName()", message ?: "")
     }
 
     @JvmStatic
@@ -127,7 +154,7 @@ object LogUtil {
         if (!isDebug) return
 
         for (stackTraceElement in Thread.currentThread().stackTrace) {
-            Log.d(tag, stackTraceElement.toString())
+            d(tag, stackTraceElement.toString())
         }
     }
 }

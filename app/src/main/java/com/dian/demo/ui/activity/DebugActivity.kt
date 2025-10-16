@@ -1,8 +1,10 @@
 package com.dian.demo.ui.activity
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
@@ -11,13 +13,20 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.config.AppConfig.getBaseUrl
 import com.dian.demo.databinding.ActivityDebugBinding
+import com.dian.demo.ui.dialog.ConfirmDialog
 import com.dian.demo.ui.dialog.DebugDialog
+import com.dian.demo.ui.dialog.TipDialog
+import com.dian.demo.ui.fragment.KeyBoardFragment
 import com.dian.demo.ui.titlebar.CommonTitleBar
+import com.dian.demo.utils.ActivityManager
 import com.dian.demo.utils.DomainUtil
 import com.dian.demo.utils.ExceptionHandlerUtil
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.datastore.AppDataStore
+import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.ext.singleClick
+import com.dian.demo.utils.permissions.LivePermissions
+import com.dian.demo.utils.permissions.PermissionResult
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -86,18 +95,48 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
             binding.ivDebugCheck.setImageResource(R.mipmap.icon_selected)
             binding.ivReleaseCheck.setImageResource(R.mipmap.icon_unselected)
             AppDataStore.putData(DEBUG_URL_CONFIG, debugUrl)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                LivePermissions(this@DebugActivity).request(Manifest.permission.SCHEDULE_EXACT_ALARM)
+                    .observe(this) {
+                        when (it) {
+                            is PermissionResult.Grant -> {  //权限允许
+                                ActivityManager.getInstance().restartAPP(this@DebugActivity)
+                            }
+
+                            else -> {  //权限拒绝
+
+                            }
+                        }
+                    }
+            }
         }
         binding.cvRelease.singleClick {
             binding.ivDebugCheck.setImageResource(R.mipmap.icon_unselected)
             binding.ivReleaseCheck.setImageResource(R.mipmap.icon_selected)
             AppDataStore.putData(DEBUG_URL_CONFIG, releaseUrl)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                LivePermissions(this@DebugActivity).request(Manifest.permission.SCHEDULE_EXACT_ALARM)
+                    .observe(this) {
+                        when (it) {
+                            is PermissionResult.Grant -> {  //权限允许
+                                ActivityManager.getInstance().restartAPP(this@DebugActivity)
+                            }
+
+                            else -> {  //权限拒绝
+
+                            }
+                        }
+                    }
+            }
         }
         binding.btnSchema.singleClick {
-              val debugDialog = DebugDialog()
-             debugDialog.show(supportFragmentManager, "")
-
+            val debugDialog = DebugDialog()
+            debugDialog.show(supportFragmentManager, "")
 
         }
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fl_container, KeyBoardFragment.newInstance()).commitAllowingStateLoss()
     }
 
     @Throws(Exception::class)

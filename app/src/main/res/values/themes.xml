@@ -41,6 +41,7 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:background">@android:color/transparent</item>
         <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowSoftInputMode">stateAlwaysVisible</item>
     </style>
 
 </resources>

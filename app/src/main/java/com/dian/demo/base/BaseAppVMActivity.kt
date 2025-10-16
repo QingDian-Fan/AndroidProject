@@ -13,7 +13,8 @@ import com.dian.demo.utils.ext.observeNullable
  * @description: --
  * @since: 1.0.0
  */
-abstract class BaseAppVMActivity<B : ViewDataBinding, VM : BaseViewModel> : BaseAppBindActivity<B>() {
+abstract class BaseAppVMActivity<B : ViewDataBinding, VM : BaseViewModel> :
+    BaseAppBindActivity<B>() {
     protected lateinit var viewModel: VM
 
     override fun initContentView() {

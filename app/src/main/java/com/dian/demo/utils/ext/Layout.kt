@@ -1453,10 +1453,10 @@ fun <T> View.observe(liveData: LiveData<T>?, action: (T) -> Unit) {
 fun RecyclerView.setOnItemClickListener(listener: (View, Int, Float, Float) -> Unit) {
     addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
         val gestureDetector = GestureDetector(context, object : GestureDetector.OnGestureListener {
-            override fun onShowPress(e: MotionEvent?) {
+            override fun onShowPress(e: MotionEvent) {
             }
 
-            override fun onSingleTapUp(e: MotionEvent?): Boolean {
+            override fun onSingleTapUp(e: MotionEvent): Boolean {
                 e?.let {
                     findChildViewUnder(it.x, it.y)?.let { child ->
                         listener(
@@ -1470,13 +1470,13 @@ fun RecyclerView.setOnItemClickListener(listener: (View, Int, Float, Float) -> U
                 return false
             }
 
-            override fun onDown(e: MotionEvent?): Boolean {
+            override fun onDown(e: MotionEvent): Boolean {
                 return false
             }
 
             override fun onFling(
                 e1: MotionEvent?,
-                e2: MotionEvent?,
+                e2: MotionEvent,
                 velocityX: Float,
                 velocityY: Float
             ): Boolean {
@@ -1485,14 +1485,14 @@ fun RecyclerView.setOnItemClickListener(listener: (View, Int, Float, Float) -> U
 
             override fun onScroll(
                 e1: MotionEvent?,
-                e2: MotionEvent?,
+                e2: MotionEvent,
                 distanceX: Float,
                 distanceY: Float
             ): Boolean {
                 return false
             }
 
-            override fun onLongPress(e: MotionEvent?) {
+            override fun onLongPress(e: MotionEvent) {
             }
         })
 
@@ -1583,12 +1583,12 @@ fun Job.autoDispose(view: View): Job {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && view.isAttachedToWindow || view.windowToken != null
 
     val listener = object : View.OnAttachStateChangeListener {
-        override fun onViewDetachedFromWindow(v: View?) {
+        override fun onViewDetachedFromWindow(v: View) {
             cancel()
             v?.removeOnAttachStateChangeListener(this)
         }
 
-        override fun onViewAttachedToWindow(v: View?) = Unit
+        override fun onViewAttachedToWindow(v: View) = Unit
     }
 
     view.addOnAttachStateChangeListener(listener)
@@ -1605,12 +1605,12 @@ fun <T> SendChannel<T>.autoDispose(view: View): SendChannel<T> {
     val isAttached =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && view.isAttachedToWindow || view.windowToken != null
     val listener = object : View.OnAttachStateChangeListener {
-        override fun onViewDetachedFromWindow(v: View?) {
+        override fun onViewDetachedFromWindow(v: View) {
             close()
             v?.removeOnAttachStateChangeListener(this)
         }
 
-        override fun onViewAttachedToWindow(v: View?) = Unit
+        override fun onViewAttachedToWindow(v: View) = Unit
     }
 
     view.addOnAttachStateChangeListener(listener)

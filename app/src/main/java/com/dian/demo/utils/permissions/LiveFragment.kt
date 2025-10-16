@@ -18,7 +18,6 @@ internal class LiveFragment : Fragment() {
         retainInstance = true
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
     fun requestPermissions(permissions: Array<out String>) {
         liveData = MutableLiveData()
         val tempPermission = ArrayList<String>()

@@ -1,7 +1,6 @@
 package com.dian.demo.http.interceptor
 
 
-import com.dian.demo.BuildConfig
 import com.dian.demo.ProjectApplication
 import com.dian.demo.R
 import com.dian.demo.utils.DeviceIdUtil
@@ -11,6 +10,8 @@ import com.dian.demo.utils.Utils
 import com.dian.demo.utils.encryption.AESUtils
 import okhttp3.Interceptor
 import okhttp3.Response
+import com.dian.demo.BuildConfig
+
 
 /**
  * 中文（中国）：values-zh-rCN

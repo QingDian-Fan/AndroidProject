@@ -1,11 +1,21 @@
 package com.dian.demo.utils
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlarmManager
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Process
+import androidx.annotation.RequiresPermission
 import androidx.collection.ArrayMap
-import java.util.*
+import kotlin.system.exitProcess
 
 
 class ActivityManager private constructor() : ActivityLifecycleCallbacks {
@@ -117,6 +127,31 @@ class ActivityManager private constructor() : ActivityLifecycleCallbacks {
     fun finishAllActivities() {
         finishAllActivities(null as Class<out Activity?>?)
     }
+
+    @SuppressLint("ScheduleExactAlarm")
+    fun restartAPP(context: Context) {
+
+        val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+        if (launchIntent == null) {
+            return
+        }
+        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+
+        val restartIntent = PendingIntent.getActivity(context, 10010, launchIntent, PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        // 延迟 800ms 启动，确保退出后系统有时间重新调度
+        alarmManager.setExact(AlarmManager.RTC, System.currentTimeMillis() + 800, restartIntent)
+
+
+        // 延迟一点点再退出，确保 Alarm 任务已注册
+        Handler(Looper.getMainLooper()).postDelayed(Runnable {
+            Process.killProcess(Process.myPid())
+            exitProcess(0)
+        }, 200)
+    }
+
 
     /**
      * 销毁所有的 Activity

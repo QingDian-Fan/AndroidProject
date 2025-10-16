@@ -5,14 +5,15 @@ import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.internal.$Gson$Types;
 import com.google.gson.internal.ConstructorConstructor;
 import com.google.gson.internal.Excluder;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -86,7 +87,9 @@ public class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
                     continue;
                 }
                 field.setAccessible(true);
-                Type fieldType = $Gson$Types.resolve(type.getType(), raw, field.getGenericType());
+               // Type fieldType = GsonTypes.resolve(type.getType(), raw, field.getGenericType());
+                Type fieldType = TypeToken.get(field.getGenericType()).getType();
+
                 List<String> fieldNames = getFieldNames(field);
                 ReflectiveFieldBound previous = null;
                 for (int i = 0; i < fieldNames.size(); ++i) {
@@ -107,7 +110,20 @@ public class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
                             + " declares multiple JSON fields named " + previous.getFieldName());
                 }
             }
-            type = TypeToken.get($Gson$Types.resolve(type.getType(), raw, raw.getGenericSuperclass()));
+           // type = TypeToken.get(GsonTypes.resolve(type.getType(), raw, raw.getGenericSuperclass()));
+
+            Type genericSuperclass = raw.getGenericSuperclass();
+            if (genericSuperclass instanceof ParameterizedType) {
+                // 获取原始类型对应的泛型父类
+                ParameterizedType parameterizedType = (ParameterizedType) genericSuperclass;
+                Type resolvedType = resolveType(type.getType(), raw, parameterizedType);
+                type = TypeToken.get(resolvedType);
+            } else {
+                // 没有泛型父类，直接取原始父类类型
+                type = TypeToken.get(genericSuperclass);
+            }
+
+
             raw = type.getRawType();
         }
         return result;
@@ -124,4 +140,26 @@ public class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
     private List<String> getFieldNames(Field field) {
         return ReflectiveTypeUtils.getFieldName(mFieldNamingPolicy, field);
     }
+
+    private static Type resolveType(Type context, Class<?> contextRawType, Type toResolve) {
+        if (toResolve instanceof TypeVariable<?>) {
+            TypeVariable<?> typeVariable = (TypeVariable<?>) toResolve;
+            Class<?> raw = contextRawType;
+            while (raw != null) {
+                Type genericSuper = raw.getGenericSuperclass();
+                if (genericSuper instanceof ParameterizedType) {
+                    ParameterizedType paramType = (ParameterizedType) genericSuper;
+                    TypeVariable<?>[] vars = raw.getSuperclass().getTypeParameters();
+                    for (int i = 0; i < vars.length; i++) {
+                        if (vars[i].equals(typeVariable)) {
+                            return paramType.getActualTypeArguments()[i];
+                        }
+                    }
+                }
+                raw = raw.getSuperclass();
+            }
+        }
+        return toResolve;
+    }
+
 }

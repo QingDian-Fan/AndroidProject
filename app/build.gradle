@@ -1,9 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-android-extensions'
+    id 'kotlin-parcelize'
     id 'kotlin-kapt'
-    id 'com.google.protobuf'
     id 'walle'
 }
 
@@ -36,14 +35,10 @@ android {
         }
     }
 
-    sourceSets {
-        main {
-            //实际测试指不指定无所谓，不影响 Java 文件生成
-            proto {
-                srcDir 'src/main/proto'
-            }
-        }
+    buildFeatures {
+        buildConfig = true
     }
+
 
 
     def releaseFile = file(build_key.keystoreReleaseFilepath)
@@ -106,6 +101,7 @@ android {
     }
 
     dataBinding.enabled = true
+    buildFeatures.aidl = true
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -138,8 +134,8 @@ dependencies {
     /*===============================页面导航==============================================*/
 
     /*================================数据库===============================================*/
-    implementation 'androidx.room:room-runtime:2.4.3'
-    kapt 'androidx.room:room-compiler:2.4.3'
+    implementation 'androidx.room:room-runtime:2.7.2'
+    kapt 'androidx.room:room-compiler:2.7.2'
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'
     /*================================数据库===============================================*/
 
@@ -152,7 +148,7 @@ dependencies {
     /*================================网络请求==============================================*/
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
     implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
-    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+    implementation "com.squareup.retrofit2:converter-gson:3.0.0"
     implementation "com.squareup.retrofit2:converter-scalars:2.9.0"
     implementation "com.squareup.retrofit2:adapter-rxjava:2.9.0"
     implementation "com.squareup.okhttp3:okhttp:4.9.1"
@@ -212,7 +208,6 @@ dependencies {
     /*===============================datastore===============================================*/
     implementation "androidx.datastore:datastore:1.0.0"
     implementation "androidx.datastore:datastore-preferences:1.0.0"
-    implementation  "com.google.protobuf:protobuf-javalite:3.14.0"
     /*===============================datastore===============================================*/
 
     /*=============================== walle ===============================================*/
@@ -224,30 +219,18 @@ dependencies {
     /*=============================== bugly ===============================================*/
 
 
+    debugImplementation "com.github.chuckerteam.chucker:library:4.2.0"
+    //releaseImplementation "com.github.chuckerteam.chucker:library-no-op:4.2.0"
     /*================================leakcanary============================================*/
     /* debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7' */
     /*================================leakcanary============================================*/
+
+
 }
 
-protobuf {
-    protoc {
-        if (osdetector.os == "osx") {
-            artifact = 'com.google.protobuf:protoc:3.14.0:osx-x86_64'
-        } else {
-            artifact = 'com.google.protobuf:protoc:3.14.0'
-        }
-    }
 
-    generateProtoTasks {
-        all().each { task ->
-            task.builtins {
-                java {
-                    option 'lite'
-                }
-            }
-        }
-    }
-}
+
+
 
 
 //aop aspectj

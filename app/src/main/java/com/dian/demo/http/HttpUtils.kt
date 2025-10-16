@@ -1,7 +1,6 @@
 package com.dian.demo.http
 
 import android.content.Context
-import com.dian.demo.BuildConfig
 import com.dian.demo.ProjectApplication
 import com.dian.demo.http.cookie.AddCookieInterceptor
 import com.dian.demo.http.cookie.SaveCookieInterceptor
@@ -12,6 +11,8 @@ import com.dian.demo.utils.LogUtil
 import okhttp3.Cache
 import java.io.File
 import java.lang.reflect.Type
+import com.dian.demo.BuildConfig
+
 
 /**
  * @author: QingDian_Fan
@@ -47,6 +48,7 @@ class HttpUtils {
             .addInterceptor(NetCacheInterceptor())
             .addInterceptor(OfflineCacheInterceptor())
             .addInterceptor(ParamsInterceptor())
+            //.addInterceptor(ChuckerInterceptor(ProjectApplication.getAppContext()))
             .addNetworkInterceptor(CurlLogInterceptor(), true)
             .openLog(BuildConfig.DEBUG)
             .retryOnConnectionFailure(true)

@@ -13,9 +13,9 @@ import com.dian.demo.utils.DateFormatUtil
 
 class HomeArticleAdapter(val dataList: List<ArticleBean>) : RecyclerView.Adapter<ItemViewHolder>() {
 
-    private var onItemClickListener: ((link: String?) -> Unit)? = null
+     var onItemClickListener: ((link: String) -> Unit)? = null
 
-    fun setOnItemClickListener(listener: (link: String?) -> Unit) {
+    fun setListener(listener: (link: String?) -> Unit) {
         this.onItemClickListener = listener
     }
 
@@ -36,8 +36,9 @@ class HomeArticleAdapter(val dataList: List<ArticleBean>) : RecyclerView.Adapter
             binding.tvTime.text = "时间：${DateFormatUtil.getDate(dataList[position].publishTime)}"
             binding.root.setOnClickListener {
                 Log.e("TAG--->", "to do it")
-                onItemClickListener?.invoke(dataList[position].link)
-
+                dataList[position].link?.let {
+                    onItemClickListener?.invoke(it)
+                }
             }
         }
 

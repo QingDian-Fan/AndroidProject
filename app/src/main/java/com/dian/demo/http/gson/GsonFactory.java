@@ -96,15 +96,15 @@ public final class GsonFactory {
         for (TypeAdapterFactory typeAdapterFactory : TYPE_ADAPTER_FACTORIES) {
             gsonBuilder.registerTypeAdapterFactory(typeAdapterFactory);
         }
-        ConstructorConstructor constructor = new ConstructorConstructor(INSTANCE_CREATORS);
+       // ConstructorConstructor constructor = new ConstructorConstructor(INSTANCE_CREATORS);
         return gsonBuilder.registerTypeAdapterFactory(TypeAdapters.newFactory(String.class, new StringTypeAdapter()))
                 .registerTypeAdapterFactory(TypeAdapters.newFactory(boolean.class, Boolean.class, new BooleanTypeAdapter()))
                 .registerTypeAdapterFactory(TypeAdapters.newFactory(int.class, Integer.class, new IntegerTypeAdapter()))
                 .registerTypeAdapterFactory(TypeAdapters.newFactory(long.class, Long.class, new LongTypeAdapter()))
                 .registerTypeAdapterFactory(TypeAdapters.newFactory(float.class, Float.class, new FloatTypeAdapter()))
                 .registerTypeAdapterFactory(TypeAdapters.newFactory(double.class, Double.class, new DoubleTypeAdapter()))
-                .registerTypeAdapterFactory(TypeAdapters.newFactory(BigDecimal.class, new BigDecimalTypeAdapter()))
-                .registerTypeAdapterFactory(new CollectionTypeAdapterFactory(constructor))
-                .registerTypeAdapterFactory(new ReflectiveTypeAdapterFactory(constructor, FieldNamingPolicy.IDENTITY, Excluder.DEFAULT));
+                .registerTypeAdapterFactory(TypeAdapters.newFactory(BigDecimal.class, new BigDecimalTypeAdapter()));
+               // .registerTypeAdapterFactory(new CollectionTypeAdapterFactory(constructor))
+                //.registerTypeAdapterFactory(new ReflectiveTypeAdapterFactory(constructor, FieldNamingPolicy.IDENTITY, Excluder.DEFAULT));
     }
 }

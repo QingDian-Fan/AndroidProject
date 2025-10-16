@@ -55,7 +55,7 @@ static def getMsgChannel() {
 /**
  * 注释：打包、上传蒲公英、发送通知(钉钉、企业微信)、加固(乐固)、签名(V2)、多渠道打包(walle)
  */
-task publishBuildRelease() {
+tasks.register('publishBuildRelease') {
     group 'pgyer'
     cleanFilesPath()
     dependsOn('app:assembleRelease')

@@ -77,7 +77,7 @@ class HomeFragment : BaseAppVMFragment<FragmentHomeBinding, HomeViewModel>() {
                 binding.rvData.layoutManager = LinearLayoutManager(requireContext())
                 mAdapter = HomeArticleAdapter(dataList)
                 binding.rvData.adapter = mAdapter
-                mAdapter?.setOnItemClickListener {
+                mAdapter?.setListener {
                     it?.let {
                         WebExplorerActivity.start(requireContext(), it, it)
                     }

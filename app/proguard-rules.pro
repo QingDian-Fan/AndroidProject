@@ -108,13 +108,27 @@
 -dontwarn okio.**
 
 # gson
--keep class com.google.gson.** {*;}
--keep class com.google.**{*;}
--keep class sun.misc.Unsafe { *; }
--keep class com.google.gson.stream.** { *; }
--keep class com.google.gson.examples.android.model.** { *; }
+# Gson 基本配置
+-keep class com.google.gson.** { *; }
+-dontwarn com.google.gson.**
 
--keep public class * implements java.io.Serializable {*;}
+# Gson 注解字段
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# Gson TypeAdapter / 反射支持
+-keep class * extends com.google.gson.TypeAdapter { *; }
+-keep class * implements com.google.gson.JsonSerializer { *; }
+-keep class * implements com.google.gson.JsonDeserializer { *; }
+-keep class * implements com.google.gson.InstanceCreator { *; }
+
+# TypeToken 支持
+-keep class com.google.gson.reflect.TypeToken { *; }
+
+# 模型类（推荐）
+-keep class com.exturing.uiagent.model.** { *; }
+
 
 #glide
 -keep public class * implements com.bumptech.glide.module.GlideModule

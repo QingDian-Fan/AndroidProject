@@ -12,8 +12,8 @@ import android.os.Environment
 import android.provider.Settings
 import androidx.annotation.RequiresPermission
 import androidx.core.content.FileProvider
-import com.dian.demo.BuildConfig
 import java.io.File
+import com.dian.demo.BuildConfig
 
 object IntentUtil {
 

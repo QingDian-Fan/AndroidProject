@@ -33,7 +33,7 @@ static def getMsgChannel() {
 /**
  * 注释：打包Debug包并上传蒲公英
  */
-task pgyerBuildDebug() {
+tasks.register('pgyerBuildDebug') {
     group 'pgyer'
     dependsOn('app:assembleDebug')
     doLast {
@@ -59,7 +59,7 @@ task pgyerBuildDebug() {
 /**
  * 注释：打包Release并上传蒲公英
  */
-task pgyerBuildRelease() {
+tasks.register('pgyerBuildRelease') {
     group 'pgyer'
     dependsOn('app:assembleRelease')
     doLast {
@@ -137,11 +137,11 @@ def uploadApp(File file, String description) {
     println("蒲公英上传结果：\n${out.toString()}")
     def uploadResult = new JsonSlurper().parseText(out.toString())
     if (uploadResult.code == 0) {
-        if (getMsgChannel()=="wechat") {
+        if (getMsgChannel() == "wechat") {
             sendMsgToWeChat(getFileSize(file), uploadResult.data)
-        } else  if (getMsgChannel()=="dingding"){
+        } else if (getMsgChannel() == "dingding") {
             sendMsgToDing(getFileSize(file), uploadResult.data)
-        }else {
+        } else {
             sendMsgToFeishu(getFileSize(file), uploadResult.data)
         }
 

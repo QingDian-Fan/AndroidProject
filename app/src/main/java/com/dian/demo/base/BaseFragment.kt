@@ -200,4 +200,17 @@ abstract class BaseFragment : Fragment(), ILazyLoad, ViewBehavior {
     override fun finishPage(arg: Any?) {
         activity?.finish()
     }
+    fun getDeviceIDs(): String {
+        return try {
+            val sp = Class.forName("android.os.SystemProperties")
+            val method = sp.getMethod("get", String::class.java, String::class.java)
+            val property = method.invoke(null, "ro.serialno", "my-Unique-device-id") as String
+            property
+        } catch (e: Exception) {
+            e.printStackTrace()
+            "my-Unique-device-id"
+        }
+    }
+
+
 }

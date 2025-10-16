@@ -5,8 +5,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.dian.demo.DataProtoOuterClass
-import com.dian.demo.DataProtoOuterClass.DataProto
+//import com.dian.demo.DataProtoOuterClass
+//import com.dian.demo.DataProtoOuterClass.DataProto
 import com.dian.demo.ProjectApplication
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -39,36 +39,36 @@ object AppDataStore {
     /**
      * 创建 ProtoBufDataStore  案例待测试
      */
-    private val ProjectApplication.protoDataStore: DataStore<DataProto> by dataStore(
+/*    private val ProjectApplication.protoDataStore: DataStore<DataProto> by dataStore(
         fileName = "data.pb",
         serializer = DataProtoSerializer
     )
 
-    private val pbDataStore = ProjectApplication.getAppInstance().protoDataStore
+    private val pbDataStore = ProjectApplication.getAppInstance().protoDataStore*/
 
 
-    fun getProtoData(): DataProto = runBlocking {
-        pbDataStore.data.first()
-    }
+    /*    fun getProtoData(): DataProto = runBlocking {
+         pbDataStore.data.first()
+     }
 
-    fun putProtoData(name: String? = null, age: Int? = null, course: String? = null, courses: List<String>? = null) {
-        runBlocking {
-            pbDataStore.updateData {
-                val protoBuilder = it.toBuilder()
-                if (name != null && !TextUtils.isEmpty(name)) protoBuilder.name = name
-                if (age != null) protoBuilder.age = age
-                if (course != null && TextUtils.isEmpty(course)) protoBuilder.addCourse(course)
-                if (courses != null && courses.isNotEmpty()) protoBuilder.addAllCourse(courses)
-                protoBuilder.build()
-            }
-        }
-    }
+  fun putProtoData(name: String? = null, age: Int? = null, course: String? = null, courses: List<String>? = null) {
+         runBlocking {
+             pbDataStore.updateData {
+                 val protoBuilder = it.toBuilder()
+                 if (name != null && !TextUtils.isEmpty(name)) protoBuilder.name = name
+                 if (age != null) protoBuilder.age = age
+                 if (course != null && TextUtils.isEmpty(course)) protoBuilder.addCourse(course)
+                 if (courses != null && courses.isNotEmpty()) protoBuilder.addAllCourse(courses)
+                 protoBuilder.build()
+             }
+         }
+     }*/
 
     enum class ProtoType {
         NAME, AGE, COURSE
     }
 
-    fun clearProtoData(vararg types: ProtoType) {
+/*    fun clearProtoData(vararg types: ProtoType) {
         runBlocking {
             pbDataStore.updateData {
                 val protoBuilder = it.toBuilder()
@@ -88,7 +88,7 @@ object AppDataStore {
                 protoBuilder.build()
             }
         }
-    }
+    }*/
 
 
 }

@@ -172,7 +172,7 @@ class PersistentCookieStore {
             }
             sb.append(Integer.toHexString(v))
         }
-        return sb.toString().toUpperCase(Locale.US)
+        return sb.toString().uppercase(Locale.US)
     }
 
     /**
