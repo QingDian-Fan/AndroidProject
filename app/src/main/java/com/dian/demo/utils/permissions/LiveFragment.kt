@@ -1,9 +1,11 @@
 package com.dian.demo.utils.permissions
 
+import android.Manifest
 import android.annotation.TargetApi
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 
@@ -18,7 +20,13 @@ internal class LiveFragment : Fragment() {
         retainInstance = true
     }
 
+    private var interceptor: IPermissionInterceptor? = null
+    fun addInterceptor(interceptor: IPermissionInterceptor?) {
+        this.interceptor = interceptor
+    }
+
     fun requestPermissions(permissions: Array<out String>) {
+        interceptor?.launchPermissionRequest(requireActivity(), permissions)
         liveData = MutableLiveData()
         val tempPermission = ArrayList<String>()
         permissions.forEach {
@@ -30,8 +38,15 @@ internal class LiveFragment : Fragment() {
             liveData.value = PermissionResult.Grant
         } else {
             requestPermissions(tempPermission.toTypedArray(), PERMISSIONS_REQUEST_CODE)
+
         }
     }
+    // requestPermissionLauncher.launch(tempPermission.toTypedArray())
+    /*   private val requestPermissionLauncher = registerForActivityResult(
+           ActivityResultContracts.RequestMultiplePermissions()
+       ) { permissions ->
+
+       }*/
 
 
     override fun onRequestPermissionsResult(
@@ -60,6 +75,8 @@ internal class LiveFragment : Fragment() {
                     liveData.value = PermissionResult.Deny(denyPermission.toTypedArray())
                 }
             }
+            interceptor?.finishPermissionRequest(requireActivity(), permissions)
+
 
         }
     }

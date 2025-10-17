@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -22,7 +23,7 @@ import java.io.File;
 
 
 public class ShareActivity extends AppCompatActivity {
-    private QQShareListener listener = new QQShareListener();
+    private final QQShareListener listener = new QQShareListener();
     private boolean isShare = false;
     ShareCallBack callBack;
 
@@ -41,7 +42,15 @@ public class ShareActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        registerReceiver(shareReceiver, new IntentFilter(SHARE_SUCCESS_ACTION));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+ 新 API 推荐写法
+            registerReceiver(shareReceiver, new IntentFilter(SHARE_SUCCESS_ACTION), Context.RECEIVER_EXPORTED);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Android 12
+            registerReceiver(shareReceiver, new IntentFilter(SHARE_SUCCESS_ACTION), Context.RECEIVER_EXPORTED);
+        } else {
+            registerReceiver(shareReceiver, new IntentFilter(SHARE_SUCCESS_ACTION));
+        }
     }
 
     private BroadcastReceiver shareReceiver = new BroadcastReceiver() {

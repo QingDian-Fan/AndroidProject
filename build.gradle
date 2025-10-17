@@ -10,6 +10,8 @@ buildscript {
         classpath 'org.aspectj:aspectjweaver:1.9.6'
         //美团walle多渠道打包插件
         classpath 'com.meituan.android.walle:plugin:1.1.7'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.9.4' // ✅
+
     }
 }
 

@@ -7,6 +7,7 @@ import com.dian.demo.ui.dialog.TipDialog
 import com.dian.demo.utils.ActivityManager
 import com.dian.demo.utils.LogUtil
 import com.dian.demo.utils.ext.showAllowStateLoss
+import com.dian.demo.utils.permissions.DefaultPermissionInterceptor
 import com.dian.demo.utils.permissions.LivePermissions
 import com.dian.demo.utils.permissions.PermissionResult
 import com.dian.demo.utils.permissions.PermissionsUtil
@@ -30,7 +31,7 @@ class CheckPermissionsAspect {
     @Around("methodPermissions()")
     @Throws(Throwable::class)
     fun aroundJoinPermissions(joinPoint: ProceedingJoinPoint) {
-        LogUtil.e("TAGTAG", "AOP-CheckPermissions")
+        LogUtil.e("AOP-CheckPermissions")
         var mActivity: AppCompatActivity? = null
         for (arg in joinPoint.args) {
             if (arg is AppCompatActivity) {
@@ -50,7 +51,7 @@ class CheckPermissionsAspect {
         val checkPermissions = method.getAnnotation(CheckPermissions::class.java)
         val permissionList: Array<out String> = checkPermissions?.value ?: arrayOf()
         val isMustPermission = checkPermissions?.isMust
-        LogUtil.e("TAGTAG", "AOP-CheckPermissions-do it")
+        LogUtil.e( "AOP-CheckPermissions-do it")
         if (PermissionsUtil.hasAopPermission(mActivity, permissionList)) {
             joinPoint.proceed()
         } else {
@@ -64,7 +65,7 @@ class CheckPermissionsAspect {
         permissions: Array<out String>,
         isMustPermission: Boolean
     ) {
-        LivePermissions(mActivity).requestArray(permissions)
+        LivePermissions.getInstance(mActivity).addInterceptor(DefaultPermissionInterceptor()).requestArray(permissions)
             .observe(mActivity) {
                 when (it) {
                     is PermissionResult.Grant -> {  //权限允许

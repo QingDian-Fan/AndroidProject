@@ -1,6 +1,12 @@
 package com.dian.demo.utils
 
 import android.content.Context
+import android.content.Intent
+import android.view.Gravity
+import androidx.core.content.FileProvider
+import com.dian.demo.ProjectApplication.Companion.getAppContext
+import com.dian.demo.ProjectApplication.Companion.getAppInstance
+import com.dian.demo.utils.ToastUtil.showToast
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
@@ -15,6 +21,8 @@ object LogFileUtil {
     private var writer: BufferedWriter? = null
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+    private var filePath: String? = null
 
 
     private val MAX_SIZE: Long = (1024 * 1024 * 10).toLong()
@@ -34,6 +42,7 @@ object LogFileUtil {
                     logFile.delete()
                     logFile.createNewFile()
                 }
+                filePath = logFile.absolutePath
                 writer = BufferedWriter(FileWriter(logFile, true))
                 fos = FileOutputStream(logFile, true)
             } catch (e: IOException) {
@@ -71,4 +80,26 @@ object LogFileUtil {
             }
         }
     }
+
+    fun getLogFilePath() = filePath
+
+    fun doShareLogFile() {
+        val file = File(filePath, "log.txt")
+        if (!file.exists()) {
+            showToast(getAppContext(), "木有找到日志文件", false, Gravity.CENTER)
+            return
+        }
+        //Uri logUri = Uri.parse(file.getAbsolutePath());
+        val logUri = FileProvider.getUriForFile(
+            getAppInstance(),
+            getAppContext().packageName + ".provider", file
+        )
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.putExtra("subject", "DomeProject日志")
+        intent.putExtra(Intent.EXTRA_STREAM, logUri)
+        intent.setType("text/plain")
+        getAppContext().startActivity(intent)
+    }
+
 }

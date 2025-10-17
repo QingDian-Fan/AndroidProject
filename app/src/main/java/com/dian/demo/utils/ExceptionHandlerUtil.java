@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.os.Process;
 import android.view.Gravity;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 
 import com.dian.demo.ProjectApplication;
@@ -38,13 +39,13 @@ public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
 
 
     public static void init(Context mContext) {
-        LOG_PATH_SDCARD_DIR = mContext.getFilesDir() + File.separator + "crash";
+        LOG_PATH_SDCARD_DIR = mContext.getFilesDir().getPath() + File.separator + "crash";
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandlerUtil());
     }
 
 
     @Override
-    public void uncaughtException(Thread thread, Throwable ex) {
+    public void uncaughtException(@NonNull Thread thread, @NonNull Throwable ex) {
         handException(ex);
     }
 
@@ -99,7 +100,7 @@ public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
 
     }
 
-    public static void doShareFile() {
+    public static void doShareExceptionFile() {
         File file = new File(LOG_PATH_SDCARD_DIR, LOG_NAME);
         if (!file.exists()) {
             ToastUtil.showToast(ProjectApplication.getAppContext(), "木有找到日志文件", false, Gravity.CENTER);
@@ -114,6 +115,11 @@ public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
         intent.putExtra(Intent.EXTRA_STREAM, logUri); // 添加附件，附件为file对象
         intent.setType("text/plain"); // 纯文本则用text/plain的mime
         ProjectApplication.getAppContext().startActivity(intent);
+    }
+
+
+    public static String getExceptionFilePath() {
+        return LOG_PATH_SDCARD_DIR;
     }
 
 

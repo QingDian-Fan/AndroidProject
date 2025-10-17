@@ -11,7 +11,7 @@ object LogUtil {
     @JvmField
     var isDebug = BuildConfig.DEBUG
 
-    var isWriteFile = false
+    var isWriteFile = true
 
     private lateinit var className: String
     private lateinit var methodName: String

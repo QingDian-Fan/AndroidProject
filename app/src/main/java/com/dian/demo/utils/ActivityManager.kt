@@ -1,6 +1,5 @@
 package com.dian.demo.utils
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlarmManager
@@ -12,9 +11,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.Process
-import androidx.annotation.RequiresPermission
+import android.view.View
 import androidx.collection.ArrayMap
+import androidx.core.content.ContextCompat.startActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
 import kotlin.system.exitProcess
 
 
@@ -128,28 +130,36 @@ class ActivityManager private constructor() : ActivityLifecycleCallbacks {
         finishAllActivities(null as Class<out Activity?>?)
     }
 
-    @SuppressLint("ScheduleExactAlarm")
     fun restartAPP(context: Context) {
+
 
         val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
         if (launchIntent == null) {
             return
         }
-        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
-        val restartIntent = PendingIntent.getActivity(context, 10010, launchIntent, PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        val restartIntent = PendingIntent.getActivity(
+            context,
+            10010,
+            launchIntent,
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        // 延迟执行（50~200ms）
 
-        // 延迟 800ms 启动，确保退出后系统有时间重新调度
-        alarmManager.setExact(AlarmManager.RTC, System.currentTimeMillis() + 800, restartIntent)
+        Handler(Looper.getMainLooper()).postDelayed({
+            try {
+                restartIntent.send()
+            } catch (e: PendingIntent.CanceledException) {
+                e.printStackTrace()
+            }
 
-
-        // 延迟一点点再退出，确保 Alarm 任务已注册
-        Handler(Looper.getMainLooper()).postDelayed(Runnable {
-            Process.killProcess(Process.myPid())
+            finishAllActivities()
+            // 杀死进程
+            android.os.Process.killProcess(android.os.Process.myPid())
             exitProcess(0)
-        }, 200)
+        }, 100)
     }
 
 
@@ -182,40 +192,46 @@ class ActivityManager private constructor() : ActivityLifecycleCallbacks {
         }
     }
 
+    val fragmentLifecycleCallback = FragmentLifecycleCallback()
+
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        LogUtil.i("%s - onCreate", activity.javaClass.simpleName)
+        if (activity is FragmentActivity) {
+            activity.supportFragmentManager
+                .registerFragmentLifecycleCallbacks(fragmentLifecycleCallback, true)
+        }
+        LogUtil.i(String.format("%s - onCreate", activity.javaClass.simpleName))
         if (activitySet.size == 0) {
             for (callback: ApplicationLifecycleCallback? in lifecycleCallbacks) {
                 callback?.onApplicationCreate(activity)
             }
-            LogUtil.i("%s - onApplicationCreate", activity.javaClass.simpleName)
+            LogUtil.i(String.format("%s - onApplicationCreate", activity.javaClass.simpleName))
         }
         activitySet[getObjectTag(activity)] = activity
         topActivity = activity
     }
 
     override fun onActivityStarted(activity: Activity) {
-        LogUtil.i("%s - onStart", activity.javaClass.simpleName)
+        LogUtil.i(String.format("%s - onStart", activity.javaClass.simpleName))
     }
 
     override fun onActivityResumed(activity: Activity) {
-        LogUtil.i("%s - onResume", activity.javaClass.simpleName)
+        LogUtil.i(String.format("%s - onResume", activity.javaClass.simpleName))
         if (topActivity === activity && resumedActivity == null) {
             for (callback: ApplicationLifecycleCallback in lifecycleCallbacks) {
                 callback.onApplicationForeground(activity)
             }
-            LogUtil.i("%s - onApplicationForeground", activity.javaClass.simpleName)
+            LogUtil.i(String.format("%s - onApplicationForeground", activity.javaClass.simpleName))
         }
         topActivity = activity
         resumedActivity = activity
     }
 
     override fun onActivityPaused(activity: Activity) {
-        LogUtil.i("%s - onPause", activity.javaClass.simpleName)
+        LogUtil.i(String.format("%s - onPause", activity.javaClass.simpleName))
     }
 
     override fun onActivityStopped(activity: Activity) {
-        LogUtil.i("%s - onStop", activity.javaClass.simpleName)
+        LogUtil.i(String.format("%s - onStop", activity.javaClass.simpleName))
         if (resumedActivity === activity) {
             resumedActivity = null
         }
@@ -223,25 +239,92 @@ class ActivityManager private constructor() : ActivityLifecycleCallbacks {
             for (callback: ApplicationLifecycleCallback in lifecycleCallbacks) {
                 callback.onApplicationBackground(activity)
             }
-            LogUtil.i("%s - onApplicationBackground", activity.javaClass.simpleName)
+            LogUtil.i(String.format("%s - onApplicationBackground", activity.javaClass.simpleName))
         }
     }
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-        LogUtil.i("%s - onSaveInstanceState", activity.javaClass.simpleName)
+        LogUtil.i(String.format("%s - onSaveInstanceState", activity.javaClass.simpleName))
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        LogUtil.i("%s - onDestroy", activity.javaClass.simpleName)
+        LogUtil.i(String.format("%s - onDestroy", activity.javaClass.simpleName))
         activitySet.remove(getObjectTag(activity))
         if (topActivity === activity) {
             topActivity = null
         }
-        if (activitySet.size == 0) {
+        if (activitySet.isEmpty()) {
             for (callback: ApplicationLifecycleCallback in lifecycleCallbacks) {
                 callback.onApplicationDestroy(activity)
             }
-            LogUtil.i("%s - onApplicationDestroy", activity.javaClass.simpleName)
+            LogUtil.i(String.format("%s - onApplicationDestroy", activity.javaClass.simpleName))
+        }
+    }
+
+    inner class FragmentLifecycleCallback : FragmentManager.FragmentLifecycleCallbacks() {
+        override fun onFragmentAttached(fm: FragmentManager, f: Fragment, context: Context) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentAttached"))
+        }
+
+        override fun onFragmentCreated(
+            fm: FragmentManager,
+            f: Fragment,
+            savedInstanceState: Bundle?
+        ) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentCreated"))
+        }
+
+        override fun onFragmentActivityCreated(
+            fm: FragmentManager,
+            f: Fragment,
+            savedInstanceState: Bundle?
+        ) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentActivityCreated"))
+        }
+
+        override fun onFragmentViewCreated(
+            fm: FragmentManager,
+            f: Fragment,
+            v: View,
+            savedInstanceState: Bundle?
+        ) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentViewCreated"))
+        }
+
+        override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentStarted"))
+        }
+
+        override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentResumed"))
+        }
+
+        override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentPaused"))
+        }
+
+        override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentStopped"))
+        }
+
+        override fun onFragmentSaveInstanceState(
+            fm: FragmentManager,
+            f: Fragment,
+            outState: Bundle
+        ) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentSaveInstanceState"))
+        }
+
+        override fun onFragmentViewDestroyed(fm: FragmentManager, f: Fragment) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentViewDestroyed"))
+        }
+
+        override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentDestroyed"))
+        }
+
+        override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
+            LogUtil.i(String.format("%s %s", f.javaClass.simpleName, "onFragmentDetached"))
         }
     }
 

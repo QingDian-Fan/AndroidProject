@@ -7,9 +7,12 @@ import com.dian.demo.config.AppConfig.WB_APP_KEY
 import com.dian.demo.config.AppConfig.WB_REDIRECT_URl
 import com.dian.demo.config.AppConfig.WB_SCOPE
 import com.dian.demo.http.HttpUtils
-import com.dian.demo.ui.view.status.Gloading
+import com.dian.demo.ui.status.Gloading.Companion.debug
+import com.dian.demo.ui.status.Gloading.Companion.initDefault
+import com.dian.demo.ui.status.GlobalAdapter
 import com.dian.demo.utils.ActivityManager
 import com.dian.demo.utils.ExceptionHandlerUtil
+import com.dian.demo.utils.LifecycleLogger
 import com.dian.demo.utils.LogFileUtil
 import com.dian.demo.utils.LogUtil
 import com.dian.demo.utils.Utils
@@ -22,6 +25,7 @@ import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import com.sina.weibo.sdk.auth.AuthInfo
 import com.sina.weibo.sdk.openapi.SdkListener
 import com.sina.weibo.sdk.openapi.WBAPIFactory
+import com.dian.demo.BuildConfig
 import com.tencent.bugly.crashreport.CrashReport
 
 
@@ -39,12 +43,13 @@ class ProjectApplication : Application() {
         @JvmStatic
         fun getAppInstance(): ProjectApplication = instance!!
 
-        @Volatile
-        private var mDefault: Gloading? = null
 
 
     }
-
+    init {
+        debug(BuildConfig.DEBUG)
+        initDefault(GlobalAdapter())
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -92,6 +97,7 @@ class ProjectApplication : Application() {
         ExceptionHandlerUtil.init(this)
         LogFileUtil.init(this)
         ActivityManager.getInstance().init(this)
+       // LifecycleLogger().install(this)
 
         CrashReport.initCrashReport(applicationContext, "2e9e288d60", true)
         CrashReport.setAppChannel(applicationContext, Utils.getChannel())

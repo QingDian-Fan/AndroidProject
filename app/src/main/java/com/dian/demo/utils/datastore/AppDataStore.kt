@@ -5,8 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-//import com.dian.demo.DataProtoOuterClass
-//import com.dian.demo.DataProtoOuterClass.DataProto
+import com.dian.demo.DataProtoOuterClass.DataProto
 import com.dian.demo.ProjectApplication
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -39,15 +38,15 @@ object AppDataStore {
     /**
      * 创建 ProtoBufDataStore  案例待测试
      */
-/*    private val ProjectApplication.protoDataStore: DataStore<DataProto> by dataStore(
+    private val ProjectApplication.protoDataStore: DataStore<DataProto> by dataStore(
         fileName = "data.pb",
         serializer = DataProtoSerializer
     )
 
-    private val pbDataStore = ProjectApplication.getAppInstance().protoDataStore*/
+    private val pbDataStore = ProjectApplication.getAppInstance().protoDataStore
 
 
-    /*    fun getProtoData(): DataProto = runBlocking {
+    fun getProtoData(): DataProto = runBlocking {
          pbDataStore.data.first()
      }
 
@@ -62,13 +61,12 @@ object AppDataStore {
                  protoBuilder.build()
              }
          }
-     }*/
+     }
 
     enum class ProtoType {
         NAME, AGE, COURSE
     }
-
-/*    fun clearProtoData(vararg types: ProtoType) {
+    fun clearProtoData(vararg types: ProtoType) {
         runBlocking {
             pbDataStore.updateData {
                 val protoBuilder = it.toBuilder()
@@ -88,7 +86,7 @@ object AppDataStore {
                 protoBuilder.build()
             }
         }
-    }*/
+    }
 
 
 }

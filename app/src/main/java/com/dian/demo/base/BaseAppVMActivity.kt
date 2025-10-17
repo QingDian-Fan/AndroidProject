@@ -25,8 +25,7 @@ abstract class BaseAppVMActivity<B : ViewDataBinding, VM : BaseViewModel> :
 
     private fun injectViewModel() {
         val vm = createViewModel()
-        viewModel = ViewModelProvider(this, BaseViewModel.createViewModelFactory(vm))
-            .get(vm::class.java)
+        viewModel = ViewModelProvider(this, BaseViewModel.createViewModelFactory(vm))[vm::class.java]
         viewModel.application = application
         lifecycle.addObserver(viewModel)
     }

@@ -9,6 +9,14 @@ class LivePermissions {
 
     companion object {
         const val TAG = "permissions"
+
+        fun getInstance(activity: AppCompatActivity): LivePermissions {
+            return LivePermissions(activity)
+        }
+
+        fun getInstance(fragment: Fragment): LivePermissions {
+            return LivePermissions(fragment)
+        }
     }
 
     constructor(activity: AppCompatActivity) {
@@ -30,11 +38,21 @@ class LivePermissions {
             } else fragmentManager.findFragmentByTag(TAG) as LiveFragment
         }
 
+    private var interceptor: IPermissionInterceptor? = null
+
+    fun addInterceptor(interceptor: IPermissionInterceptor): LivePermissions {
+        this.interceptor = interceptor
+        return this
+    }
+
     fun request(vararg permissions: String): MutableLiveData<PermissionResult> {
         return this.requestArray(permissions)
     }
 
     fun requestArray(permissions: Array<out String>): MutableLiveData<PermissionResult> {
+        interceptor?.apply {
+            liveFragment!!.addInterceptor(interceptor)
+        }
         liveFragment!!.requestPermissions(permissions)
         return liveFragment!!.liveData
     }

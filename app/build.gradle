@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.protobuf'
     id 'kotlin-parcelize'
     id 'kotlin-kapt'
     id 'walle'
@@ -39,7 +40,14 @@ android {
         buildConfig = true
     }
 
-
+    sourceSets {
+        main {
+            //实际测试指不指定无所谓，不影响 Java 文件生成
+            proto {
+                srcDir 'src/main/proto'
+            }
+        }
+    }
 
     def releaseFile = file(build_key.keystoreReleaseFilepath)
     def debugFile = file(build_key.keystoreDebugFilepath)
@@ -208,6 +216,7 @@ dependencies {
     /*===============================datastore===============================================*/
     implementation "androidx.datastore:datastore:1.0.0"
     implementation "androidx.datastore:datastore-preferences:1.0.0"
+    implementation  "com.google.protobuf:protobuf-javalite:4.33.0"
     /*===============================datastore===============================================*/
 
     /*=============================== walle ===============================================*/
@@ -228,7 +237,25 @@ dependencies {
 
 }
 
+protobuf {
+    protoc {
+        if (osdetector.os == "osx") {
+            artifact = 'com.google.protobuf:protoc::4.33.0:osx-x86_64'
+        } else {
+            artifact = 'com.google.protobuf:protoc::4.33.0'
+        }
+    }
 
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java {
+                    option 'lite'
+                }
+            }
+        }
+    }
+}
 
 
 
