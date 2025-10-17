@@ -5,5 +5,7 @@
 /.idea
 .kotlin
 /.kotlin
+build
+/build
 
 
