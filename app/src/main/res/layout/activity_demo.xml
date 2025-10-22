@@ -209,7 +209,16 @@
                     android:paddingVertical="10dp"
                     android:text="解析数据"
                     android:textColor="@color/colorWhite" />
-
+                <Button
+                    android:id="@+id/btn_camera"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp46"
+                    android:layout_marginTop="30dp"
+                    android:background="@drawable/bg_btn_generate"
+                    android:onClick="clickView"
+                    android:paddingVertical="10dp"
+                    android:text="相机"
+                    android:textColor="@color/colorWhite" />
                 <Button
                     android:id="@+id/btn_deepseek"
                     android:layout_width="match_parent"

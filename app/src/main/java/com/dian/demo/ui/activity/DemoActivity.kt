@@ -249,6 +249,10 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 Log.e("TAGTAG", "result--->" + result.toString())
             }
 
+            R.id.btn_camera->{
+                CameraActivity.start(this@DemoActivity)
+            }
+
             R.id.btn_deepseek -> {
                 if (isFirst) {
                     isFirst = false;

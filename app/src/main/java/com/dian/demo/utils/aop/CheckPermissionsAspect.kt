@@ -1,6 +1,8 @@
 package com.dian.demo.utils.aop
 
 
+import android.os.Handler
+import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import com.dian.demo.ui.dialog.ConfirmDialog
 import com.dian.demo.ui.dialog.TipDialog
@@ -28,6 +30,8 @@ class CheckPermissionsAspect {
 
     }
 
+    private val mHandler = Handler(Looper.getMainLooper())
+
     @Around("methodPermissions()")
     @Throws(Throwable::class)
     fun aroundJoinPermissions(joinPoint: ProceedingJoinPoint) {
@@ -51,7 +55,7 @@ class CheckPermissionsAspect {
         val checkPermissions = method.getAnnotation(CheckPermissions::class.java)
         val permissionList: Array<out String> = checkPermissions?.value ?: arrayOf()
         val isMustPermission = checkPermissions?.isMust
-        LogUtil.e( "AOP-CheckPermissions-do it")
+        LogUtil.e("AOP-CheckPermissions-do it")
         if (PermissionsUtil.hasAopPermission(mActivity, permissionList)) {
             joinPoint.proceed()
         } else {
@@ -65,33 +69,42 @@ class CheckPermissionsAspect {
         permissions: Array<out String>,
         isMustPermission: Boolean
     ) {
-        LivePermissions.getInstance(mActivity).addInterceptor(DefaultPermissionInterceptor()).requestArray(permissions)
-            .observe(mActivity) {
-                when (it) {
-                    is PermissionResult.Grant -> {  //权限允许
-                        joinPoint.proceed()
-                    }
-                    is PermissionResult.Rationale -> {  //权限拒绝
-                        if (isMustPermission) {
-                            val dialog = TipDialog.getDialog("提示", "请到设置中打开权限，否则无法使用该功能")
-                            dialog.showAllowStateLoss(mActivity.supportFragmentManager, "")
-                        } else {
+        mHandler.post {
+            LivePermissions.getInstance(mActivity).addInterceptor(DefaultPermissionInterceptor())
+                .requestArray(permissions)
+                .observe(mActivity) {
+                    when (it) {
+                        is PermissionResult.Grant -> {  //权限允许
                             joinPoint.proceed()
                         }
-                    }
-                    is PermissionResult.Deny -> {   //权限拒绝，且勾选了不再询问
-                        if (isMustPermission) {
-                            val dialog = ConfirmDialog.getDialog(
-                                "提示",
-                                "请到设置中打开权限，否则无法使用该功能",
-                                "dian://setting"
-                            )
-                            dialog.showAllowStateLoss(mActivity.supportFragmentManager, "")
-                        } else {
-                            joinPoint.proceed()
+
+                        is PermissionResult.Rationale -> {  //权限拒绝
+                            if (isMustPermission) {
+                                val dialog = TipDialog.getDialog(
+                                    "提示",
+                                    "请到设置中打开权限，否则无法使用该功能"
+                                )
+                                dialog.showAllowStateLoss(mActivity.supportFragmentManager, "")
+                            } else {
+                                joinPoint.proceed()
+                            }
+                        }
+
+                        is PermissionResult.Deny -> {   //权限拒绝，且勾选了不再询问
+                            if (isMustPermission) {
+                                val dialog = ConfirmDialog.getDialog(
+                                    "提示",
+                                    "请到设置中打开权限，否则无法使用该功能",
+                                    "dian://setting"
+                                )
+                                dialog.showAllowStateLoss(mActivity.supportFragmentManager, "")
+                            } else {
+                                joinPoint.proceed()
+                            }
                         }
                     }
                 }
-            }
+        }
+
     }
 }

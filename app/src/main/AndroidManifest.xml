@@ -7,7 +7,10 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" /> <!-- 相机、手电筒：扫描二维码时使用 -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" /> <!-- 相机、手电筒：扫描二维码时使用 -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="MediaStore.Images.Media.INTERNAL_CONTENT_URI" />
@@ -15,9 +18,6 @@
     <uses-permission android:name="android.permission.VIBRATE" /> <!-- 安装app权限 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission
-        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <queries>
@@ -39,6 +39,9 @@
         android:theme="@style/AppTheme.Normal"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".ui.activity.CameraActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.activity.DeepSeekActivity"
             android:exported="false" />
@@ -171,7 +174,6 @@
         <activity
             android:name=".ui.activity.RouterActivity"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 

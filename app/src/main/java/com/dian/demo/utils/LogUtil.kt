@@ -9,7 +9,7 @@ object LogUtil {
     var tag = "TAG--->"
 
     @JvmField
-    var isDebug = BuildConfig.DEBUG
+    var isDebug = true
 
     var isWriteFile = true
 
