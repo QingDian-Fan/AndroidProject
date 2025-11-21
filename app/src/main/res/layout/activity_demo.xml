@@ -199,6 +199,29 @@
                     android:paddingVertical="10dp"
                     android:text="灰白屏:"
                     android:textColor="@color/colorWhite" />
+
+                <Button
+                    android:id="@+id/btn_default"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp46"
+                    android:layout_marginTop="30dp"
+                    android:background="@drawable/bg_btn_generate"
+                    android:onClick="clickView"
+                    android:paddingVertical="10dp"
+                    android:text="默认主题"
+                    android:textColor="@color/colorWhite" />
+
+                <Button
+                    android:id="@+id/btn_night"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp46"
+                    android:layout_marginTop="30dp"
+                    android:background="@drawable/bg_btn_generate"
+                    android:onClick="clickView"
+                    android:paddingVertical="10dp"
+                    android:text="夜间模式"
+                    android:textColor="@color/colorWhite" />
+
                 <Button
                     android:id="@+id/btn_parse"
                     android:layout_width="match_parent"

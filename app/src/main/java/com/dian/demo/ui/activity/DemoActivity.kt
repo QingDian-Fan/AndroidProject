@@ -41,6 +41,7 @@ import com.dian.demo.utils.share.dialog.ShareDialog
 import com.dian.demo.utils.sse.ExecuteSSEUtil
 import com.dian.demo.utils.sse.IChatListener
 import com.squareup.moshi.Types
+import skin.support.SkinCompatManager
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -230,6 +231,15 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 AppDataStore.putData("isGray", !isGray)
             }
 
+            R.id.btn_default -> {
+                SkinCompatManager.getInstance().restoreDefaultTheme();
+            }
+
+            R.id.btn_night -> {
+
+                SkinCompatManager.getInstance().loadSkin("night", SkinCompatManager.SKIN_LOADER_STRATEGY_BUILD_IN);
+            }
+
             R.id.btn_parse -> {
 
                 val stringBuilder = StringBuilder()
@@ -249,7 +259,7 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 Log.e("TAGTAG", "result--->" + result.toString())
             }
 
-            R.id.btn_camera->{
+            R.id.btn_camera -> {
                 CameraActivity.start(this@DemoActivity)
             }
 
@@ -257,8 +267,12 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 if (isFirst) {
                     isFirst = false;
                     ExecuteSSEUtil.getInstance()
-                        .executeSSE(true, "你好，deepseek",object :IChatListener{
-                            override fun onChatResult(chatString: String?, isEnd: Boolean, isFirstPackage: Boolean) {
+                        .executeSSE(true, "你好，deepseek", object : IChatListener {
+                            override fun onChatResult(
+                                chatString: String?,
+                                isEnd: Boolean,
+                                isFirstPackage: Boolean
+                            ) {
 
                             }
 
@@ -269,8 +283,12 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                         })
                 } else {
                     ExecuteSSEUtil.getInstance()
-                        .executeSSE( true, "帮我介绍一下周传雄",object :IChatListener{
-                            override fun onChatResult(chatString: String?, isEnd: Boolean, isFirstPackage: Boolean) {
+                        .executeSSE(true, "帮我介绍一下周传雄", object : IChatListener {
+                            override fun onChatResult(
+                                chatString: String?,
+                                isEnd: Boolean,
+                                isFirstPackage: Boolean
+                            ) {
 
                             }
 

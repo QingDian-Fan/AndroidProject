@@ -3,4 +3,14 @@
     <item type="id" name="status_bar_view" />
     <item type="id" name="translucent_view" />
     <item type="id" name="bgaqrcode_camera_preview" />
+
+
+
+    <item name="tag_background_res_id" type="id" />
+    <item name="tag_textcolor_res_id" type="id" />
+    <item name="tag_src_res_id" type="id" />
+    <item name="tag_drawable_start_res_id" type="id" />
+    <item name="tag_drawable_end_res_id" type="id" />
+    <item name="tag_drawable_top_res_id" type="id" />
+    <item name="tag_drawable_bottom_res_id" type="id" />
 </resources>

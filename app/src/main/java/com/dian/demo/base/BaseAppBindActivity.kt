@@ -9,6 +9,9 @@ import com.demo.project.utils.ext.visible
 import com.dian.demo.R
 import com.dian.demo.databinding.ActivityRootLayoutBinding
 import com.dian.demo.ui.titlebar.CommonTitleBar
+import skin.support.SkinCompatManager
+import skin.support.app.SkinAppCompatViewInflater
+import skin.support.design.SkinMaterialManager
 
 
 /**
@@ -39,6 +42,7 @@ abstract class BaseAppBindActivity<B : ViewDataBinding> : BaseActivity() {
     }
 
     private fun initRootView() {
+
         binding = DataBindingUtil.inflate(
             LayoutInflater.from(this@BaseAppBindActivity),
             getLayoutId(),

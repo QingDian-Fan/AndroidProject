@@ -24,8 +24,8 @@ abstract class BaseActivity : ShareActivity(), ViewBehavior {
     private val manager = ScreenShotListenManager(ProjectApplication.getAppContext())
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         window.requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
+        super.onCreate(savedInstanceState)
         initContentView()
         supportActionBar?.hide()
         initialize(savedInstanceState)

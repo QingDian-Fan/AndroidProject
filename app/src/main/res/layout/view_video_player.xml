@@ -108,7 +108,7 @@
         android:gravity="center"
         android:orientation="vertical"
         android:visibility="gone"
-        app:cardBackgroundColor="@color/black85"
+        app:cardBackgroundColor="#00000000"
         app:cardCornerRadius="@dimen/dp15"
         app:cardElevation="0px"
         tools:visibility="visible">

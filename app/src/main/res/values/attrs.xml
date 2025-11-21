@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <attr name="night_background" format="reference|color" />
+    <attr name="night_textColor" format="reference|color" />
+    <attr name="night_src" format="reference|color" />
+    <attr name="night_shape_solidColor" format="color" />
+    <attr name="night_drawableStart" format="reference|color" />
+    <attr name="night_drawableEnd" format="reference|color" />
+    <attr name="night_drawableTop" format="reference|color" />
+    <attr name="night_drawableBottom" format="reference|color" />
+
+
+
     <declare-styleable name="CommonTitleBar">
         <attr name="openStatusBar" format="boolean"/>
         <!-- 填充状态栏 -->

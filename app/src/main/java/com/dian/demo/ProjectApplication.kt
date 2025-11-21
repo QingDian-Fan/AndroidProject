@@ -26,10 +26,11 @@ import com.sina.weibo.sdk.auth.AuthInfo
 import com.sina.weibo.sdk.openapi.SdkListener
 import com.sina.weibo.sdk.openapi.WBAPIFactory
 import com.dian.demo.BuildConfig
+import com.dian.demo.skin.SkinApplication
 import com.tencent.bugly.crashreport.CrashReport
 
 
-class ProjectApplication : Application() {
+class ProjectApplication : SkinApplication() {
     companion object {
 
         private var mContext: Context? = null

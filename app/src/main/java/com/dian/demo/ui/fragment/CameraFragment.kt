@@ -33,17 +33,13 @@ import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker
 import com.dian.demo.ProjectApplication
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.databinding.FragmentCameraBinding
-import com.dian.demo.ui.dialog.ConfirmDialog
-import com.dian.demo.ui.dialog.TipDialog
 import com.dian.demo.ui.view.CameraButtonView
 import com.dian.demo.ui.view.FocusCornerDrawable
 import com.dian.demo.utils.aop.CheckPermissions
-import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.permissions.DefaultPermissionInterceptor
 import com.dian.demo.utils.permissions.LivePermissions
 import com.dian.demo.utils.permissions.PermissionResult
@@ -62,42 +58,18 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
 
     private var timer: CountDownTimer? = null
     private var elapsedTime = 0
-    private var flashAnimator: ObjectAnimator? = null
 
 
     override fun getLayoutId(): Int = R.layout.fragment_camera
 
     override fun initialize(savedInstanceState: Bundle?) {
         startCamera()
-        if (allPermissionsGranted()) {
-
-        } else {
-            LivePermissions.getInstance(this@CameraFragment)
-                .addInterceptor(DefaultPermissionInterceptor())
-                .requestArray(REQUIRED_PERMISSIONS)
-                .observe(this) {
-                    when (it) {
-                        is PermissionResult.Grant -> {
-                            startCamera()
-                        }
-
-                        is PermissionResult.Rationale -> {
-
-                        }
-
-                        is PermissionResult.Deny -> {   //权限拒绝，且勾选了不再询问
-
-                        }
-                    }
-                }
-
-        }
-
         setupCaptureButton()
         setupSwitchCameraButton()
     }
 
     private fun setupCaptureButton() {
+        // binding.captureButton.setButtonType(CameraButtonView.ButtonType.TOGGLE_CLICK)
         binding.captureButton.setCameraButtonCallback(object :
             CameraButtonView.CameraButtonCallback {
             override fun onTakePhoto() {
@@ -267,7 +239,6 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
                 val seconds = elapsedTime % 60
                 binding.recordTimer.text = String.format("%02d:%02d", minutes, seconds)
             }
-
             override fun onFinish() {}
         }.start()
     }
@@ -306,9 +277,7 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
 
         binding.previewView.setOnTouchListener { view, event ->
             scaleGestureDetector.onTouchEvent(event)
-
             if (!isZooming && event.pointerCount == 1 && event.action == MotionEvent.ACTION_UP) {
-                // ✅ 点击对焦
                 val factory = binding.previewView.meteringPointFactory
                 val point = factory.createPoint(event.x, event.y)
                 val action = FocusMeteringAction.Builder(point)
@@ -317,7 +286,6 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
                 camera?.cameraControl?.startFocusAndMetering(action)
                 showTapFocusAnimation(event.x, event.y, view as PreviewView)
             }
-
             true
         }
     }
@@ -345,20 +313,7 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
             .start()
     }
 
-
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(
-            ProjectApplication.getAppContext(),
-            it
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
     companion object {
-        private val REQUIRED_PERMISSIONS = arrayOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
 
         @JvmStatic
         fun getFragment() = CameraFragment()

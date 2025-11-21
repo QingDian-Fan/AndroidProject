@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 
 
+import com.dian.demo.skin.SkinActivity;
 import com.dian.demo.utils.CacheUtil;
 import com.tencent.connect.common.Constants;
 import com.tencent.tauth.Tencent;
@@ -22,7 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.io.File;
 
 
-public class ShareActivity extends AppCompatActivity {
+public class ShareActivity extends SkinActivity {
     private final QQShareListener listener = new QQShareListener();
     private boolean isShare = false;
     ShareCallBack callBack;

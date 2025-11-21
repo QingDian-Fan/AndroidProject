@@ -1,6 +1,8 @@
 package com.dian.demo.ui.activity
 
 
+import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -33,7 +35,9 @@ open class WebExplorerActivity : BaseAppBindActivity<ActivityWebExplorerBinding>
             intent.setClass(mContext, WebExplorerActivity::class.java)
             intent.putExtra(EXTRA_URL, urlString)
             intent.putExtra(EXTRA_TITLE, titleString)
-            intent.flags = FLAG_ACTIVITY_NEW_TASK
+            if (mContext !is Activity){
+                intent.flags = FLAG_ACTIVITY_NEW_TASK
+            }
             mContext.startActivity(intent)
         }
     }

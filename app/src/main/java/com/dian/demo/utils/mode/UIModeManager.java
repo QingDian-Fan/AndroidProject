@@ -2,10 +2,11 @@ package com.dian.demo.utils.mode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class UIModeManager {
-    private List<UIModeListener> uiModeListenerList = new ArrayList<>();
-    private static UIModeManager instance = new UIModeManager();
+    private final List<UIModeListener> uiModeListenerList = new ArrayList<>();
+    private static final UIModeManager instance = new UIModeManager();
 
     public static UIModeManager getInstance() {
         return instance;
@@ -24,7 +25,9 @@ public class UIModeManager {
     }
 
     public void unRegisterUIModeListener(UIModeListener uiModeListener) {
-        uiModeListenerList.remove(uiModeListener);
+        if (uiModeListenerList.contains(uiModeListener)) {
+            uiModeListenerList.remove(uiModeListener);
+        }
     }
 
     public void broadCastUiModeChanged(boolean isLight) {

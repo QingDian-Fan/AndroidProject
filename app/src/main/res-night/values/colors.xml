@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200_night">#FFBB86FC</color>
+    <color name="purple_500_night">#FF6200EE</color>
+    <color name="purple_700_night">#FF3700B3</color>
+    <color name="teal_200_night">#FF03DAC5</color>
+    <color name="teal_700_night">#FF018786</color>
+    <color name="black_night">#FF000000</color>
+    <color name="white_night">#FFFFFFFF</color>
+
+    <color name="bg_common_night">#FF121212</color>
+    <color name="bg_default_night">#FF1E1E1E</color>
+    <color name="bg_placeholder_night">#FF2A2A2A</color>
+
+    <color name="text_color_night">#FFFFFFFF</color>
+    <color name="text_sub_color_night">#FFB3B3B3</color>
+    <color name="text_light_color_night">#FF8F8F8F</color>
+    <color name="text_annotation_night">#FF6F6F6F</color>
+
+    <color name="line_color_night">#FF2A2A2A</color>
+
+    <!-- 主题色保持品牌特性，可略加强亮度以适配暗底 -->
+    <color name="colorPink_night">#FFF06292</color>  <!-- 原：F34981 -->
+    <color name="colorWhite_night">#FFFFFFFF</color>
+    <color name="colorGreen_night">#FF21C48C</color> <!-- 原：11A876 -->
+    <color name="colorRed_night">#FFE04B5A</color>   <!-- 原：D93D57 -->
+    <color name="colorBlack_night">#FF000000</color>
+    <color name="transparent_night">#00000000</color>
+
+    <color name="color_line_night">#FF2D2D2D</color>
+
+    <color name="text_blue_color_night">#FF4C9FFF</color> <!-- 原：40a9ff -->
+    <color name="colorGray_night">#FF8C8C8C</color>
+
+    <!-- 黑色透明度系列 -->
+    <color name="black5_night">#0DFFFFFF</color>   <!-- 反转透明蒙层为白色系 -->
+    <color name="black80_night">#CCFFFFFF</color>
+    <color name="black60_night">#99FFFFFF</color>
+
+</resources>

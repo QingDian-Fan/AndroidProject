@@ -42,12 +42,14 @@ android {
 
     sourceSets {
         main {
+            res.srcDirs = ['src/main/res','src/main/res-night']
             //实际测试指不指定无所谓，不影响 Java 文件生成
             proto {
                 srcDir 'src/main/proto'
             }
         }
     }
+
 
     def releaseFile = file(build_key.keystoreReleaseFilepath)
     def debugFile = file(build_key.keystoreDebugFilepath)
@@ -248,6 +250,11 @@ dependencies {
     implementation "androidx.camera:camera-video:$camerax_version"
 
 
+    implementation 'skin.support:skin-support:4.0.5'                   // skin-support
+    implementation 'skin.support:skin-support-appcompat:4.0.5'         // skin-support 基础控件支持
+    implementation 'skin.support:skin-support-design:4.0.5'            // skin-support-design material design 控件支持[可选]
+    implementation 'skin.support:skin-support-cardview:4.0.5'          // skin-support-cardview CardView 控件支持[可选]
+    implementation 'skin.support:skin-support-constraint-layout:4.0.5' // skin-support-constraint-layout ConstraintLayout 控件支持[可选]
 
 }
 
@@ -271,7 +278,13 @@ protobuf {
     }
 }
 
-
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            force 'androidx.appcompat:appcompat:1.2.0'
+        }
+    }
+}
 
 
 //aop aspectj
