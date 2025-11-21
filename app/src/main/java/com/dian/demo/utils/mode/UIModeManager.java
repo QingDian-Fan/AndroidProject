@@ -25,14 +25,12 @@ public class UIModeManager {
     }
 
     public void unRegisterUIModeListener(UIModeListener uiModeListener) {
-        if (uiModeListenerList.contains(uiModeListener)) {
-            uiModeListenerList.remove(uiModeListener);
-        }
+        uiModeListenerList.remove(uiModeListener);
     }
 
-    public void broadCastUiModeChanged(boolean isLight) {
+    public void broadCastUiModeChanged(boolean isNight) {
         for (int i = 0; i < uiModeListenerList.size(); i++) {
-            uiModeListenerList.get(i).uiModeChanged(isLight);
+            uiModeListenerList.get(i).uiModeChanged(isNight);
         }
     }
 

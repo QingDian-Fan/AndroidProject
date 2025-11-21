@@ -35,8 +35,10 @@ import com.dian.demo.utils.SpannableStringUtil
 import com.dian.demo.utils.StatusBarUtil
 import com.dian.demo.utils.ToastUtil
 import com.dian.demo.utils.aop.SingleClick
+import com.dian.demo.utils.bus.LiveDataBus
 import com.dian.demo.utils.datastore.AppDataStore
 import com.dian.demo.utils.ext.showAllowStateLoss
+import com.dian.demo.utils.mode.UIModeManager
 import com.dian.demo.utils.share.dialog.ShareDialog
 import com.dian.demo.utils.sse.ExecuteSSEUtil
 import com.dian.demo.utils.sse.IChatListener
@@ -232,12 +234,17 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
             }
 
             R.id.btn_default -> {
-                SkinCompatManager.getInstance().restoreDefaultTheme();
+                SkinCompatManager.getInstance().restoreDefaultTheme()
+                UIModeManager.getInstance().broadCastUiModeChanged(false)
+                LiveDataBus.getDefault().postEvent("UI_MODE",false)
+                AppDataStore.putData("UI_MODE",false)
             }
 
             R.id.btn_night -> {
-
-                SkinCompatManager.getInstance().loadSkin("night", SkinCompatManager.SKIN_LOADER_STRATEGY_BUILD_IN);
+                SkinCompatManager.getInstance().loadSkin("night", SkinCompatManager.SKIN_LOADER_STRATEGY_BUILD_IN)
+                UIModeManager.getInstance().broadCastUiModeChanged(true)
+                LiveDataBus.getDefault().postEvent("UI_MODE",true)
+                AppDataStore.putData("UI_MODE",true)
             }
 
             R.id.btn_parse -> {

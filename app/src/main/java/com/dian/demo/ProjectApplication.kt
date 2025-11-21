@@ -59,20 +59,7 @@ class ProjectApplication : SkinApplication() {
         HttpUtils.getInstance().init(this)
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        val currentNightMode = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        when (currentNightMode) {
-            Configuration.UI_MODE_NIGHT_NO -> {
-                LogUtil.e("onConfigurationChanged: uiMode=白天模式")
-                UIModeManager.getInstance().broadCastUiModeChanged(true)
-            }
-            Configuration.UI_MODE_NIGHT_YES -> {
-                LogUtil.e("onConfigurationChanged: uiMode=黑夜模式")
-                UIModeManager.getInstance().broadCastUiModeChanged(false)
-            }
-        }
-    }
+
 
     private fun initWeiBoSdk() {
         val authInfo = AuthInfo(this, WB_APP_KEY, WB_REDIRECT_URl, WB_SCOPE)
