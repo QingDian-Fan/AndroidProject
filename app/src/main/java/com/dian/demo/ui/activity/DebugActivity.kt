@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
+import android.util.Log
 import com.dian.demo.config.Constant.DEBUG_URL_CONFIG
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
@@ -21,6 +22,7 @@ import com.dian.demo.utils.ActivityManager
 import com.dian.demo.utils.DomainUtil
 import com.dian.demo.utils.ExceptionHandlerUtil
 import com.dian.demo.utils.ResourcesUtil
+import com.dian.demo.utils.bus.LiveDataBus
 import com.dian.demo.utils.datastore.AppDataStore
 import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.ext.singleClick
@@ -79,6 +81,8 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
             binding.ivReleaseCheck.setImageResource(R.mipmap.icon_selected)
         }
         binding.btnNetworkTest.singleClick {
+            LiveDataBus.getDefault().postEvent("UI_MODE",true)
+
             binding.tvNetworkMessage.text = null
             thread {
                 pingAddress(
@@ -111,6 +115,9 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
             val debugDialog = DebugDialog()
             debugDialog.show(supportFragmentManager, "")
 
+        }
+        LiveDataBus.getDefault().subscribe<Boolean>("UI_MODE").observe(this) { value ->
+            Log.e("TAG--->","DebugActivity::sticky onChanged: $value")
         }
     }
 

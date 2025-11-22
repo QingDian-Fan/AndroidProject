@@ -3,6 +3,7 @@ package com.dian.demo.ui.activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import com.demo.project.utils.ext.gone
 import com.dian.demo.R
@@ -12,6 +13,7 @@ import com.dian.demo.ui.adapter.HomePagerAdapter
 import com.dian.demo.ui.fragment.HomeFragment
 import com.dian.demo.ui.fragment.SettingFragment
 import com.dian.demo.utils.ResourcesUtil
+import com.dian.demo.utils.bus.LiveDataBus
 import kotlin.system.exitProcess
 
 
@@ -33,6 +35,9 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
     override fun getLayoutId(): Int = R.layout.activity_home
 
     override fun initialize(savedInstanceState: Bundle?) {
+        LiveDataBus.getDefault().subscribe<Boolean>("UI_MODE").observe(this) { value ->
+            Log.e("TAG--->","HomeActivity::sticky onChanged: $value")
+        }
         getTitleBarView().leftImageButton.visibility = gone
         setPageTitle("首页")
         binding.vpContent.adapter = HomePagerAdapter(fragmentList, supportFragmentManager)

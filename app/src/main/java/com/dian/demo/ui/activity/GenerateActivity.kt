@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.text.TextUtils
+import android.util.Log
 import android.widget.Toast
 import androidx.core.view.drawToBitmap
 import com.dian.demo.R
@@ -21,6 +22,7 @@ import com.dian.demo.utils.BitmapUtil
 import com.dian.demo.utils.PictureSelector
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.aop.CheckPermissions
+import com.dian.demo.utils.bus.LiveDataBus
 import com.dian.demo.utils.code.generate.GenerateCodeUtils
 import com.dian.demo.utils.ext.singleClick
 import java.io.File
@@ -48,12 +50,15 @@ class GenerateActivity : BaseAppBindActivity<ActivityGenerateBinding>() {
      */
     override fun initialize(savedInstanceState: Bundle?) {
         setPageTitle(ResourcesUtil.getString(R.string.generate_qr_code))
-
+        LiveDataBus.getDefault().subscribe<Boolean>("UI_MODE", sticky = true).observe(this) { value ->
+            Log.e("TAG--->","GenerateActivity::sticky onChanged: $value")
+        }
         binding.tvChooseLogo.singleClick {
             PictureSelector.select(this@GenerateActivity, 1001)
         }
 
         binding.tvGenerate.setOnClickListener {
+            LiveDataBus.getDefault().postEvent("UI_MODE",false)
             if (binding.etContent.text == null || TextUtils.isEmpty(binding.etContent.text.toString())) return@setOnClickListener
             val contentString = binding.etContent.text.toString()
             logoBitmap =

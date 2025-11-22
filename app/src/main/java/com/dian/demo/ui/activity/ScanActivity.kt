@@ -20,6 +20,7 @@ import com.dian.demo.utils.BitmapUtil
 import com.dian.demo.utils.PictureSelector
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.aop.CheckPermissions
+import com.dian.demo.utils.bus.LiveDataBus
 import com.dian.demo.utils.code.core.QRCodeView
 import com.dian.demo.utils.code.decoder.QRCodeDecoder
 import com.dian.demo.utils.ext.singleClick
@@ -57,7 +58,6 @@ class ScanActivity : BaseAppBindActivity<ActivityScanBinding>(), QRCodeView.Dele
     override fun initialize(savedInstanceState: Bundle?) {
         getTitleBarView().visibility = gone
         binding.zxingView.setDelegate(this@ScanActivity)
-
        val mCameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         val cameraIdList = mCameraManager.cameraIdList
         cameraIdList.forEach {

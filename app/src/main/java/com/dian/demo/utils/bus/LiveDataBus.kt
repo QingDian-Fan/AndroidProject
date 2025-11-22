@@ -4,23 +4,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 类型安全事件总线，支持 Sticky 事件和可空值
- *
- * 使用示例:
- *
- * LiveDataBus.getDefault().postEvent("LiveData", "hi LiveData")
- *
- * LiveDataBus.getDefault().subscribe<String>("LiveData").observe(this) { value ->
- *     println("onChanged: $value")
- * }
- *
- * Sticky 示例:
- *
- * LiveDataBus.getDefault().subscribe<String>("LiveData", sticky = true).observe(this) { value ->
- *     println("sticky onChanged: $value")
- * }
  */
 class LiveDataBus private constructor() {
 
@@ -48,64 +35,99 @@ class LiveDataBus private constructor() {
      */
     fun <T> subscribe(eventKey: Any, tag: String? = null, sticky: Boolean = false): MutableLiveData<T?> {
         val key = mergeEventKey(eventKey, tag)
-        val liveData = mLiveDataBus.getOrPut(key) { LiveBusData<T?>(true) }
+        val liveData = mLiveDataBus.getOrPut(key) { LiveBusData<T?>(sticky = sticky) }
 
         if (liveData is LiveBusData<*>) {
-            (liveData as LiveBusData<T?>).apply {
-                isFirstSubscribe = false
-                if (sticky) isSticky = true
-            }
+            @Suppress("UNCHECKED_CAST")
+            val l = liveData as LiveBusData<T?>
+            l.isSticky = sticky
+            return l
         }
-
         @Suppress("UNCHECKED_CAST")
         return liveData as MutableLiveData<T?>
     }
+
     /**
-     * 发送事件
+     * 发送事件（异步）
      */
-    fun <T> postEvent(eventKey: Any,  value: T?){
-        this.postEvent(eventKey = eventKey, tag = null,value = value)
+    fun <T> postEvent(eventKey: Any, value: T?) {
+        this.postEvent(eventKey = eventKey, tag = null, value = value)
     }
-
+    @Suppress("UNCHECKED_CAST")
     fun <T> postEvent(eventKey: Any, tag: String? = null, value: T?) {
-        val liveData = subscribe<T?>(eventKey, tag)
-        if (liveData is LiveBusData<*>) {
-            (liveData as LiveBusData<T?>).lastValue = value
-        }
-        liveData.postValue(value)
+        val key = mergeEventKey(eventKey, tag)
+        val liveData = mLiveDataBus.getOrPut(key) { LiveBusData<T?>(sticky = false) } as LiveBusData<T?>
+        liveData.postPublish(value)
     }
 
-    class LiveBusData<T>(var isFirstSubscribe: Boolean) : MutableLiveData<T>() {
-        var lastValue: T? = null
-        var isSticky: Boolean = false
-
-        override fun observe(owner: LifecycleOwner, observer: Observer<in T>) {
-            // 使用匿名类包装 Observer，避免访问 AndroidX 内部类
-            val wrapper = object : Observer<T> {
-                var isChanged = isFirstSubscribe
-                override fun onChanged(value: T) {
-                    if (isSticky && lastValue != null && !isChanged) {
-                        observer.onChanged(lastValue!!)
-                        isChanged = true
-                        return
-                    }
-                    if (isChanged) {
-                        observer.onChanged(value)
-                    } else {
-                        isChanged = true
-                    }
-                }
-            }
-            super.observe(owner, wrapper)
-        }
+    /**
+     * 清理事件通道
+     */
+    fun clear(eventKey: Any, tag: String? = null) {
+        val key = mergeEventKey(eventKey, tag)
+        mLiveDataBus.remove(key)
     }
 
     private fun mergeEventKey(eventKey: Any, tag: String?): String {
         return if (!tag.isNullOrEmpty()) "$eventKey$tag" else eventKey.toString()
     }
 
-    fun clear(eventKey: Any, tag: String? = null) {
-        val key = mergeEventKey(eventKey, tag)
-        mLiveDataBus.remove(key)
+    /**
+     * 内部 LiveData 类型
+     */
+    class LiveBusData<T>(sticky: Boolean = false) : MutableLiveData<T>() {
+
+        @Volatile
+        var lastValue: T? = null
+
+        @Volatile
+        var isSticky: Boolean = sticky
+
+        // 版本号，每次 postEvent/setValue 时递增
+        private val versionCounter = AtomicInteger(0)
+
+        /** 异步发布事件 */
+        fun postPublish(value: T?) {
+            lastValue = value
+            versionCounter.incrementAndGet()
+            super.postValue(value)
+        }
+
+        /** 同步发布事件 */
+        fun setPublish(value: T?) {
+            lastValue = value
+            versionCounter.incrementAndGet()
+            super.setValue(value)
+        }
+
+        override fun observe(owner: LifecycleOwner, observer: Observer<in T>) {
+
+            val startVersion = versionCounter.get()
+            val wrapper = object : Observer<T> {
+                var lastSeenVersion = startVersion
+                var stickyDelivered = false
+
+                override fun onChanged(value: T) {
+                    val currentVersion = versionCounter.get()
+
+                    // sticky 回放一次 lastValue
+                    if (isSticky && !stickyDelivered && lastValue != null) {
+                        stickyDelivered = true
+                        lastSeenVersion = currentVersion
+                        @Suppress("UNCHECKED_CAST")
+                        observer.onChanged(lastValue as T)
+                        return
+                    }
+
+                    // 只派发新版本
+                    if (currentVersion > lastSeenVersion) {
+                        lastSeenVersion = currentVersion
+                        observer.onChanged(value)
+                    }
+                }
+            }
+            super.observe(owner, wrapper)
+        }
+
     }
 }
