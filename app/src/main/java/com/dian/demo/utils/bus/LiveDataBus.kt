@@ -6,9 +6,7 @@ import androidx.lifecycle.Observer
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
-/**
- * 类型安全事件总线，支持 Sticky 事件和可空值
- */
+
 class LiveDataBus private constructor() {
 
     private val mLiveDataBus: ConcurrentHashMap<String, LiveBusData<*>> = ConcurrentHashMap()

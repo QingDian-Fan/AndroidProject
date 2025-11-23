@@ -307,6 +307,9 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 }
 
             }
+            R.id.btn_browser ->{
+                H5ContainerActivity.start(this@DemoActivity)
+            }
         }
     }
 

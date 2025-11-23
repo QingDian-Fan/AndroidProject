@@ -22,7 +22,7 @@ import com.dian.demo.utils.LogUtil
 /**
  * https://juejin.cn/post/7049735291778629645
  */
-class BaseWebView : WebView, NestedScrollingChild {
+open class BaseWebView : WebView, NestedScrollingChild {
 
     private var mChildHelper: NestedScrollingChildHelper? = null
 
@@ -36,7 +36,7 @@ class BaseWebView : WebView, NestedScrollingChild {
 
     constructor(context: Context): super(context)
 
-    constructor(context: Context, attributeSet: AttributeSet): super(context, attributeSet)
+    constructor(context: Context, attributeSet: AttributeSet?): super(context, attributeSet)
 
     constructor(context: Context, attributeSet: AttributeSet, defStyleAttr: Int): super(
         context,
@@ -177,6 +177,7 @@ class BaseWebView : WebView, NestedScrollingChild {
             )
         }
     }
+
 
 
     fun handleCallback(callbackname: String, response: String?) {
