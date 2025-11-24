@@ -1,6 +1,6 @@
 /*application版本控制*/
 def build_versions = [:]
-build_versions.min_sdk = 23
+build_versions.min_sdk = 24
 build_versions.target_sdk = 35
 build_versions.compile_sdk = 35
 build_versions.tool_version = "30.0.2"

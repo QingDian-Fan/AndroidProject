@@ -18,17 +18,21 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.databinding.FragmentH5ContainerBinding
 import com.dian.demo.ui.dialog.WebMenuDialog
+import com.dian.demo.ui.view.RevealLayout
 import com.dian.demo.utils.InputMethodUtils
 import com.dian.demo.utils.ext.showAllowStateLoss
+import com.dian.demo.utils.webview.bean.WebDataEntry
 import com.dian.demo.utils.webview.callback.IWebMenuListener
 import com.dian.demo.utils.webview.callback.LoadProgressCallBack
 import com.dian.demo.utils.webview.callback.WebViewCallBack
+import com.dian.demo.utils.webview.utils.CollectWebPageUtil
+import com.dian.demo.utils.webview.utils.WebHistoryUtil
 
-class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(),WebViewCallBack {
+class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), WebViewCallBack {
     private var currentTitleString: String? = null
     private var currentUrlString: String? = null
 
-    override fun getLayoutId(): Int  = R.layout.fragment_h5_container
+    override fun getLayoutId(): Int = R.layout.fragment_h5_container
 
     override fun initialize(savedInstanceState: Bundle?) {
         initView()
@@ -54,9 +58,9 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(),We
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    if (binding.webView.canGoBack()){
+                    if (binding.webView.canGoBack()) {
                         binding.webView.goBack()
-                    }else{
+                    } else {
                         activity?.finish()
                     }
                 }
@@ -66,9 +70,30 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(),We
     }
 
     private fun initView() {
+        binding.cvCollect.setOnCheckedChangeListener { revealLayout, isChecked ->
+            if (isChecked) {
+                if (binding.webView.title?.isNotEmpty() == true && binding.webView.url?.isNotEmpty() == true) {
+                    val webEntry = WebDataEntry(
+                        binding.webView.title,
+                        binding.webView.url,
+                        System.currentTimeMillis()
+                    )
+                    CollectWebPageUtil.collectWebPage(webEntry)
+                }
+            } else {
+                if (binding.webView.title?.isNotEmpty() == true && binding.webView.url?.isNotEmpty() == true) {
+                    val webEntry = WebDataEntry(
+                        binding.webView.title,
+                        binding.webView.url,
+                        System.currentTimeMillis()
+                    )
+                    CollectWebPageUtil.removeCollectWebPage(webEntry)
+                }
+            }
+        }
         binding.ivMenu.setOnClickListener {
-           val dialog = WebMenuDialog.getDialog()
-            dialog.setListener(object : IWebMenuListener{
+            val dialog = WebMenuDialog.getDialog()
+            dialog.setListener(object : IWebMenuListener {
                 override fun onHome() {
                     var step = 0
                     while (binding.webView.canGoBackOrForward(step - 1)) step--
@@ -91,8 +116,18 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(),We
                     dialog.dismissAllowingStateLoss()
                 }
 
+                override fun onCollect() {
+                    if (binding.webView.title?.isNotEmpty() == true && binding.webView.url?.isNotEmpty() == true) {
+                        val webEntry = WebDataEntry(
+                            binding.webView.title,
+                            binding.webView.url,
+                            System.currentTimeMillis()
+                        )
+                        CollectWebPageUtil.collectWebPage(webEntry)
+                    }
+                }
             })
-            dialog.showAllowStateLoss(childFragmentManager,"")
+            dialog.showAllowStateLoss(childFragmentManager, "")
         }
         binding.ivBack.setOnClickListener {
             if (binding.webView.canGoBack()) {
@@ -101,7 +136,7 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(),We
                 activity?.finish()
             }
         }
-        binding.ivForward.setOnClickListener{
+        binding.ivForward.setOnClickListener {
             if (binding.webView.canGoForward()) {
                 binding.webView.goForward()
             }
@@ -157,6 +192,15 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(),We
     }
 
     override fun pageFinished(url: String?) {
+        if (binding.webView.title?.isNotEmpty() == true && binding.webView.url?.isNotEmpty() == true) {
+            val webEntry = WebDataEntry(binding.webView.title, binding.webView.url, System.currentTimeMillis())
+            if (!binding.webView.canGoBack()) {
+                WebHistoryUtil.putWebHistory(webEntry)
+            }
+            binding.cvCollect.post {
+                binding.cvCollect.setChecked(CollectWebPageUtil.isCollectedWebPage(webEntry))
+            }
+        }
         if (binding.webView.canGoBack()) {
             binding.ivBack.setImageResource(R.mipmap.ic_back)
         } else {
@@ -164,6 +208,7 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(),We
         }
         switchIconEnable(binding.ivForward, binding.webView.canGoForward())
     }
+
     private fun switchIconEnable(view: View, enable: Boolean) {
         if (enable) {
             view.isEnabled = true

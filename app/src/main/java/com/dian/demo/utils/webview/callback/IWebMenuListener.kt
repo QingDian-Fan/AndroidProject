@@ -5,4 +5,5 @@ interface IWebMenuListener {
     fun onTop()
     fun onRefresh()
     fun onClose()
+    fun onCollect()
 }
