@@ -10,6 +10,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
+import androidx.activity.OnBackPressedCallback
 import androidx.core.net.toUri
 import com.demo.project.utils.ext.gone
 import com.demo.project.utils.ext.visible
@@ -19,6 +20,7 @@ import com.dian.demo.databinding.FragmentH5ContainerBinding
 import com.dian.demo.ui.dialog.WebMenuDialog
 import com.dian.demo.utils.InputMethodUtils
 import com.dian.demo.utils.ext.showAllowStateLoss
+import com.dian.demo.utils.webview.callback.IWebMenuListener
 import com.dian.demo.utils.webview.callback.LoadProgressCallBack
 import com.dian.demo.utils.webview.callback.WebViewCallBack
 
@@ -47,11 +49,50 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(),We
                 }
             }
         })
+
+        activity?.onBackPressedDispatcher?.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (binding.webView.canGoBack()){
+                        binding.webView.goBack()
+                    }else{
+                        activity?.finish()
+                    }
+                }
+            }
+        )
+
     }
 
     private fun initView() {
         binding.ivMenu.setOnClickListener {
-            WebMenuDialog.getDialog().showAllowStateLoss(childFragmentManager,"")
+           val dialog = WebMenuDialog.getDialog()
+            dialog.setListener(object : IWebMenuListener{
+                override fun onHome() {
+                    var step = 0
+                    while (binding.webView.canGoBackOrForward(step - 1)) step--
+                    binding.webView.goBackOrForward(step)
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onTop() {
+                    binding.webView.goTop()
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onRefresh() {
+                    binding.webView.reload()
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onClose() {
+                    activity?.finish()
+                    dialog.dismissAllowingStateLoss()
+                }
+
+            })
+            dialog.showAllowStateLoss(childFragmentManager,"")
         }
         binding.ivBack.setOnClickListener {
             if (binding.webView.canGoBack()) {
@@ -160,6 +201,7 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(),We
             true
         }
     }
+
     companion object {
 
         @JvmStatic

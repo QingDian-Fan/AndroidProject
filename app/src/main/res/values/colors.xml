@@ -18,7 +18,7 @@
     <color name="line_color">#FFF2F4FA</color>
 
 
-    <color name="bg_common_night">#FF1C1C1E</color>
+<!--    <color name="bg_common_night">#FF1C1C1E</color>
     <color name="bg_default_night">#FF2C2C2E</color>
     <color name="bg_placeholder_night">#FF3A3A3C</color>
 
@@ -27,7 +27,9 @@
     <color name="text_light_color_night">#FF888888</color>
 
     <color name="text_annotation_night">#FF6F6F6F</color>
-    <color name="line_color_night">#FF3A3A3C</color>
+    <color name="line_color_night">#FF3A3A3C</color>-->
+
+    <color name="bg_edit_color">#F0F2F4</color>
 
 
     <color name="colorPink">#F34981</color>

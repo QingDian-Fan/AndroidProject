@@ -12,6 +12,7 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 
 
+
 /**
  * 监听软键盘的打开和隐藏
  * 打开时滚动布局，可设置仅在某几个EditText获取焦点时开启
@@ -37,7 +38,7 @@ public class KeyboardHelper implements ViewTreeObserver.OnGlobalFocusChangeListe
     private int moveHeight = 0;
     private boolean isFocusChange = false;
 
-    private Runnable moveRunnable = new Runnable() {
+    private final Runnable moveRunnable = new Runnable() {
         @Override
         public void run() {
             if (isViewFocus()) {
@@ -56,8 +57,23 @@ public class KeyboardHelper implements ViewTreeObserver.OnGlobalFocusChangeListe
     private int mBottomViewBottom = -1;
     private KeyboardCompat mKeyboardCompat;
     private int mKeyboardNowHeight;
+    private volatile static KeyboardHelper singleton = null;
 
-    private KeyboardHelper(@NonNull Activity activity) {
+    public static KeyboardHelper getInstance() {
+        if (null == singleton) {
+            synchronized (KeyboardHelper.class) {
+                if (null == singleton) {
+                    singleton = new KeyboardHelper();
+                }
+            }
+        }
+        return singleton;
+    }
+    private KeyboardHelper() {
+
+    }
+
+    public  void attach(@NonNull Activity activity) {
         this.window = activity.getWindow();
         this.rootView = window.getDecorView().findViewById(android.R.id.content);
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
@@ -66,9 +82,6 @@ public class KeyboardHelper implements ViewTreeObserver.OnGlobalFocusChangeListe
         mKeyboardCompat.attach();
     }
 
-    public static KeyboardHelper attach(@NonNull Activity activity) {
-        return new KeyboardHelper(activity);
-    }
 
     public void detach() {
         if (mKeyboardCompat != null) {

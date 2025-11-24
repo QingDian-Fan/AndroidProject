@@ -18,6 +18,8 @@
     <color name="text_annotation_night">#FF6F6F6F</color>
 
     <color name="line_color_night">#FF2A2A2A</color>
+    <color name="bg_edit_color_night">#F0F2F4</color>
+
 
     <!-- 主题色保持品牌特性，可略加强亮度以适配暗底 -->
     <color name="colorPink_night">#FFF06292</color>  <!-- 原：F34981 -->

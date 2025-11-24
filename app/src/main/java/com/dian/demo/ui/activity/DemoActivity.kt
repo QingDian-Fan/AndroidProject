@@ -22,6 +22,7 @@ import com.dian.demo.test.proxy.LoginApi
 import com.dian.demo.ui.dialog.AddressDialog
 import com.dian.demo.ui.dialog.DatePickDialog
 import com.dian.demo.ui.dialog.DebugDialog
+import com.dian.demo.ui.dialog.KeyBoardDialog
 import com.dian.demo.ui.dialog.TipDialog
 import com.dian.demo.ui.dialog.UpdateDialog
 import com.dian.demo.ui.img.ImageCancelListener
@@ -309,6 +310,9 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
             }
             R.id.btn_browser ->{
                 H5ContainerActivity.start(this@DemoActivity)
+            }
+            R.id.btn_keyboard->{
+                KeyBoardDialog.getDialog().showAllowStateLoss(supportFragmentManager,"")
             }
         }
     }

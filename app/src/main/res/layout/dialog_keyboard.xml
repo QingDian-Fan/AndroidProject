@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+    </data>
+
+    <LinearLayout
+        android:id="@+id/ll_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_keyborad"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="@dimen/dp16">
+
+        <LinearLayout
+            android:id="@+id/ll_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/et_content"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_keyboard_edit"
+                    android:paddingHorizontal="5dp" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/btn_confirm"
+                    android:layout_width="@dimen/dp24"
+                    android:layout_height="@dimen/dp24"
+                    android:layout_marginStart="16dp"
+                    android:src="@mipmap/icon_confirm" />
+            </LinearLayout>
+
+            <RadioGroup
+                android:id="@+id/rg_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp12"
+                android:layout_marginBottom="@dimen/dp16"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rb_message"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_keyboard_radiobutton"
+                    android:button="@null"
+                    android:drawableStart="@mipmap/icon_message"
+                    android:drawablePadding="4dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="@dimen/dp17"
+                    android:paddingVertical="4dp"
+                    android:text="选项1"
+                    android:textSize="@dimen/dp12" />
+
+                <RadioButton
+                    android:id="@+id/rb_voice"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_keyboard_radiobutton"
+                    android:button="@null"
+                    android:drawableStart="@mipmap/icon_voice"
+                    android:drawablePadding="4dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="@dimen/dp17"
+                    android:paddingVertical="4dp"
+                    android:text="选项2"
+                    android:textSize="@dimen/dp12" />
+
+                <RadioButton
+                    android:id="@+id/rb_camera"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_keyboard_radiobutton"
+                    android:button="@null"
+                    android:drawableStart="@mipmap/icon_camera"
+                    android:drawablePadding="4dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="@dimen/dp17"
+                    android:paddingVertical="4dp"
+                    android:text="选项3"
+                    android:textSize="@dimen/dp12" />
+
+                <RadioButton
+                    android:id="@+id/rb_image"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_keyboard_radiobutton"
+                    android:button="@null"
+                    android:drawableStart="@mipmap/icon_image"
+                    android:drawablePadding="4dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="@dimen/dp17"
+                    android:paddingVertical="4dp"
+                    android:text="选项4"
+                    android:textSize="@dimen/dp12" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/ll_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+</layout>

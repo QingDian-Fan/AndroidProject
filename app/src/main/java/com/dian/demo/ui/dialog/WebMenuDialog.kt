@@ -11,25 +11,52 @@ import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDialogFragment
 import com.dian.demo.R
+import com.dian.demo.databinding.DialogKeyboardBinding
+import com.dian.demo.databinding.DialogWebMenuBinding
+import com.dian.demo.utils.webview.callback.IWebMenuListener
 
-class WebMenuDialog:AppCompatDialogFragment() {
-    companion object{
-        fun getDialog(): AppCompatDialogFragment {
+class WebMenuDialog : AppCompatDialogFragment() {
+    companion object {
+        fun getDialog(): WebMenuDialog {
             val dialog = WebMenuDialog()
             val bundle = Bundle()
             dialog.arguments = bundle
             return dialog
         }
     }
+
+    private var listener: IWebMenuListener? = null
+    fun setListener(listener: IWebMenuListener) {
+        this.listener = listener
+    }
+
+    private lateinit var binding: DialogWebMenuBinding
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         super.onCreate(savedInstanceState)
-        val mView = LayoutInflater.from(context).inflate(R.layout.dialog_web_menu, null, false)
+        binding = DialogWebMenuBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        return mView
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.dialogWebMenuIvGoTop.setOnClickListener {
+            listener?.onTop()
+        }
+
+        binding.dialogWebMenuIvHome.setOnClickListener {
+            listener?.onHome()
+        }
+        binding.dialogWebMenuIvCloseActivity.setOnClickListener {
+            listener?.onClose()
+        }
+        binding.dialogWebMenuIvRefresh.setOnClickListener {
+            listener?.onRefresh()
+        }
     }
 
     override fun onStart() {

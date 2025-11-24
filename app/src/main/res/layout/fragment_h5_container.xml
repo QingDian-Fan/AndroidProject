@@ -73,7 +73,7 @@
             android:minHeight="1dp"
             android:layout_gravity="bottom"
             android:progressDrawable="@drawable/web_explorer_progress" />
-        <com.dian.demo.utils.webview.webview.BaseWebView
+        <com.dian.demo.utils.webview.webview.BrowserWebView
             android:id="@+id/web_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
