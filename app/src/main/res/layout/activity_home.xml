@@ -22,7 +22,7 @@
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/tab_home"
             android:layout_width="match_parent"
-            android:background="@color/colorWhite"
+            android:background="@color/bg_common"
             app:menu="@menu/menu_tab_home"
             android:layout_height="?actionBarSize"/>
     </LinearLayout>
