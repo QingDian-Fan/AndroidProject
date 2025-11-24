@@ -41,7 +41,8 @@
         tools:targetApi="31">
         <activity
             android:name=".ui.activity.H5ContainerActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.activity.CameraActivity"
             android:exported="false"
@@ -133,7 +134,7 @@
         </activity>
         <activity
             android:name=".ui.activity.ScanActivity"
-            android:screenOrientation="fullSensor" /> <!-- 生成二维码 -->
+            android:screenOrientation="portrait"/> <!-- 生成二维码 -->
         <activity
             android:name=".ui.activity.GenerateActivity"
             android:screenOrientation="portrait" /> <!-- 网页浏览 -->
