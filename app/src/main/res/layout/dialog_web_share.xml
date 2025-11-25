@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <RelativeLayout
+        android:id="@+id/rl_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/rv_data">
+            <!-- 居中的主内容区域 -->
+            <LinearLayout
+                android:id="@+id/cardContainer"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:background="@android:color/white"
+                android:elevation="6dp"
+                android:orientation="vertical">
+
+                <!-- 顶部主图 -->
+                <com.dian.demo.ui.view.ActionWidthIconView
+                    android:id="@+id/mainImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    tools:src="@tools:sample/backgrounds/scenic" />
+
+                <!-- 文本内容区域 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <!-- 标题 -->
+                    <TextView
+                        android:id="@+id/title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="文章标题文章标题文章标题文章标题..."
+                        android:textColor="#000000"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal">
+                        <!-- 正文摘要 -->
+                        <TextView
+                            android:id="@+id/tv_content"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:maxLines="3"
+                            android:text="文章摘要文章摘要文章摘文章摘要文章摘文章摘要文章摘要文章摘要文章摘要文章摘要..."
+                            android:textColor="#333333"
+                            android:textSize="13sp" />
+
+                        <!-- 黑色小方块（模拟缩略图） -->
+                        <com.dian.demo.ui.view.ActionIconView
+                            android:id="@+id/iv_code"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="#000000" />
+                    </LinearLayout>
+
+
+                    <!-- 来源 -->
+                    <LinearLayout
+                        android:id="@+id/ll_source"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@mipmap/ic_launcher" />
+
+                        <TextView
+                            android:id="@+id/source"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="由AndroidProject平台生成"
+                            android:textColor="#666666"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+        </RelativeLayout>
+
+
+        <!-- 底部小缩略图列表 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/bottomButtons"
+            android:padding="16dp"
+            android:scrollbars="none" />
+
+
+        <!-- 底部按钮 -->
+        <LinearLayout
+            android:id="@+id/bottomButtons"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_alignParentBottom="true"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="32dp"
+            android:paddingVertical="16dp">
+
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_white_round"
+                android:text="保存相册"
+                android:textColor="#424242" />
+
+            <Space
+                android:layout_width="16dp"
+                android:layout_height="1dp" />
+
+            <Button
+                android:id="@+id/btnShare"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_blue_round"
+                android:text="立即分享"
+                android:textColor="#ffffff" />
+        </LinearLayout>
+
+    </RelativeLayout>
+</layout>

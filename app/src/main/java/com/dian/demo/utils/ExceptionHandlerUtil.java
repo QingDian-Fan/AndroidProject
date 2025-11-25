@@ -13,6 +13,7 @@ import android.view.Gravity;
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 
+import com.dian.demo.BuildConfig;
 import com.dian.demo.ProjectApplication;
 import com.dian.demo.utils.aop.CheckPermissions;
 
@@ -108,9 +109,10 @@ public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
         }
         //Uri logUri = Uri.parse(file.getAbsolutePath());
         Uri logUri = FileProvider.getUriForFile(ProjectApplication.getAppInstance(),
-                ProjectApplication.getAppContext().getPackageName() + ".provider", file);
+                BuildConfig.APPLICATION_ID + ".provider", file);
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra("subject", "DomeProject日志"); //
         intent.putExtra(Intent.EXTRA_STREAM, logUri); // 添加附件，附件为file对象
         intent.setType("text/plain"); // 纯文本则用text/plain的mime

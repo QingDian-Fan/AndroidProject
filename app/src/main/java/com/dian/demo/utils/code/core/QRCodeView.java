@@ -27,7 +27,7 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
     protected Delegate mDelegate;
     protected boolean mSpotAble = false;
     protected ProcessDataTask mProcessDataTask;
-    protected int mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+    protected int mCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     private PointF[] mLocationPoints;
     private Paint mPaint;
     protected BarcodeType mBarcodeType = BarcodeType.HIGH_FREQUENCY;

@@ -6,4 +6,7 @@ interface IWebMenuListener {
     fun onRefresh()
     fun onClose()
     fun onCollect()
+    fun onMark()
+    fun onShare()
+    fun onSetting()
 }

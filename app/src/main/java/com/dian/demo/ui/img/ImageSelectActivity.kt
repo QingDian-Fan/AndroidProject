@@ -35,7 +35,7 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         private fun setCancelLister(cancelListener: ImageCancelListener) {
             this.cancelListener = cancelListener
         }
-        @CheckPermissions(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, isMust = true)
+        @CheckPermissions(Manifest.permission.READ_MEDIA_IMAGES,Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, isMust = true)
         fun start(mContext: Context, maxSelect: Int, column:Int, selectList: ArrayList<String>? = null, listener: ImageSelectListener? = null, cancelListener:ImageCancelListener?=null) {
             val intent = Intent()
             intent.setClass(mContext, ImageSelectActivity::class.java)

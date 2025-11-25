@@ -18,14 +18,16 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.databinding.FragmentH5ContainerBinding
 import com.dian.demo.ui.dialog.WebMenuDialog
-import com.dian.demo.ui.view.RevealLayout
+import com.dian.demo.ui.dialog.WebShareDialog
 import com.dian.demo.utils.InputMethodUtils
 import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.webview.bean.WebDataEntry
+import com.dian.demo.utils.webview.callback.IShareCallBack
 import com.dian.demo.utils.webview.callback.IWebMenuListener
 import com.dian.demo.utils.webview.callback.LoadProgressCallBack
 import com.dian.demo.utils.webview.callback.WebViewCallBack
 import com.dian.demo.utils.webview.utils.CollectWebPageUtil
+import com.dian.demo.utils.webview.utils.WebBookMarkUtil
 import com.dian.demo.utils.webview.utils.WebHistoryUtil
 
 class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), WebViewCallBack {
@@ -125,6 +127,40 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
                         )
                         CollectWebPageUtil.collectWebPage(webEntry)
                     }
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onMark() {
+                    if (binding.webView.title?.isNotEmpty() == true && binding.webView.url?.isNotEmpty() == true) {
+                        val webEntry = WebDataEntry(
+                            binding.webView.title,
+                            binding.webView.url,
+                            System.currentTimeMillis()
+                        )
+                        WebBookMarkUtil.markWebPage(webEntry)
+                    }
+                     dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onShare() {
+                    binding.webView.getShareData(object : IShareCallBack{
+                        override fun onShareData(
+                            url: String,
+                            covers: MutableList<String?>,
+                            title: String,
+                            desc: String
+                        ) {
+                            WebShareDialog.getDialog( url,
+                                covers,
+                            title,
+                            desc).showAllowStateLoss(childFragmentManager,"")
+                        }
+                    })
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onSetting() {
+                    dialog.dismissAllowingStateLoss()
                 }
             })
             dialog.showAllowStateLoss(childFragmentManager, "")
@@ -193,7 +229,8 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
 
     override fun pageFinished(url: String?) {
         if (binding.webView.title?.isNotEmpty() == true && binding.webView.url?.isNotEmpty() == true) {
-            val webEntry = WebDataEntry(binding.webView.title, binding.webView.url, System.currentTimeMillis())
+            val webEntry =
+                WebDataEntry(binding.webView.title, binding.webView.url, System.currentTimeMillis())
             if (!binding.webView.canGoBack()) {
                 WebHistoryUtil.putWebHistory(webEntry)
             }
