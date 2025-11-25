@@ -58,21 +58,12 @@ object MoshiUtil {
         return this.toJson(adapter = adapter, src = src, indent = indent)
     }
 
-    /**
-     * 序列化为 JSON：List<T> / MutableList<T>
-     */
     inline fun <reified T> toJsonList(list: List<T>, indent: String = ""): String {
         val listType = Types.newParameterizedType(List::class.java, T::class.java)
         val adapter = moshi.adapter<List<T>>(listType)
         return adapter.indent(indent).toJson(list)
     }
 
-    /**
-     * 序列化为 JSON：MutableList<T>（可复用上面的）
-     */
-    inline fun <reified T> toJsonList(list: MutableList<T>, indent: String = ""): String {
-        return toJsonList(list as List<T>, indent)
-    }
 
     /**
      * 万能序列化对象为 JSON，自动根据对象类型构建 adapter
