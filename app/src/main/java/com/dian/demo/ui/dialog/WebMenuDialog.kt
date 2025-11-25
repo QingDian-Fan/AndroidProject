@@ -60,12 +60,11 @@ class WebMenuDialog : AppCompatDialogFragment() {
         binding.dialogWebMenuIvDismiss.setOnClickListener {
             dismissAllowingStateLoss()
         }
-<<<<<<< HEAD
+
         binding.dialogWebMenuIvCollect.setOnClickListener {
             listener?.onCollect()
         }
-=======
->>>>>>> 60d546c (fix)
+
     }
 
     override fun onStart() {
