@@ -55,7 +55,7 @@
                     android:orientation="horizontal">
                     <!-- 正文摘要 -->
                     <TextView
-                        android:id="@+id/summary"
+                        android:id="@+id/tv_content"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -66,7 +66,8 @@
                         android:textSize="13sp" />
 
                     <!-- 黑色小方块（模拟缩略图） -->
-                    <View
+                    <com.dian.demo.ui.view.ActionIconView
+                        android:id="@+id/iv_code"
                         android:layout_width="56dp"
                         android:layout_height="56dp"
                         android:background="#000000" />
@@ -101,34 +102,15 @@
         </LinearLayout>
 
         <!-- 底部小缩略图列表 -->
-        <HorizontalScrollView
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_data"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_above="@+id/bottomButtons"
             android:padding="16dp"
-            android:scrollbars="none">
+            android:scrollbars="none"/>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
 
-                <ImageView
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:layout_marginEnd="16dp"
-                    android:background="@drawable/thumbnail_bg"
-                    android:scaleType="centerCrop"
-                    tools:src="@tools:sample/backgrounds/scenic" />
-
-                <ImageView
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:background="@drawable/thumbnail_bg"
-                    android:scaleType="centerCrop"
-                    tools:src="@tools:sample/backgrounds/scenic" />
-            </LinearLayout>
-        </HorizontalScrollView>
 
         <!-- 底部按钮 -->
         <LinearLayout

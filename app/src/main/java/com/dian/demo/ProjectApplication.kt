@@ -57,6 +57,7 @@ class ProjectApplication : SkinApplication() {
         init()
         initWeiBoSdk()
         HttpUtils.getInstance().init(this)
+
     }
 
 

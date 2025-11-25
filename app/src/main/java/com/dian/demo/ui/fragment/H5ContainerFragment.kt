@@ -22,6 +22,7 @@ import com.dian.demo.ui.dialog.WebShareDialog
 import com.dian.demo.utils.InputMethodUtils
 import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.webview.bean.WebDataEntry
+import com.dian.demo.utils.webview.callback.IShareCallBack
 import com.dian.demo.utils.webview.callback.IWebMenuListener
 import com.dian.demo.utils.webview.callback.LoadProgressCallBack
 import com.dian.demo.utils.webview.callback.WebViewCallBack
@@ -142,7 +143,19 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
                 }
 
                 override fun onShare() {
-                    WebShareDialog.getDialog().showAllowStateLoss(childFragmentManager,"")
+                    binding.webView.getShareData(object : IShareCallBack{
+                        override fun onShareData(
+                            url: String,
+                            covers: MutableList<String?>,
+                            title: String,
+                            desc: String
+                        ) {
+                            WebShareDialog.getDialog( url,
+                                covers,
+                            title,
+                            desc).showAllowStateLoss(childFragmentManager,"")
+                        }
+                    })
                     dialog.dismissAllowingStateLoss()
                 }
 
