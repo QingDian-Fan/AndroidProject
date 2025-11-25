@@ -264,7 +264,7 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 )
                 val result = MoshiUtil.fromJson<Result<List<BannerBean>>>(jsonString, type)
 
-                Log.e("TAGTAG", "result--->" + result.toString())
+                Log.e("TAGTAG", "result--->$result")
             }
 
             R.id.btn_camera -> {

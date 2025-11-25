@@ -2,11 +2,16 @@ package com.dian.demo.utils.share.channel;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.Gravity;
 
 
@@ -16,6 +21,7 @@ import com.dian.demo.config.AppConfig;
 import com.dian.demo.utils.ResourcesUtil;
 import com.dian.demo.utils.ToastUtil;
 import com.dian.demo.utils.share.QQShareListener;
+import com.dian.demo.utils.share.utils.FileShareHelper;
 import com.tencent.connect.share.QQShare;
 import com.tencent.connect.share.QzonePublish;
 import com.tencent.connect.share.QzoneShare;
@@ -24,6 +30,7 @@ import com.tencent.tauth.Tencent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class QQChannel extends CustomChannel {
@@ -61,7 +68,8 @@ public class QQChannel extends CustomChannel {
 
         Bundle params = new Bundle();
         // 保存图片bitmap到本地
-        String bmpUri = saveImageToLocal(bitmap);
+      //  String bmpUri = saveImageToLocal(bitmap);
+        String bmpUri = FileShareHelper.getBitmapPath(ProjectApplication.getAppContext(),bitmap);
         if (!isQQZone) {
             params.putString(QQShare.SHARE_TO_QQ_IMAGE_LOCAL_URL, bmpUri);
             params.putString(QQShare.SHARE_TO_QQ_APP_NAME, "");
@@ -86,7 +94,9 @@ public class QQChannel extends CustomChannel {
         if (bitmap == null) {
             bitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
         }
-        String bmpUri = saveImageToLocal(bitmap);
+   //     String bmpUri = saveImageToLocal(bitmap);
+        String bmpUri = FileShareHelper.getBitmapPath(ProjectApplication.getAppContext(),bitmap);
+
         if (!isQQZone) {
             params.putInt(QQShare.SHARE_TO_QQ_KEY_TYPE, QQShare.SHARE_TO_QQ_TYPE_DEFAULT);
             params.putString(QQShare.SHARE_TO_QQ_TITLE, title);
@@ -105,25 +115,6 @@ public class QQChannel extends CustomChannel {
             params.putStringArrayList(QzoneShare.SHARE_TO_QQ_IMAGE_URL, bmpUriList);
             mTencent.shareToQzone(context, params, listener);
         }
-    }
-
-    public String saveImageToLocal(Bitmap bmp) {
-        String storePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "share";// 首先保存图片
-        File appDir = new File(storePath);
-        if (!appDir.exists()) {
-            appDir.mkdir();
-        }
-        String fileName = System.currentTimeMillis() + ".jpg";
-        File file = new File(appDir, fileName);
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 60, fos);//通过io流的方式来压缩保存图片
-            fos.flush();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return storePath + File.separator + fileName;
     }
 
 
