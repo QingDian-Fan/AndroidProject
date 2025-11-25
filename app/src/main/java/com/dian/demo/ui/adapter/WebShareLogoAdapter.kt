@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.dian.demo.R
 import com.dian.demo.databinding.ItemShareWebBinding
 
 class WebShareLogoAdapter(
@@ -29,7 +30,7 @@ class WebShareLogoAdapter(
     ) {
         with(holder) {
             if (dataList.getOrNull(position) == null) {
-                binding.ivLogo.setImageBitmap(null)
+                binding.ivLogo.setImageResource(R.mipmap.icon_none)
             } else {
                 Glide.with(binding.root.context).load(dataList.getOrNull(position))
                     .into(binding.ivLogo)

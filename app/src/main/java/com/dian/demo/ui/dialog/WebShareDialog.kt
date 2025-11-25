@@ -79,6 +79,10 @@ class WebShareDialog : AppCompatDialogFragment() {
         title = arguments?.getString("title")
         contentString = arguments?.getString("desc")
         val coversString = arguments?.getString("covers")
+        binding.rlRoot.setOnClickListener {
+            dismissAllowingStateLoss()
+        }
+        binding.cardContainer.setOnClickListener {  }
         coversString?.let {
             val covers = MoshiUtil.fromJson<MutableList<String?>>(it)
             val allCovers = arrayListOf<String?>().apply {

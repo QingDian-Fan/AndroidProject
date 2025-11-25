@@ -3,6 +3,9 @@ package com.dian.demo
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Build
+import android.webkit.WebView
+import androidx.annotation.RequiresApi
 import com.dian.demo.config.AppConfig.WB_APP_KEY
 import com.dian.demo.config.AppConfig.WB_REDIRECT_URl
 import com.dian.demo.config.AppConfig.WB_SCOPE
@@ -57,7 +60,23 @@ class ProjectApplication : SkinApplication() {
         init()
         initWeiBoSdk()
         HttpUtils.getInstance().init(this)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (isOtherProcess()) {
+                WebView.setDataDirectorySuffix(getProcessNameSuffix())
+            }
+        }
+    }
 
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun isOtherProcess(): Boolean {
+        val process = getProcessName()
+        return process != packageName
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun getProcessNameSuffix(): String {
+        val full = getProcessName()
+        return full.substringAfterLast(":", "")
     }
 
 
