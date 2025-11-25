@@ -90,7 +90,12 @@ class WebShareDialog : AppCompatDialogFragment() {
                 covers?.filter { !it.isNullOrBlank() }
                     ?.forEach { add(it) }
             }
-            Glide.with(this).load(allCovers.getOrNull(0)?.toUri()).into(binding.mainImage)
+            if (allCovers.size>=2){
+                binding.mainImage.visible()
+                Glide.with(this).load(allCovers.getOrNull(1)?.toUri()).into(binding.mainImage)
+            }else{
+                binding.mainImage.gone()
+            }
             context?.let { context ->
                 binding.rvData.layoutManager = LinearLayoutManager(context, HORIZONTAL, false)
                 binding.rvData.adapter = WebShareLogoAdapter(allCovers) { position ->
