@@ -48,7 +48,7 @@ class VideoPlayButton @JvmOverloads constructor(
         val lineColor: Int = typedArray.getColor(R.styleable.VideoPlayButton_pb_lineColor, Color.WHITE)
         val lineSize: Int = typedArray.getInteger(
             R.styleable.VideoPlayButton_pb_lineSize,
-            resources.getDimension(R.dimen.dp4).toInt()
+            resources.getDimension(R.dimen.dp_4).toInt()
         )
         animDuration = typedArray.getInteger(R.styleable.VideoPlayButton_pb_animDuration, 200)
         typedArray.recycle()
@@ -70,7 +70,7 @@ class VideoPlayButton @JvmOverloads constructor(
         super.onSizeChanged(width, height, oldWidth, oldHeight)
         viewWidth = width * 9 / 10
         viewHeight = height * 9 / 10
-        circleRadius = width / resources.getDimension(R.dimen.dp4).toInt()
+        circleRadius = width / resources.getDimension(R.dimen.dp_4).toInt()
         centerX = width / 2
         centerY = height / 2
         rectF = RectF(
@@ -94,12 +94,12 @@ class VideoPlayButton @JvmOverloads constructor(
         var finalHeightMeasureSpec: Int = heightMeasureSpec
         when (MeasureSpec.getMode(finalWidthMeasureSpec)) {
             MeasureSpec.AT_MOST, MeasureSpec.UNSPECIFIED ->
-                finalWidthMeasureSpec = MeasureSpec.makeMeasureSpec(resources.getDimension(R.dimen.dp60).toInt(), MeasureSpec.EXACTLY)
+                finalWidthMeasureSpec = MeasureSpec.makeMeasureSpec(resources.getDimension(R.dimen.dp_60).toInt(), MeasureSpec.EXACTLY)
             MeasureSpec.EXACTLY -> {}
         }
         when (MeasureSpec.getMode(finalHeightMeasureSpec)) {
             MeasureSpec.AT_MOST, MeasureSpec.UNSPECIFIED ->
-                finalHeightMeasureSpec = MeasureSpec.makeMeasureSpec(resources.getDimension(R.dimen.dp60).toInt(), MeasureSpec.EXACTLY)
+                finalHeightMeasureSpec = MeasureSpec.makeMeasureSpec(resources.getDimension(R.dimen.dp_60).toInt(), MeasureSpec.EXACTLY)
             MeasureSpec.EXACTLY -> {}
         }
         setMeasuredDimension(finalWidthMeasureSpec, finalHeightMeasureSpec)

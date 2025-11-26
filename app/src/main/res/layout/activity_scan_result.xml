@@ -18,7 +18,7 @@
         <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dp50"
+            android:layout_marginTop="@dimen/dp_50"
             android:text="以下为扫码结果："
             android:textColor="@color/text_color"
             android:textSize="18dp" />

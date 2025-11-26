@@ -27,7 +27,7 @@
                 android:layout_weight="1"
                 android:text="账 号:"
                 android:textColor="@color/text_sub_color"
-                android:textSize="@dimen/dp16" />
+                android:textSize="@dimen/dp_16" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -41,7 +41,7 @@
                     android:layout_height="wrap_content"
                     android:background="@null"
                     android:hint="请输入账号"
-                    android:paddingStart="@dimen/dp16"
+                    android:paddingStart="@dimen/dp_16"
                     android:textSize="16dp" />
 
                 <View
@@ -57,7 +57,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dp50"
+            android:layout_marginTop="@dimen/dp_50"
             android:gravity="center"
             android:orientation="horizontal"
             android:paddingHorizontal="12dp">
@@ -68,7 +68,7 @@
                 android:layout_weight="1"
                 android:text="密 码:"
                 android:textColor="@color/text_sub_color"
-                android:textSize="@dimen/dp16" />
+                android:textSize="@dimen/dp_16" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -82,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:background="@null"
                     android:hint="请输入密码"
-                    android:paddingStart="@dimen/dp16"
+                    android:paddingStart="@dimen/dp_16"
                     android:textSize="16dp" />
 
                 <View
@@ -98,7 +98,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginHorizontal="35dp"
-            android:layout_marginTop="@dimen/dp88"
+            android:layout_marginTop="@dimen/dp_88"
             android:background="@drawable/bg_btn_generate"
             android:gravity="center"
             android:paddingVertical="6dp"

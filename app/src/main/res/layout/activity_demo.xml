@@ -33,7 +33,7 @@
                 <Button
                     android:id="@+id/btn_share_text"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="40dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -44,7 +44,7 @@
                 <Button
                     android:id="@+id/btn_share_link"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -55,7 +55,7 @@
                 <Button
                     android:id="@+id/btn_share_bitmap"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -66,7 +66,7 @@
                 <Button
                     android:id="@+id/btn_debug_activity"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -77,7 +77,7 @@
                 <Button
                     android:id="@+id/btn_scan_activity"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -88,7 +88,7 @@
                 <Button
                     android:id="@+id/btn_generate_activity"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -99,7 +99,7 @@
                 <Button
                     android:id="@+id/btn_web_activity"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -110,7 +110,7 @@
                 <Button
                     android:id="@+id/btn_clear_cache"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -121,7 +121,7 @@
                 <Button
                     android:id="@+id/btn_image_select"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -132,7 +132,7 @@
                 <Button
                     android:id="@+id/btn_network_request"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -142,7 +142,7 @@
                 <Button
                     android:id="@+id/btn_network_request_post"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -152,7 +152,7 @@
                 <Button
                     android:id="@+id/btn_video_play"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -162,7 +162,7 @@
                 <Button
                     android:id="@+id/btn_address_dialog"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -172,7 +172,7 @@
                 <Button
                     android:id="@+id/btn_date_dialog"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -182,7 +182,7 @@
                 <Button
                     android:id="@+id/btn_update_dialog"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -192,7 +192,7 @@
                 <Button
                     android:id="@+id/btn_gray"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -203,7 +203,7 @@
                 <Button
                     android:id="@+id/btn_default"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -214,7 +214,7 @@
                 <Button
                     android:id="@+id/btn_night"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -225,7 +225,7 @@
                 <Button
                     android:id="@+id/btn_parse"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -235,7 +235,7 @@
                 <Button
                     android:id="@+id/btn_camera"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -245,7 +245,7 @@
                 <Button
                     android:id="@+id/btn_deepseek"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -255,7 +255,7 @@
                 <Button
                     android:id="@+id/btn_browser"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -265,7 +265,7 @@
                 <Button
                     android:id="@+id/btn_keyboard"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:background="@drawable/bg_btn_generate"
                     android:onClick="clickView"
@@ -276,7 +276,7 @@
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/tv_span"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dp46"
+                    android:layout_height="@dimen/dp_46"
                     android:layout_marginTop="30dp"
                     android:gravity="center"
                     android:onClick="clickView"

@@ -36,7 +36,7 @@
         android:id="@+id/rv_address_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="@dimen/dp10" />
+        android:paddingHorizontal="@dimen/dp_10" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/vp_address_page"

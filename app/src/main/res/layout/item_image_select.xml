@@ -41,12 +41,12 @@
 
             <TextView
                 android:id="@+id/cb_multi_image_select_check"
-                android:layout_width="@dimen/dp24"
-                android:layout_height="@dimen/dp24"
+                android:layout_width="@dimen/dp_24"
+                android:layout_height="@dimen/dp_24"
                 android:background="@drawable/icon_multi_checkbox_checked"
                 android:gravity="center"
                 android:textColor="@color/colorWhite"
-                android:textSize="@dimen/dp16"
+                android:textSize="@dimen/dp_16"
                 tools:text="1" />
 
         </FrameLayout>

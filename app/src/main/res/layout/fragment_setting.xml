@@ -35,7 +35,7 @@
         <Button
             android:id="@+id/btn_loginout"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/dp46"
+            android:layout_height="@dimen/dp_46"
             android:layout_marginHorizontal="40dp"
             android:layout_marginTop="30dp"
             android:background="@drawable/bg_btn_generate"

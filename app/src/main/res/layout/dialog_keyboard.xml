@@ -13,7 +13,7 @@
         android:background="@drawable/bg_keyborad"
         android:orientation="vertical"
         android:paddingHorizontal="16dp"
-        android:paddingTop="@dimen/dp16">
+        android:paddingTop="@dimen/dp_16">
 
         <LinearLayout
             android:id="@+id/ll_header"
@@ -39,8 +39,8 @@
 
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/btn_confirm"
-                    android:layout_width="@dimen/dp24"
-                    android:layout_height="@dimen/dp24"
+                    android:layout_width="@dimen/dp_24"
+                    android:layout_height="@dimen/dp_24"
                     android:layout_marginStart="16dp"
                     android:src="@mipmap/icon_confirm" />
             </LinearLayout>
@@ -49,8 +49,8 @@
                 android:id="@+id/rg_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/dp12"
-                android:layout_marginBottom="@dimen/dp16"
+                android:layout_marginTop="@dimen/dp_12"
+                android:layout_marginBottom="@dimen/dp_16"
                 android:orientation="horizontal">
 
                 <RadioButton
@@ -64,10 +64,10 @@
                     android:drawableStart="@mipmap/icon_message"
                     android:drawablePadding="4dp"
                     android:gravity="center"
-                    android:paddingHorizontal="@dimen/dp17"
+                    android:paddingHorizontal="@dimen/dp_17"
                     android:paddingVertical="4dp"
                     android:text="选项1"
-                    android:textSize="@dimen/dp12" />
+                    android:textSize="@dimen/dp_12" />
 
                 <RadioButton
                     android:id="@+id/rb_voice"
@@ -80,10 +80,10 @@
                     android:drawableStart="@mipmap/icon_voice"
                     android:drawablePadding="4dp"
                     android:gravity="center"
-                    android:paddingHorizontal="@dimen/dp17"
+                    android:paddingHorizontal="@dimen/dp_17"
                     android:paddingVertical="4dp"
                     android:text="选项2"
-                    android:textSize="@dimen/dp12" />
+                    android:textSize="@dimen/dp_12" />
 
                 <RadioButton
                     android:id="@+id/rb_camera"
@@ -96,10 +96,10 @@
                     android:drawableStart="@mipmap/icon_camera"
                     android:drawablePadding="4dp"
                     android:gravity="center"
-                    android:paddingHorizontal="@dimen/dp17"
+                    android:paddingHorizontal="@dimen/dp_17"
                     android:paddingVertical="4dp"
                     android:text="选项3"
-                    android:textSize="@dimen/dp12" />
+                    android:textSize="@dimen/dp_12" />
 
                 <RadioButton
                     android:id="@+id/rb_image"
@@ -111,10 +111,10 @@
                     android:drawableStart="@mipmap/icon_image"
                     android:drawablePadding="4dp"
                     android:gravity="center"
-                    android:paddingHorizontal="@dimen/dp17"
+                    android:paddingHorizontal="@dimen/dp_17"
                     android:paddingVertical="4dp"
                     android:text="选项4"
-                    android:textSize="@dimen/dp12" />
+                    android:textSize="@dimen/dp_12" />
             </RadioGroup>
         </LinearLayout>
 

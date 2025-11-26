@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:background="@color/bg_common"
         android:gravity="center_vertical"
-        android:paddingHorizontal="@dimen/dp8"
+        android:paddingHorizontal="@dimen/dp_8"
         android:paddingVertical="6dp">
 
         <androidx.appcompat.widget.AppCompatTextView

@@ -162,7 +162,7 @@
                     android:lineSpacingExtra="5dp"
                     android:paddingHorizontal="5dp"
                     android:textColor="@color/text_sub_color"
-                    android:textSize="@dimen/dp12" />
+                    android:textSize="@dimen/dp_12" />
             </LinearLayout>
 
 
