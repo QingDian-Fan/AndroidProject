@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
+import com.dian.demo.utils.permissions.PermissionConversionUtil.conversionPermission
 
 internal class LiveFragment : Fragment() {
 
@@ -29,7 +30,8 @@ internal class LiveFragment : Fragment() {
         interceptor?.launchPermissionRequest(requireActivity(), permissions)
         liveData = MutableLiveData()
         val tempPermission = ArrayList<String>()
-        permissions.forEach {
+        val mConversionPermissions = conversionPermission(permissions)
+        mConversionPermissions.forEach {
             if (activity?.checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED) {
                 tempPermission.add(it)
             }
@@ -38,16 +40,8 @@ internal class LiveFragment : Fragment() {
             liveData.value = PermissionResult.Grant
         } else {
             requestPermissions(tempPermission.toTypedArray(), PERMISSIONS_REQUEST_CODE)
-
         }
     }
-    // requestPermissionLauncher.launch(tempPermission.toTypedArray())
-    /*   private val requestPermissionLauncher = registerForActivityResult(
-           ActivityResultContracts.RequestMultiplePermissions()
-       ) { permissions ->
-
-       }*/
-
 
     override fun onRequestPermissionsResult(
         requestCode: Int,

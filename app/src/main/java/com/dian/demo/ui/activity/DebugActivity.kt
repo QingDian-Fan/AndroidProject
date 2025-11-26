@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.util.Log
 import com.dian.demo.config.Constant.DEBUG_URL_CONFIG
@@ -45,11 +46,11 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
         }
     }
 
-    @SuppressLint("HandlerLeak")
-    private val mHandler: Handler = object : Handler() {
+    private val mHandler: Handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             val resultMsg = msg.obj as String
             binding.tvNetworkMessage.append(resultMsg)
+            binding.tvNetworkMessage.append("\n")
         }
     }
 
@@ -89,7 +90,7 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
                     DomainUtil.getDomainMedium(
                         AppDataStore.getData(
                             DEBUG_URL_CONFIG,
-                            debugUrl
+                            releaseUrl
                         )
                     )
                 )
