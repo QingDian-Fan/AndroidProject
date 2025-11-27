@@ -2,5 +2,5 @@
 <androidx.appcompat.widget.AppCompatImageView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:id="@+id/item_banner_view"
-    android:layout_height="240dp"/>
+    android:layout_height="@dimen/dp_240"/>
 

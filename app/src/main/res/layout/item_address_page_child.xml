@@ -8,10 +8,10 @@
     <TextView
         android:id="@+id/tv_content"
         android:layout_width="match_parent"
-        android:paddingVertical="10dp"
+        android:paddingVertical="@dimen/dp_10"
         android:gravity="start"
-        android:paddingHorizontal="20dp"
-        android:textSize="14dp"
+        android:paddingHorizontal="@dimen/dp_20"
+        android:textSize="@dimen/dp_14"
         android:textColor="@color/text_color"
         android:layout_height="wrap_content" />
 </layout>

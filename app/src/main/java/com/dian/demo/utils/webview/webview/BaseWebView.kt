@@ -2,11 +2,17 @@ package com.dian.demo.utils.webview.webview
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
+import android.webkit.ServiceWorkerClient
+import android.webkit.ServiceWorkerController
+import android.webkit.WebStorage
 import android.webkit.WebView
+import androidx.annotation.RequiresApi
 import androidx.core.view.NestedScrollingChild
 import androidx.core.view.NestedScrollingChildHelper
 import androidx.core.view.ViewCompat
@@ -18,6 +24,7 @@ import com.dian.demo.utils.webview.webset.DefaultWebChromeClient
 import com.dian.demo.utils.webview.webset.DefaultWebSetting
 import com.dian.demo.utils.webview.webset.DefaultWebViewClient
 import com.dian.demo.utils.LogUtil
+import java.io.File
 
 /**
  * https://juejin.cn/post/7049735291778629645
@@ -189,4 +196,61 @@ open class BaseWebView : WebView, NestedScrollingChild {
             }
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun clearWebViewData(context: Context) {
+        try {
+
+            // ============= 1. 清除 Cookie（最关键） =============
+            val cookieManager = CookieManager.getInstance()
+            cookieManager.removeAllCookies(null)
+            cookieManager.flush()   // 必须，否则不会真正删除
+
+            // ============= 2. 清除 WebView 缓存/历史/FormData ============
+            WebView(context).apply {
+                clearCache(true)     // 删除缓存文件
+                clearHistory()       // 删除访问记录
+                clearFormData()      // 删除表单自动填充
+            }
+
+            // ============= 3. 清 WebStorage：LocalStorage / Web SQL ============
+            WebStorage.getInstance().deleteAllData()
+
+            // ============= 4. 清除 ServiceWorker 缓存（Android 7.0+） ============
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                val controller = ServiceWorkerController.getInstance()
+                controller.serviceWorkerWebSettings.setBlockNetworkLoads(true)
+                controller.setServiceWorkerClient(object : ServiceWorkerClient() {})
+            }
+
+            // ============= 5. 删除 WebView 相关缓存目录 ============
+
+            // /data/data/xxx/cache/
+            context.cacheDir?.deleteRecursively()
+
+            // /data/data/xxx/code_cache/
+            context.codeCacheDir?.deleteRecursively()
+
+            // /storage/emulated/0/Android/data/xxx/cache/
+            context.externalCacheDir?.deleteRecursively()
+
+            // WebView 的内部目录：/data/data/xxx/app_webview
+            try {
+                val webviewDir = File(context.dataDir, "app_webview")
+                if (webviewDir.exists()) {
+                    webviewDir.deleteRecursively()
+                }
+            } catch (_: Exception) { }
+
+            // ============= 6. 删除 WebView 的 SharedPreferences ============
+            try {
+                context.deleteSharedPreferences("WebViewPrefs")
+            } catch (_: Exception) { }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+
 }

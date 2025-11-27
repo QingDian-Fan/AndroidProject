@@ -21,22 +21,22 @@
             android:layout_marginTop="@dimen/dp_50"
             android:text="以下为扫码结果："
             android:textColor="@color/text_color"
-            android:textSize="18dp" />
+            android:textSize="@dimen/dp_18" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tv_result"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="35dp"
-            android:layout_marginTop="40dp"
+            android:layout_marginHorizontal="@dimen/dp_35"
+            android:layout_marginTop="@dimen/dp_40"
             android:background="@drawable/bg_edit_content"
             android:gravity="center"
-            android:minHeight="60dp"
-            android:paddingVertical="10dp"
-            android:paddingHorizontal="12dp"
-            android:lineSpacingExtra="3dp"
+            android:minHeight="@dimen/dp_60"
+            android:paddingVertical="@dimen/dp_10"
+            android:paddingHorizontal="@dimen/dp_12"
+            android:lineSpacingExtra="@dimen/dp_3"
             android:letterSpacing="0.15"
             android:textColor="@color/text_color"
-            android:textSize="16dp" />
+            android:textSize="@dimen/dp_16" />
     </LinearLayout>
 </layout>

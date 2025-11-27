@@ -19,7 +19,7 @@
 
             <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="@dimen/dp_200"
                 android:background="@color/transparent"
                 app:elevation="0dp">
 
@@ -38,7 +38,7 @@
                         app:pageChangeDuration="800"
                         app:pointsContainerBackground="#44aaaaaa"
                         app:pointsPosition="RIGHT"
-                        app:tipTextSize="12sp" />
+                        app:tipTextSize="@dimen/dp_12" />
 
 
                 </com.google.android.material.appbar.CollapsingToolbarLayout>

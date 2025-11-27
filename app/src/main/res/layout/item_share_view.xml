@@ -12,21 +12,21 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:paddingTop="5dp"
-        android:paddingBottom="8dp">
+        android:paddingTop="@dimen/dp_5"
+        android:paddingBottom="@dimen/dp_8">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_share_image"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:padding="8dp"
+            android:layout_width="@dimen/dp_50"
+            android:layout_height="@dimen/dp_50"
+            android:padding="@dimen/dp_8"
             tools:src="@mipmap/ic_launcher" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tv_share_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="@dimen/dp_2"
             android:textColor="#666666"
             android:textSize="12dp"
             tools:text="分享平台" />

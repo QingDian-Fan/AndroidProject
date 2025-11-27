@@ -9,34 +9,34 @@
         android:id="@+id/dialog_web_quick_tv_copy_link"
         android:layout_width="0dp"
         android:layout_weight="1"
-        android:layout_height="44dp"
+        android:layout_height="@dimen/dp_44"
         android:background="@drawable/bg_press_color_surface"
         android:gravity="center"
         android:text="复制链接"
         android:textColor="@color/text_sub_color"
-        android:textSize="13dp" />
+        android:textSize="@dimen/dp_13" />
 
     <TextView
         android:id="@+id/dialog_web_quick_tv_browser"
         android:layout_width="0dp"
         android:layout_weight="1"
-        android:layout_height="44dp"
+        android:layout_height="@dimen/dp_44"
         android:background="@drawable/bg_press_color_surface"
         android:gravity="center"
         android:text="浏览器打开"
         android:textColor="@color/text_sub_color"
-        android:textSize="13dp" />
+        android:textSize="@dimen/dp_13" />
 
     <TextView
         android:id="@+id/dialog_web_quick_tv_wanpwd"
         android:layout_width="0dp"
         android:layout_weight="1"
-        android:layout_height="44dp"
+        android:layout_height="@dimen/dp_44"
         android:visibility="gone"
         android:background="@drawable/bg_press_color_surface"
         android:gravity="center"
         android:text="网页玩口令"
         android:textColor="@color/text_sub_color"
-        android:textSize="13dp" />
+        android:textSize="@dimen/dp_13" />
 
 </LinearLayout>

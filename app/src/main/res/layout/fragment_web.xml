@@ -15,8 +15,8 @@
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxHeight="1.5dp"
-            android:minHeight="1.5dp"
+            android:maxHeight="1dp"
+            android:minHeight="1dp"
             android:layout_gravity="bottom"
             android:progressDrawable="@drawable/web_explorer_progress" />
             <com.dian.demo.utils.webview.webview.BaseWebView

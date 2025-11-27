@@ -5,8 +5,8 @@
     <item>
         <shape>
             <size
-                tools:height="360dp"
-                tools:width="360dp" />
+                tools:height="@dimen/dp_360"
+                tools:width="@dimen/dp_360" />
             <solid android:color="@color/colorPink" />
         </shape>
     </item>

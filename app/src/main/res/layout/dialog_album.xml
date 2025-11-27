@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/transparent"
-        android:minHeight="200dp"
+        android:minHeight="@dimen/dp_200"
         android:orientation="vertical"
         tools:context="com.dian.demo.ui.img.AlbumDialogFragment">
 
@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_top_circle"
-            android:paddingTop="10dp" />
+            android:paddingTop="@dimen/dp_10" />
 
     </LinearLayout>
 </layout>

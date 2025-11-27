@@ -10,23 +10,23 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp">
+        android:paddingLeft="@dimen/dp_10"
+        android:paddingRight="@dimen/dp_10">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/tab_img"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="@dimen/dp_30"
+            android:layout_height="@dimen/dp_30"
             android:src="@mipmap/icon_tab_home" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tab_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="@dimen/dp_5"
             android:text="首页"
             android:textColor="@color/text_color"
-            android:textSize="14dp" />
+            android:textSize="@dimen/dp_14" />
 
     </LinearLayout>
 </layout>

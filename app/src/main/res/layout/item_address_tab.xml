@@ -25,8 +25,8 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cv_tab_indicator"
-            android:layout_width="5dp"
-            android:layout_height="5dp"
+            android:layout_width="@dimen/dp_5"
+            android:layout_height="@dimen/dp_5"
             android:layout_gravity="bottom|center_horizontal"
             android:layout_marginBottom="@dimen/dp_5"
             app:cardBackgroundColor="@color/text_blue_color" />

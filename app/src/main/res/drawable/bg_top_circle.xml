@@ -3,16 +3,16 @@
     <solid android:color="@color/bg_common" />
 
     <stroke
-        android:width="3dp"
+        android:width="@dimen/dp_3"
         android:color="@color/transparent" />
 
     <padding
-        android:bottom="1dp"
-        android:left="1dp"
-        android:right="1dp"
-        android:top="1dp" />
+        android:bottom="@dimen/dp_1"
+        android:left="@dimen/dp_1"
+        android:right="@dimen/dp_1"
+        android:top="@dimen/dp_1" />
 
     <corners
-        android:topLeftRadius="10dp"
-        android:topRightRadius="10dp" />
+        android:topLeftRadius="@dimen/dp_10"
+        android:topRightRadius="@dimen/dp_10" />
 </shape>

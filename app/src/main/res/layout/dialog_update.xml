@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginHorizontal="52dp"
+            android:layout_marginHorizontal="@dimen/dp_52"
             android:elevation="0px"
             app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="@dimen/dp_7"
