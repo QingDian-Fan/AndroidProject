@@ -76,6 +76,9 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
                 initAlbum()
             }
         }
+        getTitleBarView().leftImageButton.setOnClickListener {
+            finish()
+        }
         val maxSelect = intent.getIntExtra(SELECT_IMAGE_MAX_SELECT, 9)
         val selectList = intent.getStringArrayListExtra(SELECT_IMAGE_IMAGE_LIST)
         val column = intent.getIntExtra(SELECT_IMAGE_COLUM,3)

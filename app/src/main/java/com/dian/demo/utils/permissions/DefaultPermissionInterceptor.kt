@@ -32,9 +32,12 @@ class DefaultPermissionInterceptor(var mPermissionDescription: String = "") :
     ): String {
         val stringBuilder = StringBuilder()
         allPermissions.forEach { it ->
-            stringBuilder
-                .append(permissionsToDescription(activity, it))
-                .append("\n")
+            val mDescription = permissionsToDescription(activity, it)
+            if (!stringBuilder.contains(mDescription)) {
+                stringBuilder
+                    .append(mDescription)
+                    .append("\n")
+            }
         }
         return stringBuilder.toString().trim { it <= ' ' }
     }

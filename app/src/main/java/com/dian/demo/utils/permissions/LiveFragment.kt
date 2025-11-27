@@ -27,7 +27,6 @@ internal class LiveFragment : Fragment() {
     }
 
     fun requestPermissions(permissions: Array<out String>) {
-        interceptor?.launchPermissionRequest(requireActivity(), permissions)
         liveData = MutableLiveData()
         val tempPermission = ArrayList<String>()
         val mConversionPermissions = conversionPermission(permissions)
@@ -39,6 +38,7 @@ internal class LiveFragment : Fragment() {
         if (tempPermission.isEmpty()) {
             liveData.value = PermissionResult.Grant
         } else {
+            interceptor?.launchPermissionRequest(requireActivity(), permissions)
             requestPermissions(tempPermission.toTypedArray(), PERMISSIONS_REQUEST_CODE)
         }
     }
@@ -69,10 +69,8 @@ internal class LiveFragment : Fragment() {
                     liveData.value = PermissionResult.Deny(denyPermission.toTypedArray())
                 }
             }
-            interceptor?.finishPermissionRequest(requireActivity(), permissions)
-
-
         }
+        interceptor?.finishPermissionRequest(requireActivity(), permissions)
     }
 
 }
