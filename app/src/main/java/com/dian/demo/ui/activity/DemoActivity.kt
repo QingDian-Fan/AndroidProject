@@ -326,7 +326,7 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 MultiThreadDownloader(
                     taskId = "1001",
                     url = "https://mirrors.cloud.tencent.com/gradle/gradle-8.13-all.zip",
-                    saveFilePath = File(filesDir, "gradle-8.13-all.zip").absolutePath,
+                    savePath = File(filesDir, "gradle-8.13-all.zip").absolutePath,
                     threadCount = 4,
                     callback = object : MultiThreadDownloader.Callback {
 
@@ -347,10 +347,12 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                             }
                         }
 
-                        override fun onError() {
-
+                        override fun onError(msg: String) {
+                            TODO("Not yet implemented")
                         }
-                    }, db = db
+
+
+                    }, db = db.downloadTaskDao()
 
                 ).start()
             }

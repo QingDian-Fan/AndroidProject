@@ -5,5 +5,5 @@ import androidx.room.RoomDatabase
 
 @Database(entities = [DownloadTaskEntry::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun downloadProgressDao(): DownloadTaskDao
+    abstract fun downloadTaskDao(): DownloadTaskDao
 }

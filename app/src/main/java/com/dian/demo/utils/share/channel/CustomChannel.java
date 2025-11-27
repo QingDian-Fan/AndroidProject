@@ -25,7 +25,7 @@ public class CustomChannel implements Channel {
         shareIntent.setType("text/plain");
         shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         shareIntent.putExtra(Intent.EXTRA_TEXT, text);
-        shareIntent.putExtra("Kdescription", context.getString(R.string.app_name));
+        shareIntent.putExtra("description", context.getString(R.string.app_name));
         if (!TextUtils.isEmpty(packageName)) {
             shareIntent.setPackage(packageName);
         }
@@ -42,7 +42,7 @@ public class CustomChannel implements Channel {
         shareIntent.setType("image/*");
         shareIntent.setAction(Intent.ACTION_SEND);
         shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-        shareIntent.putExtra("Kdescription", context.getString(R.string.app_name));
+        shareIntent.putExtra("description", context.getString(R.string.app_name));
 
         if (!TextUtils.isEmpty(packageName)) {
             shareIntent.setPackage(packageName);
