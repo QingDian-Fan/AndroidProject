@@ -273,6 +273,17 @@
                     android:text="键盘Dialog"
                     android:textColor="@color/colorWhite" />
 
+                <Button
+                    android:id="@+id/btn_download"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp_46"
+                    android:layout_marginTop="@dimen/dp_30"
+                    android:background="@drawable/bg_btn_generate"
+                    android:onClick="clickView"
+                    android:paddingVertical="@dimen/dp_10"
+                    android:text="多线程下载文件"
+                    android:textColor="@color/colorWhite" />
+
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/tv_span"
                     android:layout_width="match_parent"

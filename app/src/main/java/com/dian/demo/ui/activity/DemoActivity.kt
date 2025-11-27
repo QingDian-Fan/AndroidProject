@@ -8,6 +8,7 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.util.Log
 import android.view.View
+import androidx.room.Room
 import com.demo.project.utils.ext.gone
 import com.dian.demo.ProjectApplication
 import com.dian.demo.R
@@ -17,6 +18,7 @@ import com.dian.demo.databinding.ActivityDemoBinding
 import com.dian.demo.di.model.BannerBean
 import com.dian.demo.di.vm.DemoViewModel
 import com.dian.demo.http.Result
+import com.dian.demo.room.AppDatabase
 import com.dian.demo.test.proxy.ApiGenerator
 import com.dian.demo.test.proxy.LoginApi
 import com.dian.demo.ui.dialog.AddressDialog
@@ -30,6 +32,7 @@ import com.dian.demo.ui.img.ImageSelectListener
 import com.dian.demo.ui.img.ImageSelectUtil
 import com.dian.demo.utils.CacheUtil
 import com.dian.demo.utils.MoshiUtil
+import com.dian.demo.utils.MultiThreadDownloader
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.ScreenShotUtil
 import com.dian.demo.utils.SpannableStringUtil
@@ -237,15 +240,16 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
             R.id.btn_default -> {
                 SkinCompatManager.getInstance().restoreDefaultTheme()
                 UIModeManager.getInstance().broadCastUiModeChanged(false)
-                LiveDataBus.getDefault().postEvent("UI_MODE",false)
-                AppDataStore.putData("UI_MODE",false)
+                LiveDataBus.getDefault().postEvent("UI_MODE", false)
+                AppDataStore.putData("UI_MODE", false)
             }
 
             R.id.btn_night -> {
-                SkinCompatManager.getInstance().loadSkin("night", SkinCompatManager.SKIN_LOADER_STRATEGY_BUILD_IN)
+                SkinCompatManager.getInstance()
+                    .loadSkin("night", SkinCompatManager.SKIN_LOADER_STRATEGY_BUILD_IN)
                 UIModeManager.getInstance().broadCastUiModeChanged(true)
-                LiveDataBus.getDefault().postEvent("UI_MODE",true)
-                AppDataStore.putData("UI_MODE",true)
+                LiveDataBus.getDefault().postEvent("UI_MODE", true)
+                AppDataStore.putData("UI_MODE", true)
             }
 
             R.id.btn_parse -> {
@@ -308,11 +312,47 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
                 }
 
             }
-            R.id.btn_browser ->{
+
+            R.id.btn_browser -> {
                 H5ContainerActivity.start(this@DemoActivity)
             }
-            R.id.btn_keyboard->{
-                KeyBoardDialog.getDialog().showAllowStateLoss(supportFragmentManager,"")
+
+            R.id.btn_keyboard -> {
+                KeyBoardDialog.getDialog().showAllowStateLoss(supportFragmentManager, "")
+            }
+
+            R.id.btn_download -> {
+                val db = Room.databaseBuilder(this, AppDatabase::class.java, "download_db").build()
+                MultiThreadDownloader(
+                    taskId = "1001",
+                    url = "https://mirrors.cloud.tencent.com/gradle/gradle-8.13-all.zip",
+                    saveFilePath = File(filesDir, "gradle-8.13-all.zip").absolutePath,
+                    threadCount = 4,
+                    callback = object : MultiThreadDownloader.Callback {
+
+                        override fun onProgress(percent: Int) {
+                            runOnUiThread {
+                                binding.btnDownload.text = "进度：$percent%"
+                            }
+                        }
+
+                        override fun onCompleted() {
+                            runOnUiThread {
+                                binding.btnDownload.text = "下载完成！文件位置：${
+                                    File(
+                                        filesDir,
+                                        "gradle-8.13-all.zip"
+                                    ).absolutePath
+                                }"
+                            }
+                        }
+
+                        override fun onError() {
+
+                        }
+                    }, db = db
+
+                ).start()
             }
         }
     }
