@@ -7,7 +7,6 @@ import com.dian.demo.base.BaseAppVMFragment
 import com.dian.demo.constant.HOOK_AMS_EXTRA_NAME
 import com.dian.demo.databinding.FragmentLoginBinding
 import com.dian.demo.di.vm.LoginViewModel
-import com.dian.demo.ui.activity.HomeActivity
 import com.dian.demo.ui.activity.LoginActivity
 import com.dian.demo.utils.ToastUtil
 import com.dian.demo.utils.ext.observeNonNull
@@ -52,7 +51,7 @@ class LoginFragment : BaseAppVMFragment<FragmentLoginBinding, LoginViewModel>() 
             if (targetIntent != null) {
                 startActivity(targetIntent)
             }else{
-                HomeActivity.start(requireActivity())
+               activity?.finish()
             }
         }
     }
