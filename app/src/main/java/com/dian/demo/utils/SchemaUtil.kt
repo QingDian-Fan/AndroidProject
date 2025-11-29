@@ -6,6 +6,7 @@ import android.provider.Settings
 import android.text.TextUtils
 import com.dian.demo.R
 import com.dian.demo.ui.activity.DemoActivity
+import com.dian.demo.ui.activity.LoginActivity
 import com.dian.demo.ui.activity.WebExplorerActivity
 import com.dian.demo.utils.IntentUtil.openBrowser
 
@@ -18,6 +19,7 @@ object SchemaUtil {
     private const val PAGE_HOME = "home"
 
     private const val PAGE_SETTING ="setting"
+    private const val PAGE_LOGIN ="login"
 
     private const val PAGE_INSTALL = "install"
 
@@ -53,6 +55,9 @@ object SchemaUtil {
                 filePath?.let {
                     IntentUtil.installedApp(mContext,filePath)
                 }
+            }
+            PAGE_LOGIN->{
+                LoginActivity.start(mContext)
             }
         }
 

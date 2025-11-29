@@ -239,6 +239,9 @@ dependencies {
     kapt "com.google.auto.service:auto-service:1.0-rc6"
     implementation "com.google.auto.service:auto-service:1.0-rc6"
 
+    implementation project(':lib_annotation')
+    kapt project(':lib_processor')
+
 
     def camerax_version = "1.2.3"
 
@@ -247,10 +250,7 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:$camerax_version"
     implementation "androidx.camera:camera-view:$camerax_version"
     implementation "androidx.camera:camera-video:$camerax_version"
-
-    // 录制视频依赖
     implementation "androidx.camera:camera-video:$camerax_version"
-
 
     implementation 'skin.support:skin-support:4.0.5'                   // skin-support
     implementation 'skin.support:skin-support-appcompat:4.0.5'         // skin-support 基础控件支持

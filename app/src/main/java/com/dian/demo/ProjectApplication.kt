@@ -18,6 +18,7 @@ import com.dian.demo.ui.status.GlobalAdapter
 import com.dian.demo.utils.ActivityManager
 import com.dian.demo.utils.ExceptionHandlerUtil
 import com.dian.demo.utils.LogFileUtil
+import com.dian.demo.utils.LoginHookUtil
 import com.dian.demo.utils.Utils
 import com.dian.demo.utils.datastore.AppDataStore
 import com.dian.demo.utils.gray.GlobalGray
@@ -97,7 +98,7 @@ class ProjectApplication : SkinApplication() {
         if (AppDataStore.getData("isGray", false)) {
             GlobalGray.hook()
         }
-
+        LoginHookUtil.HookAms(this)
 
         ExceptionHandlerUtil.init(this)
         LogFileUtil.init(this)
