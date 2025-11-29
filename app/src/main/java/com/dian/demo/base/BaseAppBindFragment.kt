@@ -10,6 +10,7 @@ import com.demo.project.utils.ext.gone
 import com.demo.project.utils.ext.visible
 import com.dian.demo.R
 import com.dian.demo.databinding.FragmentRootLayoutBinding
+import com.dian.demo.ui.titlebar.CommonTitleBar
 
 /**
  * @author: QingDian_Fan
@@ -51,6 +52,7 @@ abstract class BaseAppBindFragment<B : ViewDataBinding> : BaseFragment() {
     fun setPageTitle(titleString:String){
         (activity as BaseAppBindActivity<*>).setPageTitle(titleString)
     }
+    fun getTitleBarView():CommonTitleBar = (activity as BaseAppBindActivity<*>).getTitleBarView()
     override fun showLoadingView(isShow: Boolean) {
         if (isShow) {
             rootBinding.flRoot.visibility = gone

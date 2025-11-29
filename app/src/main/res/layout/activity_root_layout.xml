@@ -23,7 +23,7 @@
                 app:centerTextMarquee="false"
                 app:centerType="textView"
                 app:leftImageResource="@mipmap/action_back"
-                app:leftType="imageButton" />
+                app:leftType="imageButton"/>
         </FrameLayout>
 
 

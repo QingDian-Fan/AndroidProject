@@ -1,7 +1,7 @@
 package com.dian.processor;
 
 import com.dian.annotation.CheckLogin;
-import com.dian.annotation.LoginActivity;
+import com.dian.annotation.LoginPage;
 import com.dian.annotation.RequireLogin;
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;
@@ -56,7 +56,7 @@ public class RequireLoginProcessor extends AbstractProcessor {
     public Set<String> getSupportedAnnotationTypes() {
         HashSet<String> supportTypes = new LinkedHashSet<>();
         supportTypes.add(RequireLogin.class.getCanonicalName());
-        supportTypes.add(LoginActivity.class.getCanonicalName());
+        supportTypes.add(LoginPage.class.getCanonicalName());
         supportTypes.add(CheckLogin.class.getCanonicalName());
         return supportTypes;
     }
@@ -122,7 +122,7 @@ public class RequireLoginProcessor extends AbstractProcessor {
         }
 
         // 查找登录的Activity
-        Set<? extends Element> loginActivityElements = roundEnv.getElementsAnnotatedWith(LoginActivity.class);
+        Set<? extends Element> loginActivityElements = roundEnv.getElementsAnnotatedWith(LoginPage.class);
         for (Element loginActivityElement : loginActivityElements) {
             if (loginActivityElement.getKind() != ElementKind.CLASS) {
                 mMessager.printMessage(Diagnostic.Kind.WARNING,
