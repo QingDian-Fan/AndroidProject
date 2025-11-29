@@ -9,6 +9,7 @@ import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.fragment.app.DialogFragment
 import com.dian.demo.R
+import com.dian.demo.constant.ANDROID_ASSET_URI
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.SchemaUtil
 import com.dian.demo.utils.ext.singleClick
@@ -31,7 +32,7 @@ class DebugDialog : DialogFragment() {
         val mTvTitle = mView.findViewById<AppCompatTextView>(R.id.tv_title)
         val mEtInput = mView.findViewById<AppCompatEditText>(R.id.et_input)
         mTvTitle.text = ResourcesUtil.getString(R.string.text_schema)
-        mEtInput.setText("dian://webview?link_url=https://wanandroid.com/")
+        mEtInput.setText("dian://webview?link_url=${ANDROID_ASSET_URI}demo.html")
         mTvConfirm.singleClick {
             if (!TextUtils.isEmpty(mEtInput.text.toString().trim())) {
                 SchemaUtil.schemaToPage(requireContext(),mEtInput.text.toString().trim())

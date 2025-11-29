@@ -78,7 +78,7 @@ fun <T : View> T.singleClick(interval: Long = 500L, action: ((T) -> Unit)?) {
 }
 
 private var lastClickTime = 0L
-private var mView: View? = null
+private var mViewId: Int? = null
 
 
 class SingleClickListener<T : View>(
@@ -88,11 +88,11 @@ class SingleClickListener<T : View>(
 
     override fun onClick(v: View) {
         val nowTime = System.currentTimeMillis()
-        if (nowTime - lastClickTime > interval || mView == null || v != mView) {
+        if (nowTime - lastClickTime > interval || mViewId == null || v.id != mViewId) {
             // 单次点击事件
             clickFunc?.invoke(v as T)
             lastClickTime = nowTime
-            mView = v
+            mViewId = v.id
         }
     }
 }

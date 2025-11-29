@@ -1,11 +1,11 @@
-var myjs = {};
-myjs.os = {};
-myjs.os.isIOS = /iOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
-myjs.os.isAndroid = !myjs.os.isIOS;
-myjs.callbacks = {}
+var demojs = {};
+demojs.os = {};
+demojs.os.isIOS = /iOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
+demojs.os.isAndroid = !demojs.os.isIOS;
+demojs.callbacks = {}
 
-myjs.callback = function (callbackname, response) {
-   var callbackobject = myjs.callbacks[callbackname];
+demojs.callback = function (callbackname, response) {
+   var callbackobject = demojs.callbacks[callbackname];
    console.log("xxxx"+callbackname);
    if (callbackobject !== undefined){
        if(callbackobject.callback != undefined){
@@ -14,37 +14,37 @@ myjs.callback = function (callbackname, response) {
            if(ret === false){
                return
            }
-           delete myjs.callbacks[callbackname];
+           delete demojs.callbacks[callbackname];
        }
    }
 }
 
-myjs.takeNativeAction = function(commandname, parameters){
-    console.log("myjs takenativeaction")
+demojs.takeNativeAction = function(commandname, parameters){
+    console.log("demojs takenativeaction")
     var request = {};
     request.name = commandname;
     request.param = parameters;
-    if(window.myjs.os.isAndroid){
+    if(window.demojs.os.isAndroid){
         console.log("android take native action" + JSON.stringify(request));
-        window.mywebview.takeNativeAction(JSON.stringify(request));
+        window.webview.takeNativeAction(JSON.stringify(request));
     } else {
-        window.webkit.messageHandlers.mywebview.postMessage(JSON.stringify(request))
+        window.webkit.messageHandlers.webview.postMessage(JSON.stringify(request))
     }
 }
 
-myjs.takeNativeActionWithCallback = function(commandname, parameters, callback) {
+demojs.takeNativeActionWithCallback = function(commandname, parameters, callback) {
     var callbackname = "nativetojs_callback_" +  (new Date()).getTime() + "_" + Math.floor(Math.random() * 10000);
-    myjs.callbacks[callbackname] = {callback:callback};
+    demojs.callbacks[callbackname] = {callback:callback};
 
     var request = {};
     request.name = commandname;
     request.param = parameters;
     request.param.callbackname = callbackname;
-    if(window.myjs.os.isAndroid){
-        window.mywebview.takeNativeAction(JSON.stringify(request));
+    if(window.demojs.os.isAndroid){
+        window.webview.takeNativeAction(JSON.stringify(request));
     } else {
-        window.webkit.messageHandlers.mywebview.postMessage(JSON.stringify(request))
+        window.webkit.messageHandlers.webview.postMessage(JSON.stringify(request))
     }
 }
 
-window.myjs = myjs;
+window.demojs = demojs;

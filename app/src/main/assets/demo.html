@@ -19,22 +19,22 @@
     <script>
         function callAppToast(){
             console.log("callAppToast.");
-            myjs.takeNativeAction("showToast", {message: "this is a message from html."});
+            demojs.takeNativeAction("showToast", {message: "this is a message from html."});
         }
         function openActivityA(){
             console.log("openActivityA.");
-            myjs.takeNativeAction("openActivity", {message: "SecondActivity"});
+            demojs.takeNativeAction("openActivity", {message: "HomeActivity"});
         }
         function login(){
             console.log("login.");
-            myjs.takeNativeActionWithCallback("login", {}, function(res) {
+            demojs.takeNativeActionWithCallback("login", {}, function(res) {
                  var element = document.createElement("div");
                  element.appendChild(document.createTextNode("result: "+res.accountName));
                  document.getElementById('login_id').appendChild(element);
             });
         }
     </script>
-    <script src="js/myjs.js" charset="utf-8"></script>
+    <script src="js/demo.js" charset="utf-8"></script>
 </head>
 <body style="height: 100%;">
 <div class="item" style="font-size: 20px; color: #ffffff" onclick="callAppToast()">调用: showToast</div>

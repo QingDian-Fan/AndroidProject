@@ -20,7 +20,7 @@ ext {
 
 
     //更新文案
-    version_description = "测试更新文案-pgyer"
+    version_description = "测试更新文案"
 }
 
 /**
@@ -126,6 +126,7 @@ project.tasks.whenTaskAdded { Task currentTask ->
 def uploadApp(File file, String description) {
     def out = new ByteArrayOutputStream()
     exec {
+        println("curl -F _api_key=${api_key} -F file=@${file.absolutePath} -F buildUpdateDescription=${description} ${upload_url}")
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
             ExecSpec execSpec = commandLine "cmd", "/c", "curl -F _api_key=${api_key} -F file=@${file.absolutePath} -F buildUpdateDescription=${description} ${upload_url}"
             execSpec.standardOutput = out

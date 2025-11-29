@@ -190,6 +190,13 @@
                 <data android:scheme="dian" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".utils.webview.mainprocess.MainCommandService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.dian.demo.utils.webview.mainprocess.MainCommandService" />
+            </intent-filter>
+        </service>
 
         <provider
             android:name="androidx.core.content.FileProvider"

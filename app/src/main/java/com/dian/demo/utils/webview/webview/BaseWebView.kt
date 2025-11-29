@@ -50,16 +50,15 @@ open class BaseWebView : WebView, NestedScrollingChild {
         attributeSet,
         defStyleAttr
     )
-    init {
-        mChildHelper = NestedScrollingChildHelper(this)
-        isNestedScrollingEnabled = true
-    }
+
 
     private var mWebChromeClient: DefaultWebChromeClient?=null
     init {
+        mChildHelper = NestedScrollingChildHelper(this)
+        isNestedScrollingEnabled = true
         WebCommandDispatcher.instance.initAidlConnection()
         DefaultWebSetting.getSetting(this)
-        addJavascriptInterface(this, "android_web_view")
+        addJavascriptInterface(this, "webview")
     }
 
     fun initWebClient(webViewCallBack: WebViewCallBack) {
@@ -98,7 +97,7 @@ open class BaseWebView : WebView, NestedScrollingChild {
                 }
                 mLastMotionY = y - mScrollOffset[1]
                 val oldY = scrollY
-                val newScrollY = Math.max(0, oldY + deltaY)
+                val newScrollY = 0.coerceAtLeast(oldY + deltaY)
                 val dyConsumed = newScrollY - oldY
                 val dyUnconsumed = deltaY - dyConsumed
                 if (dispatchNestedScroll(0, dyConsumed, 0, dyUnconsumed, mScrollOffset)) {
@@ -172,6 +171,7 @@ open class BaseWebView : WebView, NestedScrollingChild {
 
     @JavascriptInterface
     fun takeNativeAction(jsParam: String?) {
+        LogUtil.e("TAG--->WebView","jsParam:$jsParam")
         if (!TextUtils.isEmpty(jsParam)) {
             val jsParamObject: JsParam = GsonFactory.getSingletonGson().fromJson(
                 jsParam,
@@ -190,7 +190,7 @@ open class BaseWebView : WebView, NestedScrollingChild {
     fun handleCallback(callbackname: String, response: String?) {
         if (!TextUtils.isEmpty(callbackname) && !TextUtils.isEmpty(response)) {
             post {
-                val jscode = "javascript:myjs.callback('$callbackname',$response)"
+                val jscode = "javascript:demojs.callback('$callbackname',$response)"
                 LogUtil.e("xxxxxx", jscode)
                 evaluateJavascript(jscode, null)
             }

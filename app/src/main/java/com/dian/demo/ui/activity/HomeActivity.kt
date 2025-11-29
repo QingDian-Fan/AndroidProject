@@ -1,7 +1,9 @@
 package com.dian.demo.ui.activity
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -23,6 +25,9 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
         fun start(mContext: Context) {
             val intent = Intent()
             intent.setClass(mContext, HomeActivity::class.java)
+            if (mContext !is Activity){
+                intent.flags = FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
             mContext.startActivity(intent)
         }
     }

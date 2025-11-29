@@ -236,6 +236,8 @@ dependencies {
     /*================================leakcanary============================================*/
     /* debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7' */
     /*================================leakcanary============================================*/
+    kapt "com.google.auto.service:auto-service:1.0-rc6"
+    implementation "com.google.auto.service:auto-service:1.0-rc6"
 
 
     def camerax_version = "1.2.3"

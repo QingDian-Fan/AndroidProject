@@ -1,5 +1,6 @@
 package com.dian.demo.utils.webview.mainprocess
 
+import android.util.Log
 import com.dian.demo.MainToWebInterface
 import com.dian.demo.WebToMainInterface
 import com.google.gson.Gson
@@ -20,7 +21,10 @@ class MainCommandsManager private constructor() : WebToMainInterface.Stub() {
     init {
         // 收集使用了注解的类
         val serviceLoader = ServiceLoader.load(Command::class.java)
+        Log.e("TAG--->WebView","ServiceLoader")
+
         for (command in serviceLoader) {
+            Log.e("TAG--->WebView","command-${command.name()}")
             if (!mCommands.containsKey(command.name())) {
                 mCommands[command.name()] = command
             }

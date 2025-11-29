@@ -69,7 +69,7 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
 
 
     override fun initialize(savedInstanceState: Bundle?) {
-        getTitleBarView().setOpenStatusBar(false)
+      getTitleBarView().setOpenStatusBar(false)
         getTitleBarView().setCenterText(ResourcesUtil.getString(R.string.demo_title_text))
         getTitleBarView().leftImageButton.visibility = gone
 
@@ -78,9 +78,9 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
 
         StatusBarUtil.setColor(this@DemoActivity, ResourcesUtil.getColor(R.color.bg_common), 0)
         StatusBarUtil.setLightMode(this@DemoActivity)
-        val api = ApiGenerator.generateApi(
+       /* val api = ApiGenerator.generateApi(
             LoginApi::class.java
-        )
+        )*/
         binding.tvSpan.text = SpannableStringUtil.Builder()
             .append("您已同意")
             .append("《用户协议》")

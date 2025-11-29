@@ -43,7 +43,7 @@ object LogFileUtil {
             synchronized(lock) {
                 try {
                     fos?.close()
-                    val logDir = File(context.filesDir, "log")
+                    val logDir = File(context.getExternalFilesDir("log"), "log")
                     if (!logDir.exists()) {
                         logDir.mkdirs()
                     }

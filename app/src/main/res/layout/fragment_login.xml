@@ -101,7 +101,7 @@
             android:layout_marginTop="@dimen/dp_88"
             android:background="@drawable/bg_btn_generate"
             android:gravity="center"
-            android:paddingVertical="6dp"
+            android:paddingVertical="@dimen/dp_6"
             android:text="登 录"
             android:textColor="#ffffff"
             android:textSize="@dimen/dp_16" />

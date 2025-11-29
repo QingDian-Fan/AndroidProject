@@ -9,6 +9,7 @@ import android.os.RemoteException
 import com.dian.demo.MainToWebInterface
 import com.dian.demo.ProjectApplication
 import com.dian.demo.WebToMainInterface
+import com.dian.demo.utils.LogUtil
 import com.dian.demo.utils.webview.mainprocess.MainCommandService
 import com.dian.demo.utils.webview.webview.BaseWebView
 
@@ -23,26 +24,31 @@ class WebCommandDispatcher private constructor() : ServiceConnection {
     }
 
     fun initAidlConnection() {
-        val intent = Intent(ProjectApplication.getAppContext(), MainCommandService::class.java)
-        ProjectApplication.getAppContext().bindService(intent, this, Context.BIND_AUTO_CREATE)
+        val intent = Intent("com.dian.demo.utils.webview.mainprocess.MainCommandService")
+        intent.setPackage(ProjectApplication.getAppContext().packageName)
+        val isBindService = ProjectApplication.getAppContext().bindService(intent, this, Context.BIND_AUTO_CREATE)
     }
 
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+        LogUtil.e("TAG--->WebView","onServiceConnected")
         iWebviewProcessToMainProcessInterface =
             WebToMainInterface.Stub.asInterface(service)
     }
 
     override fun onServiceDisconnected(name: ComponentName?) {
+        LogUtil.e("TAG--->WebView","onServiceDisconnected")
         iWebviewProcessToMainProcessInterface = null
         initAidlConnection()
     }
 
     override fun onBindingDied(name: ComponentName?) {
+        LogUtil.e("TAG--->WebView","onBindingDied")
         iWebviewProcessToMainProcessInterface = null
         initAidlConnection()
     }
 
     fun executeCommand(commandName: String, params: String?, baseWebView: BaseWebView) {
+        LogUtil.e("TAG--->WebView","commandName:$commandName - params:$params")
         try {
             iWebviewProcessToMainProcessInterface?.handleWebCommand(
                 commandName,
