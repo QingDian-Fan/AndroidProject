@@ -34,6 +34,13 @@ object AppDataStore {
         dataStore.clear()
     }
 
+    fun clearKey(key: String) {
+        dataStore.clearKey(key)
+    }
+
+
+
+
 
     /**
      * 创建 ProtoBufDataStore  案例待测试

@@ -1,7 +1,9 @@
 package com.dian.demo.http
 
 import android.content.Context
+import com.dian.demo.http.cookie.CookieManager
 import com.dian.demo.http.interceptor.HeadersInterceptor
+import okhttp3.CookieJar
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -40,6 +42,7 @@ open class HttpClientBase {
             .writeTimeout(config.writeTimeout.first, config.writeTimeout.second)
             .retryOnConnectionFailure(config.retryOnConnectionFailure)
             .cache(config.cache)
+            .cookieJar(CookieManager())
             .also { builder ->
                 config.headers?.run { builder.addInterceptor(HeadersInterceptor(this)) }
                 config.dns?.run { builder.dns(this) }

@@ -114,4 +114,14 @@ class DataRepoImpl : DataRepo {
             )
         )
     }
+
+    override suspend fun getUserInfo(): ResponseHolder<UserInfo> {
+        return HttpUtils.getInstance().get(
+            url= "user/lg/userinfo/json",
+            type = Types.newParameterizedType(
+                Result::class.java,
+                UserInfo::class.java
+            )
+        )
+    }
 }

@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import com.demo.project.utils.ext.gone
 import com.dian.demo.R
@@ -13,10 +12,9 @@ import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityHomeBinding
 import com.dian.demo.ui.adapter.HomePagerAdapter
 import com.dian.demo.ui.fragment.HomeFragment
-import com.dian.demo.ui.fragment.SettingFragment
+import com.dian.demo.ui.fragment.MineFragment
 import com.dian.demo.ui.titlebar.CommonTitleBar
 import com.dian.demo.utils.ResourcesUtil
-import com.dian.demo.utils.bus.LiveDataBus
 import com.dian.demo.utils.ext.gone
 import com.dian.demo.utils.ext.visible
 import kotlin.system.exitProcess
@@ -36,7 +34,7 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
     }
 
     private val fragmentList by lazy {
-        listOf(HomeFragment.getFragment(), SettingFragment.getFragment())
+        listOf(HomeFragment.getFragment(), MineFragment.getFragment())
     }
 
 

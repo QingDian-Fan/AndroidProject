@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        tools:context=".ui.fragment.AboutFragment">
+
+        <com.dian.demo.ui.view.ActionIconView
+            android:layout_width="@dimen/dp_80"
+            android:layout_height="@dimen/dp_80"
+            android:scaleType="centerCrop"
+            android:layout_marginTop="50dp"
+            android:src="@mipmap/ic_launcher_pink" />
+
+        <TextView
+            android:id="@+id/tv_version_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="@dimen/dp_50"
+            android:textColor="@color/text_light_color"
+            android:textSize="@dimen/dp_13"
+            tools:text="1.0.0(1)" />
+
+        <com.dian.demo.ui.view.SettingBar
+            android:id="@+id/ll_check_update"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="@dimen/dp_3"
+            app:bar_rightDrawableTint="@color/text_annotation"
+            app:bar_leftText="检查更新"
+            app:bar_leftTextSize="@dimen/dp_15"
+            app:bar_rightDrawable="@mipmap/ic_enter" />
+
+        <com.dian.demo.ui.view.SettingBar
+            android:id="@+id/ll_website"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="@dimen/dp_3"
+            app:bar_rightDrawableTint="@color/text_annotation"
+            app:bar_leftText="官方网站 "
+            app:bar_leftTextSize="@dimen/dp_15"
+            app:bar_rightDrawable="@mipmap/ic_enter" />
+
+        <com.dian.demo.ui.view.SettingBar
+            android:id="@+id/ll_web_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="@dimen/dp_3"
+            app:bar_leftText="网站内容"
+            app:bar_rightDrawableTint="@color/text_annotation"
+            app:bar_leftTextSize="@dimen/dp_15"
+            app:bar_rightDrawable="@mipmap/ic_enter" />
+
+        <com.dian.demo.ui.view.SettingBar
+            android:id="@+id/ll_project"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="@dimen/dp_3"
+            app:bar_leftText="项目仓库"
+            app:bar_rightDrawableTint="@color/text_annotation"
+            app:bar_leftTextSize="@dimen/dp_15"
+            app:bar_rightDrawable="@mipmap/ic_enter" />
+
+        <com.dian.demo.ui.view.SettingBar
+            android:id="@+id/ll_inner_test"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="@dimen/dp_3"
+            app:bar_leftText="申请内测"
+            app:bar_rightDrawableTint="@color/text_annotation"
+            app:bar_leftTextSize="@dimen/dp_15"
+            app:bar_rightDrawable="@mipmap/ic_enter" />
+
+    </LinearLayout>
+</layout>

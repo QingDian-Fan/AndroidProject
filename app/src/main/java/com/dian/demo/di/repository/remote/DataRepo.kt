@@ -19,4 +19,6 @@ interface DataRepo {
     suspend fun getArticleList(page:Int): ResponseHolder<ListData<ArticleBean>>
 
     suspend fun getTodoList(page:Int): ResponseHolder<ListData<TodoData>>
+
+    suspend fun getUserInfo(): ResponseHolder<UserInfo>
 }

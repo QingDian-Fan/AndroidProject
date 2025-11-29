@@ -8,4 +8,12 @@
         android:id="@+id/webListFragment"
         android:name="com.dian.demo.ui.fragment.WebListFragment"
         android:label="WebListFragment" />
+    <fragment
+        android:id="@+id/settingFragment"
+        android:name="com.dian.demo.ui.fragment.SettingFragment"
+        android:label="SettingFragment" />
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="com.dian.demo.ui.fragment.AboutFragment"
+        android:label="AboutFragment" />
 </navigation>

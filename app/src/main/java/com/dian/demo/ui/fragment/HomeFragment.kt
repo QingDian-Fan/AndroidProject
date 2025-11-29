@@ -17,6 +17,8 @@ import com.dian.demo.di.vm.HomeViewModel
 import com.dian.demo.ui.activity.WebExplorerActivity
 import com.dian.demo.ui.adapter.GlobalArticleAdapter
 import com.dian.demo.ui.adapter.HomeArticleAdapter
+import com.dian.demo.utils.CustomDividerItemDecoration
+import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.SmartRefreshUtil
 import com.dian.demo.utils.ToastUtil
 import com.dian.demo.utils.Utils
@@ -73,7 +75,9 @@ class HomeFragment : BaseAppVMFragment<FragmentHomeBinding, HomeViewModel>() {
             dataList.addAll(it)
             if (mAdapter == null) {
                 binding.rvData.layoutManager = LinearLayoutManager(requireContext())
+                binding.rvData.addItemDecoration(CustomDividerItemDecoration(2, ResourcesUtil.getColor(R.color.line_color)))
                 mAdapter = GlobalArticleAdapter(dataList)
+
                 binding.rvData.adapter = mAdapter
                 mAdapter?.setListener {
                     it?.let {

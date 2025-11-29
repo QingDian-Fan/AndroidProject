@@ -35,6 +35,8 @@ fun <T> DataStore<Preferences>.putData(key: String, value: T) {
     }
 }
 
+
+
 /**
  * 取出数据
  */
@@ -63,6 +65,15 @@ fun <T> DataStore<Preferences>.getData(key: String, defaultValue: T): T {
         }
     }
     return data as T
+}
+
+fun DataStore<Preferences>.clearKey(key: String) {
+    runBlocking {
+        val prefKey = stringPreferencesKey(key)
+        edit {
+            it.remove(prefKey)
+        }
+    }
 }
 
 
@@ -180,3 +191,4 @@ private fun DataStore<Preferences>.getBoolean(key: String, default: Boolean = fa
         it[booleanPreferencesKey(key)] ?: default
     }.first()
 }
+

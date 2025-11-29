@@ -13,6 +13,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Log
+import android.view.HapticFeedbackConstants
 import android.widget.Toast
 import androidx.core.view.drawToBitmap
 import com.dian.demo.R
@@ -68,6 +69,7 @@ class GenerateActivity : BaseAppBindActivity<ActivityGenerateBinding>() {
         }
 
         binding.ivCode.setOnLongClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
             saveBitmapGallery(
                 this@GenerateActivity,
                 binding.ivCode.drawToBitmap(),

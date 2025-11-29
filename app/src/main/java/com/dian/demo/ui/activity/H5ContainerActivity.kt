@@ -22,6 +22,7 @@ class H5ContainerActivity : BaseAppBindActivity<ActivityH5ContainerBinding>() {
         fun start(mContext: Context,urlString: String) {
             val intent = Intent()
             intent.setClass(mContext, H5ContainerActivity::class.java)
+            intent.putExtra("urlString",urlString)
             mContext.startActivity(intent)
         }
     }
