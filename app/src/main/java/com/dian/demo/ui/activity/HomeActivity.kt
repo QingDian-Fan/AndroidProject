@@ -14,8 +14,11 @@ import com.dian.demo.databinding.ActivityHomeBinding
 import com.dian.demo.ui.adapter.HomePagerAdapter
 import com.dian.demo.ui.fragment.HomeFragment
 import com.dian.demo.ui.fragment.SettingFragment
+import com.dian.demo.ui.titlebar.CommonTitleBar
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.bus.LiveDataBus
+import com.dian.demo.utils.ext.gone
+import com.dian.demo.utils.ext.visible
 import kotlin.system.exitProcess
 
 
@@ -40,19 +43,30 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
     override fun getLayoutId(): Int = R.layout.activity_home
 
     override fun initialize(savedInstanceState: Bundle?) {
-        LiveDataBus.getDefault().subscribe<Boolean>("UI_MODE").observe(this) { value ->
-            Log.e("TAG--->","HomeActivity::sticky onChanged: $value")
-        }
+
         getTitleBarView().leftImageButton.visibility = gone
         setPageTitle("首页")
+        getTitleBarView().setLeftIcon(R.mipmap.ic_scan)
+        getTitleBarView().setRightIcon(R.mipmap.ic_search)
+        getTitleBarView().setListener {  _, action, _ ->
+            if (action == CommonTitleBar.ACTION_LEFT_BUTTON) {
+                ScanActivity.start(this@HomeActivity)
+            }
+        }
         binding.vpContent.adapter = HomePagerAdapter(fragmentList, supportFragmentManager)
         binding.tabHome.setOnItemSelectedListener {
             getTitleBarView().setCenterText(it.title)
             when (it.itemId) {
                 R.id.tab_home -> {
+                    getTitleBarView().leftImageButton.visible()
+                    getTitleBarView().rightImageButton.visible()
+                    getTitleBarView().setLeftIcon(R.mipmap.ic_scan)
+                    getTitleBarView().setRightIcon(R.mipmap.ic_search)
                     binding.vpContent.currentItem = 0
                 }
                 R.id.tab_setting -> {
+                    getTitleBarView().leftImageButton.gone()
+                    getTitleBarView().rightImageButton.gone()
                     binding.vpContent.currentItem = 1
                 }
             }

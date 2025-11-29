@@ -5,6 +5,7 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppVMFragment
 import com.dian.demo.databinding.FragmentSettingBinding
 import com.dian.demo.di.vm.SettingViewModel
+import com.dian.demo.ui.activity.ContainerActivity
 import com.dian.demo.ui.activity.DemoActivity
 import com.dian.demo.ui.activity.LoginActivity
 import com.dian.demo.ui.activity.TodoListActivity
@@ -26,18 +27,24 @@ class SettingFragment : BaseAppVMFragment<FragmentSettingBinding, SettingViewMod
     override fun createViewModel(): SettingViewModel = SettingViewModel()
 
     override fun initialize(savedInstanceState: Bundle?) {
-        binding.sbLogin.singleClick {
-            LoginActivity.start(requireActivity())
-        }
+
         binding.sbTodo.singleClick {
             TodoListActivity.start(requireActivity())
+        }
+        binding.llCollect.setOnClickListener {
+            ContainerActivity.start(requireActivity(),2)
+        }
+        binding.llReadLater.setOnClickListener {
+            ContainerActivity.start(requireActivity(),1)
+        }
+        binding.llReadRecord.singleClick {
+            ContainerActivity.start(requireActivity(),0)
         }
         binding.sbMenu.singleClick {
             DemoActivity.start(requireActivity())
         }
         binding.btnLoginout.singleClick {
             viewModel.doLoginOut()
-            CrashReport.testJavaCrash();
         }
         viewModel.isLoginOut.observeNonNull(this) {
             ToastUtil.showToast(str = if (it) "退出成功" else "退出失败")

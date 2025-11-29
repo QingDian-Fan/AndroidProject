@@ -101,7 +101,7 @@ object LogFileUtil {
             Toast.makeText(getAppInstance(), "日志文件未初始化", Toast.LENGTH_SHORT).show()
             return
         }
-        val file = File(filePath, "log.txt")
+        val file = File(filePath)
         if (!file.exists()) {
             showToast(getAppContext(), "木有找到日志文件", false, Gravity.CENTER)
             return

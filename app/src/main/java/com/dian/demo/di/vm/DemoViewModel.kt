@@ -17,7 +17,7 @@ class DemoViewModel : BaseViewModel() {
                 .onSuccess {
                     val articleList = mutableListOf<ArticleEntity>()
                     it?.datas?.forEach {
-                        articleList.add(ArticleEntity(id=it.id, link = it.link, title = it.title, superChapterName = it.superChapterName))
+                        articleList.add(ArticleEntity(id=it.id.toString(), link = it.link, title = it.title, superChapterName = it.superChapterName))
                     }
                     localRepo.deleteArticleEntities()
                     localRepo.insertArticleEntities(articleList)

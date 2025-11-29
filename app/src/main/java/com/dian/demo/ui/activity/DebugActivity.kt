@@ -17,6 +17,7 @@ import com.dian.demo.config.AppConfig.getBaseUrl
 import com.dian.demo.databinding.ActivityDebugBinding
 import com.dian.demo.ui.dialog.ConfirmDialog
 import com.dian.demo.ui.dialog.DebugDialog
+import com.dian.demo.ui.dialog.LogFileDialog
 import com.dian.demo.ui.dialog.TipDialog
 import com.dian.demo.ui.titlebar.CommonTitleBar
 import com.dian.demo.utils.ActivityManager
@@ -67,7 +68,7 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
             if (action == CommonTitleBar.ACTION_LEFT_BUTTON) {
                 onBackPressed()
             } else if (action == CommonTitleBar.ACTION_RIGHT_BUTTON) {
-                ExceptionHandlerUtil.doShareExceptionFile()
+                LogFileDialog.getDialog().showAllowStateLoss(supportFragmentManager,"")
             }
         }
         val debugUrl: String = ResourcesUtil.getString(R.string.debug_base_url)

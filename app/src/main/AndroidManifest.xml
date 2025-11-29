@@ -21,7 +21,6 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
-
     <queries>
         <package android:name="com.tencent.mm" />
         <package android:name="com.tencent.mobileqq" />
@@ -42,9 +41,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.activity.ContainerActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.H5ContainerActivity"
             android:exported="false"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.CameraActivity"
             android:exported="false"
@@ -136,7 +138,7 @@
         </activity>
         <activity
             android:name=".ui.activity.ScanActivity"
-            android:screenOrientation="portrait"/> <!-- 生成二维码 -->
+            android:screenOrientation="portrait" /> <!-- 生成二维码 -->
         <activity
             android:name=".ui.activity.GenerateActivity"
             android:screenOrientation="portrait" /> <!-- 网页浏览 -->
@@ -190,6 +192,7 @@
                 <data android:scheme="dian" />
             </intent-filter>
         </activity>
+
         <service
             android:name=".utils.webview.mainprocess.MainCommandService"
             android:exported="true">

@@ -19,11 +19,21 @@ class H5ContainerActivity : BaseAppBindActivity<ActivityH5ContainerBinding>() {
             intent.setClass(mContext, H5ContainerActivity::class.java)
             mContext.startActivity(intent)
         }
+        fun start(mContext: Context,urlString: String) {
+            val intent = Intent()
+            intent.setClass(mContext, H5ContainerActivity::class.java)
+            mContext.startActivity(intent)
+        }
     }
 
     override fun getLayoutId(): Int  =R.layout.activity_h5_container
 
     override fun initialize(savedInstanceState: Bundle?) {
        getTitleBarView().visibility = View.GONE
+        val urlString = intent.getStringExtra("urlString")
+        val bundle = Bundle().apply {
+            putString("urlString", urlString)
+        }
+        supportFragmentManager.setFragmentResult("KEY_URL_DATA", bundle)
     }
 }

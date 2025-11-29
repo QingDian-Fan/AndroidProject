@@ -37,13 +37,17 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
     override fun getLayoutId(): Int = R.layout.fragment_h5_container
 
     override fun initialize(savedInstanceState: Bundle?) {
-        initView()
-        initData()
+        requireActivity().supportFragmentManager.setFragmentResultListener("KEY_URL_DATA", viewLifecycleOwner) { key, bundle ->
+            val urlString = bundle.getString("urlString")
+            initView()
+            initData(urlString?:"https://www.wanAndroid.com")
+        }
+
 
     }
 
-    private fun initData() {
-        binding.webView.loadUrl("https://www.wanAndroid.com")
+    private fun initData(urlString:String) {
+        binding.webView.loadUrl(urlString)
         binding.webView.initWebClient(this)
         binding.webView.getChromeClient()?.setLoadProgressCallBack(object : LoadProgressCallBack {
             override fun onCurrentProgress(currentProgress: Int) {

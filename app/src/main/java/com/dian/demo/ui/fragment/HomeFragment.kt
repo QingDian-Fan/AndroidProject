@@ -15,6 +15,7 @@ import com.dian.demo.di.model.ArticleBean
 import com.dian.demo.di.model.BannerBean
 import com.dian.demo.di.vm.HomeViewModel
 import com.dian.demo.ui.activity.WebExplorerActivity
+import com.dian.demo.ui.adapter.GlobalArticleAdapter
 import com.dian.demo.ui.adapter.HomeArticleAdapter
 import com.dian.demo.utils.SmartRefreshUtil
 import com.dian.demo.utils.ToastUtil
@@ -36,7 +37,7 @@ class HomeFragment : BaseAppVMFragment<FragmentHomeBinding, HomeViewModel>() {
     override fun getLayoutId(): Int = R.layout.fragment_home
 
     private var page = 0
-    private var mAdapter: HomeArticleAdapter? = null
+    private var mAdapter: GlobalArticleAdapter? = null
     private val dataList: ArrayList<ArticleBean> by lazy { arrayListOf() }
 
     override fun initialize(savedInstanceState: Bundle?) {
@@ -65,17 +66,14 @@ class HomeFragment : BaseAppVMFragment<FragmentHomeBinding, HomeViewModel>() {
         SmartRefreshUtil.with(binding.layoutRefresh).setLoadMoreListener {
             viewModel.getArticleList(page++)
         }
-        Log.e(
-            "TAG--->",
-            "size:" + ("玩Android-release-1.0.0-20230707_legu_zipalign_sign_samsung.apk".length)
-        )
+
         viewModel.articleData.observeNonNull(this) {
             binding.layoutRefresh.finishRefresh()
             binding.layoutRefresh.finishLoadMore()
             dataList.addAll(it)
             if (mAdapter == null) {
                 binding.rvData.layoutManager = LinearLayoutManager(requireContext())
-                mAdapter = HomeArticleAdapter(dataList)
+                mAdapter = GlobalArticleAdapter(dataList)
                 binding.rvData.adapter = mAdapter
                 mAdapter?.setListener {
                     it?.let {
