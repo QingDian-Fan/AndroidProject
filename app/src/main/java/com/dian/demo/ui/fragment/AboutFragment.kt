@@ -8,6 +8,7 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.databinding.FragmentAboutBinding
 import com.dian.demo.ui.activity.H5ContainerActivity
+import com.dian.demo.utils.SmartRefreshUtil
 import java.lang.String
 import kotlin.Int
 
@@ -18,6 +19,7 @@ class AboutFragment : BaseAppBindFragment<FragmentAboutBinding>() {
     override fun getLayoutId(): Int = R.layout.fragment_about
 
     override fun initialize(savedInstanceState: Bundle?) {
+        SmartRefreshUtil.with(binding.smartLayout).setScrollMode()
         binding.tvVersionName.text = String.format("%s(%d)", getVersionName(), getVersionCode())
         binding.llCheckUpdate.setRightText("已是最新版")
         binding.llCheckUpdate.setOnClickListener {

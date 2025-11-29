@@ -18,6 +18,7 @@ import com.dian.demo.ui.activity.LoginActivity
 import com.dian.demo.utils.CacheUtil
 import com.dian.demo.utils.LoginUtil
 import com.dian.demo.utils.ResourcesUtil
+import com.dian.demo.utils.SmartRefreshUtil
 import com.dian.demo.utils.ToastUtil
 import com.dian.demo.utils.ext.observeNonNull
 import com.dian.demo.utils.ext.singleClick
@@ -30,6 +31,7 @@ class SettingFragment : BaseAppVMFragment<FragmentSettingBinding, SettingViewMod
 
     override fun initialize(savedInstanceState: Bundle?) {
         setPageTitle("设置")
+        SmartRefreshUtil.with(binding.smartLayout).setScrollMode()
         binding.llCache.setRightText(CacheUtil.getTotalCacheSize(
             ProjectApplication.getAppContext()
         ))

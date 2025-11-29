@@ -10,7 +10,7 @@ import com.dian.demo.ui.activity.DemoActivity
 import com.dian.demo.ui.activity.LoginActivity
 import com.dian.demo.ui.activity.TodoListActivity
 import com.dian.demo.utils.LoginUtil
-import com.dian.demo.utils.ToastUtil
+import com.dian.demo.utils.SmartRefreshUtil
 import com.dian.demo.utils.ext.gone
 import com.dian.demo.utils.ext.observeNonNull
 import com.dian.demo.utils.ext.singleClick
@@ -30,6 +30,7 @@ class MineFragment : BaseAppVMFragment<FragmentMineBinding, SettingViewModel>() 
 
     override fun initialize(savedInstanceState: Bundle?) {
 
+        SmartRefreshUtil.with(binding.smartLayout).setScrollMode()
 
         binding.sbTodo.singleClick {
             TodoListActivity.start(requireActivity())

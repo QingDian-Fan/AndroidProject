@@ -72,6 +72,9 @@ class HomeFragment : BaseAppVMFragment<FragmentHomeBinding, HomeViewModel>() {
         viewModel.articleData.observeNonNull(this) {
             binding.layoutRefresh.finishRefresh()
             binding.layoutRefresh.finishLoadMore()
+            if (page==0){
+                dataList.clear()
+            }
             dataList.addAll(it)
             if (mAdapter == null) {
                 binding.rvData.layoutManager = LinearLayoutManager(requireContext())

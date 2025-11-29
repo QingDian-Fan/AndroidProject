@@ -6,7 +6,7 @@ import com.scwang.smart.refresh.layout.api.RefreshLayout;
 
 
 public class SmartRefreshUtil {
-    private static final int HTTP_TIMEOUT = 2000;
+    private static final int HTTP_TIMEOUT = 3000;
     private final RefreshLayout mRefreshLayout;
     private RefreshListener mRefreshListener = null;
     private LoadMoreListener mLoadMoreListener = null;
