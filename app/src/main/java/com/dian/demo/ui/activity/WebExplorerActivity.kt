@@ -77,9 +77,9 @@ open class WebExplorerActivity : BaseAppBindActivity<ActivityWebExplorerBinding>
                 dialogFragment.setLinkData(
                     true,
                     mBitmap,
-                    mWebFragment!!.getCurrentUrlString(),
+                    mWebFragment?.getCurrentUrlString(),
                     ResourcesUtil.getString(R.string.app_name),
-                    mWebFragment!!.getCurrentTitleString()
+                    mWebFragment?.getCurrentTitleString()
                 )
                 dialogFragment.show(supportFragmentManager, "")
             }

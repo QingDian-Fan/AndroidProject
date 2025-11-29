@@ -67,6 +67,16 @@
             app:bar_leftTextSize="@dimen/dp_15" />
 
         <com.dian.demo.ui.view.SettingBar
+            android:id="@+id/ll_debug"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="@dimen/dp_3"
+            app:bar_rightDrawable="@mipmap/ic_enter"
+            app:bar_rightDrawableTint="@color/text_annotation"
+            app:bar_leftText="调试页面"
+            app:bar_leftTextSize="@dimen/dp_15" />
+
+        <com.dian.demo.ui.view.SettingBar
             android:id="@+id/btn_loginout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

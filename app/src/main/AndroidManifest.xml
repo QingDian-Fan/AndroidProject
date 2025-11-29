@@ -41,6 +41,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.activity.LoginContainerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.SearchActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.ContainerActivity"
             android:exported="false" />
         <activity

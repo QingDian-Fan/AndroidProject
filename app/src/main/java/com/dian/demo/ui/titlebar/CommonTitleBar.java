@@ -27,6 +27,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 
 import com.dian.demo.R;
@@ -755,7 +756,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
 
     public void setOpenStatusBar(boolean openStatusBar) {
         this.openStatusBar = openStatusBar;
-        removeView(viewStatusBarFill);
+        if (!openStatusBar) removeView(viewStatusBarFill);
     }
 
     /**
@@ -774,7 +775,7 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
      *
      * @param color
      */
-    public void setStatusBarColor(int color) {
+    public void setStatusBarColor(@ColorInt int color) {
         if (viewStatusBarFill != null) {
             viewStatusBarFill.setBackgroundColor(color);
         }
@@ -806,7 +807,9 @@ public class CommonTitleBar extends RelativeLayout implements View.OnClickListen
             StatusBarUtils.setDarkMode(window);
         }
     }
-
+    public View getMainView() {
+        return rlMain;
+    }
     /**
      * 获取标题栏底部横线
      *

@@ -11,8 +11,10 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityHomeBinding
 import com.dian.demo.ui.adapter.HomePagerAdapter
+import com.dian.demo.ui.fragment.AnswersFragment
 import com.dian.demo.ui.fragment.HomeFragment
 import com.dian.demo.ui.fragment.MineFragment
+import com.dian.demo.ui.fragment.SetupFragment
 import com.dian.demo.ui.titlebar.CommonTitleBar
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.ext.gone
@@ -26,7 +28,7 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
         fun start(mContext: Context) {
             val intent = Intent()
             intent.setClass(mContext, HomeActivity::class.java)
-            if (mContext !is Activity){
+            if (mContext !is Activity) {
                 intent.flags = FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
             mContext.startActivity(intent)
@@ -34,7 +36,12 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
     }
 
     private val fragmentList by lazy {
-        listOf(HomeFragment.getFragment(), MineFragment.getFragment())
+        listOf(
+            HomeFragment.getFragment(),
+            AnswersFragment.getFragment(),
+            SetupFragment.getFragment(),
+            MineFragment.getFragment()
+        )
     }
 
 
@@ -46,9 +53,11 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
         setPageTitle("首页")
         getTitleBarView().setLeftIcon(R.mipmap.ic_scan)
         getTitleBarView().setRightIcon(R.mipmap.ic_search)
-        getTitleBarView().setListener {  _, action, _ ->
+        getTitleBarView().setListener { _, action, _ ->
             if (action == CommonTitleBar.ACTION_LEFT_BUTTON) {
                 ScanActivity.start(this@HomeActivity)
+            }else if (action == CommonTitleBar.ACTION_RIGHT_BUTTON){
+                SearchActivity.start(this@HomeActivity)
             }
         }
         binding.vpContent.adapter = HomePagerAdapter(fragmentList, supportFragmentManager)
@@ -62,10 +71,23 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
                     getTitleBarView().setRightIcon(R.mipmap.ic_search)
                     binding.vpContent.currentItem = 0
                 }
-                R.id.tab_setting -> {
+
+                R.id.tab_answers -> {
                     getTitleBarView().leftImageButton.gone()
                     getTitleBarView().rightImageButton.gone()
                     binding.vpContent.currentItem = 1
+                }
+
+                R.id.tab_setup -> {
+                    getTitleBarView().leftImageButton.gone()
+                    getTitleBarView().rightImageButton.gone()
+                    binding.vpContent.currentItem = 2
+                }
+
+                R.id.tab_mine -> {
+                    getTitleBarView().leftImageButton.gone()
+                    getTitleBarView().rightImageButton.gone()
+                    binding.vpContent.currentItem = 3
                 }
             }
             true

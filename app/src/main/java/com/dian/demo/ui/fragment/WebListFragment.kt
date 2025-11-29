@@ -10,6 +10,8 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.databinding.FragmentWebListBinding
 import com.dian.demo.ui.adapter.WebRecordAdapter
+import com.dian.demo.utils.CustomDividerItemDecoration
+import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.webview.bean.WebDataEntry
 import com.dian.demo.utils.webview.utils.CollectWebPageUtil
 import com.dian.demo.utils.webview.utils.WebBookMarkUtil
@@ -47,6 +49,7 @@ class WebListFragment : BaseAppBindFragment<FragmentWebListBinding>() {
             return
         }
        binding.rvData.apply {
+           addItemDecoration(CustomDividerItemDecoration(2, ResourcesUtil.getColor(R.color.line_color)))
            layoutManager = LinearLayoutManager(requireActivity())
            adapter = WebRecordAdapter(dataList)
        }

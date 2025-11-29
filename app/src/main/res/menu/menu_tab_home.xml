@@ -7,8 +7,18 @@
         android:title="首页"
         app:showAsAction="always"/>
     <item
-        android:id="@+id/tab_setting"
+        android:id="@+id/tab_answers"
+        android:icon="@mipmap/icon_anwers"
+        android:title="问答"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/tab_setup"
+        android:icon="@mipmap/icon_setup"
+        android:title="体系"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/tab_mine"
         android:icon="@mipmap/icon_tab_mine"
         android:title="我的"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 </menu>

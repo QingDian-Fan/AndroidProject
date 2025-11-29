@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/navigation_serach"
+    app:startDestination="@id/searchHistoryFragment">
+
+    <fragment
+        android:id="@+id/searchResultFragment"
+        android:name="com.dian.demo.ui.fragment.SearchResultFragment"
+        android:label="SearchResultFragment" />
+
+    <fragment
+        android:id="@+id/searchHistoryFragment"
+        android:name="com.dian.demo.ui.fragment.SearchHistoryFragment"
+        android:label="SearchHistoryFragment" />
+</navigation>

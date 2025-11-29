@@ -17,6 +17,7 @@ import com.demo.project.utils.ext.visible
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.databinding.FragmentH5ContainerBinding
+import com.dian.demo.ui.activity.ContainerActivity
 import com.dian.demo.ui.dialog.WebMenuDialog
 import com.dian.demo.ui.dialog.WebShareDialog
 import com.dian.demo.utils.InputMethodUtils
@@ -164,6 +165,7 @@ class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
                 }
 
                 override fun onSetting() {
+                    ContainerActivity.start(requireActivity(),false,0)
                     dialog.dismissAllowingStateLoss()
                 }
             })

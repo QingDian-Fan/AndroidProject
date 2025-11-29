@@ -35,7 +35,7 @@ class MineFragment : BaseAppVMFragment<FragmentMineBinding, SettingViewModel>() 
         binding.sbTodo.singleClick {
             TodoListActivity.start(requireActivity())
         }
-        binding.llCollect.setOnClickListener {
+        binding.llBrowserCollect.setOnClickListener {
             ContainerActivity.start(requireActivity(), true,2)
         }
         binding.llReadLater.setOnClickListener {

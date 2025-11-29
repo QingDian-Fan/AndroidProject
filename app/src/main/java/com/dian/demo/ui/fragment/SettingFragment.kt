@@ -13,6 +13,7 @@ import com.dian.demo.base.BaseAppVMFragment
 import com.dian.demo.constant.ANDROID_ASSET_URI
 import com.dian.demo.databinding.FragmentSettingBinding
 import com.dian.demo.di.vm.SettingViewModel
+import com.dian.demo.ui.activity.DebugActivity
 import com.dian.demo.ui.activity.H5ContainerActivity
 import com.dian.demo.ui.activity.LoginActivity
 import com.dian.demo.utils.CacheUtil
@@ -35,9 +36,6 @@ class SettingFragment : BaseAppVMFragment<FragmentSettingBinding, SettingViewMod
         binding.llCache.setRightText(CacheUtil.getTotalCacheSize(
             ProjectApplication.getAppContext()
         ))
-        binding.btnLoginout.singleClick {
-            viewModel.doLoginOut()
-        }
 
         binding.llCache.setOnClickListener {
             CacheUtil.clearAllCache(requireActivity())
@@ -53,6 +51,14 @@ class SettingFragment : BaseAppVMFragment<FragmentSettingBinding, SettingViewMod
         binding.llPrivacy.setOnClickListener {
             H5ContainerActivity.start(requireActivity(),"${ANDROID_ASSET_URI}privacy_policy.html")
         }
+        binding.llDebug.singleClick {
+            DebugActivity.start(requireActivity())
+        }
+
+        binding.btnLoginout.singleClick {
+            viewModel.doLoginOut()
+        }
+
         viewModel.isLoginOut.observeNonNull(this) {
             ToastUtil.showToast(str = if (it) "退出成功" else "退出失败")
             if (it) {

@@ -82,6 +82,16 @@
                 app:bar_leftTextSize="@dimen/dp_15" />
 
             <com.dian.demo.ui.view.SettingBar
+                android:id="@+id/ll_browser_collect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="@dimen/dp_2"
+                app:bar_leftDrawable="@mipmap/icon_browser_collect"
+                app:bar_leftDrawableSize="@dimen/dp_16"
+                app:bar_leftText="浏览收藏"
+                app:bar_leftTextSize="@dimen/dp_15" />
+
+            <com.dian.demo.ui.view.SettingBar
                 android:id="@+id/ll_read_later"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

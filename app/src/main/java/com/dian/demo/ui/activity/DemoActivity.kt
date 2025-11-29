@@ -69,9 +69,8 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
 
 
     override fun initialize(savedInstanceState: Bundle?) {
-      getTitleBarView().setOpenStatusBar(false)
         getTitleBarView().setCenterText(ResourcesUtil.getString(R.string.demo_title_text))
-        getTitleBarView().leftImageButton.visibility = gone
+
 
         val isGray = AppDataStore.getData("isGray", false)
         binding.btnGray.text = "黑白屏：${isGray}"

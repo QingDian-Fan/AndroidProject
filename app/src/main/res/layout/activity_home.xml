@@ -23,6 +23,7 @@
             android:id="@+id/tab_home"
             android:layout_width="match_parent"
             android:background="@color/bg_common"
+            app:labelVisibilityMode="labeled"
             app:menu="@menu/menu_tab_home"
             android:layout_height="?actionBarSize"/>
     </LinearLayout>
