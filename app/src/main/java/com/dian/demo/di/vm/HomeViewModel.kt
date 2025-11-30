@@ -50,7 +50,6 @@ class HomeViewModel : BaseViewModel() {
                     it?.datas?.let {
                         articleData.value = it
                     }
-                    showToast("请求成功")
                 }
                 .onFailure { code, message ->
                     LogUtil.e("TAG----->Request", "articleList失败：code：${code},message:${message}")

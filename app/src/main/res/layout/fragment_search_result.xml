@@ -5,13 +5,21 @@
     <data>
 
     </data>
-
-    <FrameLayout
+    <com.scwang.smart.refresh.layout.SmartRefreshLayout
+        android:id="@+id/layoutRefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".ui.fragment.SearchResultFragment">
+        android:layout_height="wrap_content">
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".ui.fragment.SearchResultFragment">
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_data"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
 
 
+        </FrameLayout>
+    </com.scwang.smart.refresh.layout.SmartRefreshLayout>
 
-    </FrameLayout>
 </layout>

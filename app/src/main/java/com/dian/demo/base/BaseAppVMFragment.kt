@@ -15,7 +15,8 @@ import com.dian.demo.utils.ext.observeNonNull
  * @description: -
  * @since: 1.0.0
  */
-abstract class BaseAppVMFragment<B : ViewDataBinding, VM : BaseViewModel> : BaseAppBindFragment<B>() {
+abstract class BaseAppVMFragment<B : ViewDataBinding, VM : BaseViewModel> :
+    BaseAppBindFragment<B>() {
     protected lateinit var viewModel: VM
 
     override fun onCreateView(
@@ -34,13 +35,22 @@ abstract class BaseAppVMFragment<B : ViewDataBinding, VM : BaseViewModel> : Base
     }
 
 
-
     private fun injectViewModel() {
         val vm = createViewModel()
-        viewModel = ViewModelProvider(this, BaseViewModel.createViewModelFactory(vm))
-            .get(vm::class.java)
-        viewModel.application = requireActivity().application
-        lifecycle.addObserver(viewModel)
+        val isUseActivity = isUserActivityViewModel()
+        if (isUseActivity) {
+            viewModel =
+                ViewModelProvider(requireActivity(), BaseViewModel.createViewModelFactory(vm))
+                    .get(vm::class.java)
+            viewModel.application = requireActivity().application
+            requireActivity().lifecycle.addObserver(viewModel)
+        } else {
+            viewModel = ViewModelProvider(this, BaseViewModel.createViewModelFactory(vm))
+                .get(vm::class.java)
+            viewModel.application = requireActivity().application
+            lifecycle.addObserver(viewModel)
+        }
+
     }
 
 
@@ -69,6 +79,9 @@ abstract class BaseAppVMFragment<B : ViewDataBinding, VM : BaseViewModel> : Base
     }
 
     protected abstract fun createViewModel(): VM;
+    protected open fun isUserActivityViewModel(): Boolean{
+        return false
+    }
 
     override fun onDestroy() {
         lifecycle.removeObserver(viewModel)

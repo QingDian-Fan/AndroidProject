@@ -21,7 +21,6 @@ class DemoViewModel : BaseViewModel() {
                     }
                     localRepo.deleteArticleEntities()
                     localRepo.insertArticleEntities(articleList)
-                    showToast("请求成功")
                 }
                 .onFailure { _, _ ->
                     showErrorView(true)
@@ -38,7 +37,6 @@ class DemoViewModel : BaseViewModel() {
         launchOnUI {
             repo.doLogin(username,password)
                 .onSuccess {
-                    showToast("请求成功")
                 }
         }
     }

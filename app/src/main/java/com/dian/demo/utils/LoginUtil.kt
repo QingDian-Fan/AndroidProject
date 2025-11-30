@@ -1,5 +1,6 @@
 package com.dian.demo.utils
 
+import android.util.Log
 import com.dian.annotation.CheckLogin
 import com.dian.demo.di.model.UserBean
 import com.dian.demo.di.model.UserInfo
@@ -12,7 +13,9 @@ object LoginUtil {
     fun isLogin(): Boolean {
         val cookies = AppDataStore.getData("www.wanandroid.com", "")
         val cookie: String = cookies.ifEmpty { "" }
-        return cookie.isNotEmpty()
+        val isLogin = cookie.isNotEmpty()
+        LogUtil.e("TAG--->","isLogin::${isLogin}")
+        return isLogin
     }
 
     fun saveLoginInfo(data: UserInfo) {

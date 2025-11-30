@@ -66,32 +66,38 @@ class HomeFragment : BaseAppVMFragment<FragmentHomeBinding, HomeViewModel>() {
             viewModel.getArticleList(page = page)
         }
         SmartRefreshUtil.with(binding.layoutRefresh).setLoadMoreListener {
-            viewModel.getArticleList(page++)
+            page = page + 1
+            viewModel.getArticleList(page)
         }
 
         viewModel.articleData.observeNonNull(this) {
             binding.layoutRefresh.finishRefresh()
             binding.layoutRefresh.finishLoadMore()
-            if (page==0){
-                dataList.clear()
-            }
-            dataList.addAll(it)
+
             if (mAdapter == null) {
+                mAdapter = GlobalArticleAdapter()
                 binding.rvData.layoutManager = LinearLayoutManager(requireContext())
-                binding.rvData.addItemDecoration(CustomDividerItemDecoration(2, ResourcesUtil.getColor(R.color.line_color)))
-                mAdapter = GlobalArticleAdapter(dataList)
-
+                binding.rvData.addItemDecoration(
+                    CustomDividerItemDecoration(
+                        2,
+                        ResourcesUtil.getColor(R.color.line_color)
+                    )
+                )
                 binding.rvData.adapter = mAdapter
-                mAdapter?.setListener {
-                    it?.let {
-                        WebExplorerActivity.start(requireContext(), it, it)
-                    }
+                mAdapter?.setListener { link ->
+                    link?.let { WebExplorerActivity.start(requireContext(), it, it) }
                 }
-            } else {
-                mAdapter?.notifyDataSetChanged()
             }
 
+            if (page == 0) {
+                mAdapter?.submitList(it.toMutableList())
+            } else {
+                val mergeList = mAdapter?.currentList?.toMutableList()
+                mergeList?.addAll(it)
+                mAdapter?.submitList(mergeList)
+            }
         }
+
     }
 
 

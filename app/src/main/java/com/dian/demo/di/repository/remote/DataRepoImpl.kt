@@ -97,6 +97,16 @@ class DataRepoImpl : DataRepo {
         )
     }
 
+    override suspend fun getAnswersList(page: Int): ResponseHolder<ListData<ArticleBean>> {
+        return HttpUtils.getInstance().get(
+            url = format("wenda/list/%d/json", page),
+            type = Types.newParameterizedType(
+                Result::class.java,
+                Types.newParameterizedType(ListData::class.java, ArticleBean::class.java)
+            )
+        )
+    }
+
     /**
      * https://www.wanandroid.com/lg/todo/v2/list/页码/json
      * 页码从1开始，拼接在url 上
@@ -121,6 +131,29 @@ class DataRepoImpl : DataRepo {
             type = Types.newParameterizedType(
                 Result::class.java,
                 UserInfo::class.java
+            )
+        )
+    }
+
+    override suspend fun getSearchHotHistoryRecord(): ResponseHolder<List<SearchRecord>> {
+       return HttpUtils.getInstance().get(
+           url = "hotkey/json",
+           type = Types.newParameterizedType(
+               Result::class.java,
+                       Types.newParameterizedType(List::class.java, SearchRecord::class.java)
+           )
+       )
+    }
+
+    override suspend fun getSearchList(page: Int,keyword: String): ResponseHolder<ListData<ArticleBean>> {
+        map.clear()
+        map["k"] = keyword
+        return HttpUtils.getInstance().post(
+            url = format("article/query/%d/json", page),
+            params = map,
+            type = Types.newParameterizedType(
+                Result::class.java,
+                Types.newParameterizedType(ListData::class.java, ArticleBean::class.java)
             )
         )
     }

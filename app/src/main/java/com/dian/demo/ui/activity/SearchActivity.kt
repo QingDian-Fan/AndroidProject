@@ -9,12 +9,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.addTextChangedListener
+import androidx.navigation.fragment.NavHostFragment
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppVMActivity
 import com.dian.demo.databinding.ActivitySearchBinding
+import com.dian.demo.di.model.SearchRecord
+import com.dian.demo.di.vm.SearchData
 import com.dian.demo.di.vm.SearchViewModel
 import com.dian.demo.utils.ResourcesUtil
+import com.dian.demo.utils.SearchRecordUtil
 import com.dian.demo.utils.ext.gone
+import com.dian.demo.utils.ext.observeNonNull
+import com.dian.demo.utils.ext.visible
 
 class SearchActivity : BaseAppVMActivity<ActivitySearchBinding, SearchViewModel>() {
 
@@ -41,6 +48,42 @@ class SearchActivity : BaseAppVMActivity<ActivitySearchBinding, SearchViewModel>
         getTitleBarView().setStatusBarColor(ResourcesUtil.getColor(R.color.colorPink))
         binding.ivBack.setOnClickListener {
             onBackPressed()
+        }
+        initView()
+        initData()
+    }
+
+    private fun initView() {
+        binding.etSearch.addTextChangedListener {
+            runOnUiThread {
+                if (it?.isNotEmpty()?:false){
+                    binding.aivClear.visible()
+                }else{
+                    binding.aivClear.gone()
+                }
+            }
+        }
+        binding.aivClear.setOnClickListener {
+            binding.etSearch.setText(null)
+        }
+        binding.btnSearch.setOnClickListener {
+            val keyword = binding.etSearch.text.toString()
+            if (keyword.isNotEmpty()) {
+                val navHostFragment = supportFragmentManager
+                    .findFragmentById(R.id.fragmentContainerView) as NavHostFragment
+                navHostFragment.navController.navigate(R.id.searchResultFragment)
+                viewModel.putHistoryRecord(SearchRecord(0, null, keyword, "", ""))
+                viewModel.loadData.value = SearchData(0, keyword)
+                viewModel.getSearchList(0, keyword)
+            }
+        }
+    }
+
+    private fun initData() {
+        viewModel.clickData.observeNonNull(this) {
+            it.name?.let { name ->
+                binding.etSearch.setText(name)
+            }
         }
     }
 

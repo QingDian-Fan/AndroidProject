@@ -13,6 +13,7 @@ import com.demo.project.utils.ext.visible
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.databinding.FragmentWebBinding
+import androidx.core.net.toUri
 
 
 //https://github.com/liyihuanx/NewWebView
@@ -85,14 +86,14 @@ class WebFragment : BaseAppBindFragment<FragmentWebBinding>(), WebViewCallBack {
     }
 
     override fun overrideUrlLoading(view: WebView?, url: WebResourceRequest?): Boolean {
-        val uri = Uri.parse(url?.url.toString())
+        val uri = url?.url.toString().toUri()
         return if ("http" == uri.scheme || "https" == uri.scheme) {
             view?.loadUrl(url?.url.toString())
             currentUrlString = url?.url.toString()
             false
         } else {
             try {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url?.url.toString()))
+                val intent = Intent(Intent.ACTION_VIEW, url?.url.toString().toUri())
                 startActivity(intent)
             } catch (e: Exception) {
                 e.printStackTrace()

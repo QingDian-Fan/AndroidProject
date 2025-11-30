@@ -1,6 +1,7 @@
 package com.dian.demo.http
 
 import android.content.Context
+import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.dian.demo.ProjectApplication
 import com.dian.demo.http.cookie.AddCookieInterceptor
 import com.dian.demo.http.cookie.SaveCookieInterceptor
@@ -48,7 +49,7 @@ class HttpUtils {
             .addInterceptor(NetCacheInterceptor())
             .addInterceptor(OfflineCacheInterceptor())
             .addInterceptor(ParamsInterceptor())
-            //.addInterceptor(ChuckerInterceptor(ProjectApplication.getAppContext()))
+            .addInterceptor(ChuckerInterceptor(ProjectApplication.getAppContext()))
             .addNetworkInterceptor(CurlLogInterceptor(), true)
             .openLog(BuildConfig.DEBUG)
             .retryOnConnectionFailure(true)

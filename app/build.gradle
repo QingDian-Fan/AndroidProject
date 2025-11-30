@@ -232,7 +232,7 @@ dependencies {
 
 
     debugImplementation "com.github.chuckerteam.chucker:library:4.2.0"
-    //releaseImplementation "com.github.chuckerteam.chucker:library-no-op:4.2.0"
+    releaseImplementation "com.github.chuckerteam.chucker:library-no-op:4.2.0"
     /*================================leakcanary============================================*/
     /* debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7' */
     /*================================leakcanary============================================*/
