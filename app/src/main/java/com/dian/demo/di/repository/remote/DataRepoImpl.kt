@@ -107,6 +107,27 @@ class DataRepoImpl : DataRepo {
         )
     }
 
+    override suspend fun getMineShareList(page: Int): ResponseHolder<ShareArticle> {
+       val mPage =  page+1
+        return HttpUtils.getInstance().get(
+            url = format("user/lg/private_articles/%d/json", mPage),
+            type = Types.newParameterizedType(
+                Result::class.java,
+                ShareArticle::class.java
+            )
+        )
+    }
+
+    override suspend fun getMineCollectList(page: Int): ResponseHolder<ListData<ArticleBean>> {
+        return HttpUtils.getInstance().get(
+            url = format("lg/collect/list/%d/json", page),
+            type = Types.newParameterizedType(
+                Result::class.java,
+                Types.newParameterizedType(ListData::class.java, ArticleBean::class.java)
+            )
+        )
+    }
+
     /**
      * https://www.wanandroid.com/lg/todo/v2/list/页码/json
      * 页码从1开始，拼接在url 上

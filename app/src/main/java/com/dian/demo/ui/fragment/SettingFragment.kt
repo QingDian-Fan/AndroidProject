@@ -64,6 +64,7 @@ class SettingFragment : BaseAppVMFragment<FragmentSettingBinding, SettingViewMod
             if (it) {
                 LoginUtil.clearLoginInfo()
                 LoginActivity.start(requireActivity())
+                activity?.finish()
             }
         }
     }

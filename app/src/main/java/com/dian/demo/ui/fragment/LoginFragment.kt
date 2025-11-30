@@ -50,6 +50,7 @@ class LoginFragment : BaseAppVMFragment<FragmentLoginBinding, LoginViewModel>() 
             val targetIntent = (activity as? LoginActivity)?.intent?.getParcelableExtra<Intent>(HOOK_AMS_EXTRA_NAME)
             if (targetIntent != null) {
                 startActivity(targetIntent)
+                activity?.finish()
             }else{
                activity?.finish()
             }

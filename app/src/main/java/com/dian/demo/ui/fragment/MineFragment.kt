@@ -8,6 +8,7 @@ import com.dian.demo.di.vm.SettingViewModel
 import com.dian.demo.ui.activity.ContainerActivity
 import com.dian.demo.ui.activity.DemoActivity
 import com.dian.demo.ui.activity.LoginActivity
+import com.dian.demo.ui.activity.LoginContainerActivity
 import com.dian.demo.ui.activity.TodoListActivity
 import com.dian.demo.utils.LoginUtil
 import com.dian.demo.utils.SmartRefreshUtil
@@ -32,6 +33,12 @@ class MineFragment : BaseAppVMFragment<FragmentMineBinding, SettingViewModel>() 
 
         SmartRefreshUtil.with(binding.smartLayout).setScrollMode()
 
+        binding.llCollect.singleClick {
+            LoginContainerActivity.start(requireActivity(),1)
+        }
+        binding.llShare.singleClick {
+            LoginContainerActivity.start(requireActivity(),0)
+        }
         binding.sbTodo.singleClick {
             TodoListActivity.start(requireActivity())
         }
