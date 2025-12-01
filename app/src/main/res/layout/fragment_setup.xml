@@ -15,7 +15,6 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:background="@color/bg_common"
-
             android:layout_height="wrap_content">
             <net.lucode.hackware.magicindicator.MagicIndicator
                 android:id="@+id/magic_indicator"
@@ -23,7 +22,10 @@
                 android:layout_centerInParent="true"
                 android:layout_height="@dimen/dp_44"/>
         </RelativeLayout>
-
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2px"
+        android:background="@color/line_color"/>
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/vp_data"
             android:layout_width="match_parent"
