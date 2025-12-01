@@ -169,7 +169,7 @@ class DataRepoImpl : DataRepo {
     override suspend fun getSearchList(page: Int,keyword: String): ResponseHolder<ListData<ArticleBean>> {
         map.clear()
         map["k"] = keyword
-        return HttpUtils.getInstance().get(
+        return HttpUtils.getInstance().post(
             url = format("article/query/%d/json", page),
             params = map,
             type = Types.newParameterizedType(
@@ -191,7 +191,7 @@ class DataRepoImpl : DataRepo {
     }
 
     override suspend fun getNavigationDataList(): ResponseHolder<List<SetUpData>> {
-        return HttpUtils.getInstance().post(
+        return HttpUtils.getInstance().get(
             url = format("navi/json"),
             params = map,
             type = Types.newParameterizedType(
