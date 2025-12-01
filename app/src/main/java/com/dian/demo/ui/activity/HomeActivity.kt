@@ -60,11 +60,14 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
                 SearchActivity.start(this@HomeActivity)
             }
         }
+        binding.vpContent.offscreenPageLimit = fragmentList.size
         binding.vpContent.adapter = HomePagerAdapter(fragmentList, supportFragmentManager)
         binding.tabHome.setOnItemSelectedListener {
-            getTitleBarView().setCenterText(it.title)
             when (it.itemId) {
                 R.id.tab_home -> {
+                    getTitleBarView().mainView.visible()
+                    getTitleBarView().bottomLine.visible()
+                    getTitleBarView().setCenterText(it.title)
                     getTitleBarView().leftImageButton.visible()
                     getTitleBarView().rightImageButton.visible()
                     getTitleBarView().setLeftIcon(R.mipmap.ic_scan)
@@ -73,18 +76,26 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
                 }
 
                 R.id.tab_answers -> {
+                    getTitleBarView().mainView.visible()
+                    getTitleBarView().bottomLine.visible()
+                    getTitleBarView().setCenterText(it.title)
                     getTitleBarView().leftImageButton.gone()
                     getTitleBarView().rightImageButton.gone()
                     binding.vpContent.currentItem = 1
                 }
 
                 R.id.tab_setup -> {
+                    getTitleBarView().mainView.gone()
+                    getTitleBarView().bottomLine.gone()
                     getTitleBarView().leftImageButton.gone()
                     getTitleBarView().rightImageButton.gone()
                     binding.vpContent.currentItem = 2
                 }
 
                 R.id.tab_mine -> {
+                    getTitleBarView().mainView.visible()
+                    getTitleBarView().bottomLine.visible()
+                    getTitleBarView().setCenterText(it.title)
                     getTitleBarView().leftImageButton.gone()
                     getTitleBarView().rightImageButton.gone()
                     binding.vpContent.currentItem = 3

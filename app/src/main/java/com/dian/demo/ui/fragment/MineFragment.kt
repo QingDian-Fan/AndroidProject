@@ -27,7 +27,7 @@ class MineFragment : BaseAppVMFragment<FragmentMineBinding, SettingViewModel>() 
 
     override fun getLayoutId(): Int = R.layout.fragment_mine
 
-    override fun createViewModel(): SettingViewModel = SettingViewModel()
+    override fun getViewModelClass(): Class<SettingViewModel> = SettingViewModel::class.java
 
     override fun initialize(savedInstanceState: Bundle?) {
 

@@ -28,8 +28,8 @@ class SearchResultFragment : BaseAppVMFragment<FragmentSearchResultBinding, Sear
     private var mAdapter: GlobalArticleAdapter? = null
 
 
-    override fun isUserActivityViewModel(): Boolean = true
-    override fun createViewModel(): SearchViewModel = SearchViewModel()
+    override fun isUseActivityViewModel(): Boolean = true
+    override fun getViewModelClass(): Class<SearchViewModel> = SearchViewModel::class.java
 
     override fun getLayoutId(): Int = R.layout.fragment_search_result
 

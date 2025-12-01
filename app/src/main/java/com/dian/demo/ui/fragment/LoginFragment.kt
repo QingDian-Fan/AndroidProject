@@ -29,7 +29,7 @@ import com.dian.demo.utils.LoginUtil
 class LoginFragment : BaseAppVMFragment<FragmentLoginBinding, LoginViewModel>() {
 
 
-    override fun createViewModel(): LoginViewModel = LoginViewModel()
+    override fun getViewModelClass(): Class<LoginViewModel> = LoginViewModel::class.java
 
     override fun getLayoutId(): Int = R.layout.fragment_login
 

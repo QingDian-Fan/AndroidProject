@@ -34,7 +34,7 @@ class HomeFragment : BaseAppVMFragment<FragmentHomeBinding, HomeViewModel>() {
         fun getFragment() = HomeFragment()
     }
 
-    override fun createViewModel(): HomeViewModel = HomeViewModel()
+    override fun getViewModelClass(): Class<HomeViewModel> = HomeViewModel::class.java
 
     override fun getLayoutId(): Int = R.layout.fragment_home
 

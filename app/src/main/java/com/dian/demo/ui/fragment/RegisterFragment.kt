@@ -21,9 +21,10 @@ import com.dian.demo.utils.ext.singleClick
 class RegisterFragment : BaseAppVMFragment<FragmentRegisterBinding,LoginViewModel>() {
 
 
-    override fun createViewModel(): LoginViewModel = LoginViewModel()
 
     override fun getLayoutId(): Int = R.layout.fragment_register
+
+    override fun getViewModelClass(): Class<LoginViewModel> = LoginViewModel::class.java
 
     override fun initialize(savedInstanceState: Bundle?) {
 
@@ -47,4 +48,7 @@ class RegisterFragment : BaseAppVMFragment<FragmentRegisterBinding,LoginViewMode
             )
         }
     }
+
+
+
 }

@@ -263,6 +263,9 @@ dependencies {
     implementation 'skin.support:skin-support-constraint-layout:4.0.5'
     // skin-support-constraint-layout ConstraintLayout 控件支持[可选]
 
+    implementation 'com.google.android:flexbox:1.0.0'
+
+
 }
 
 protobuf {

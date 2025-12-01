@@ -19,9 +19,9 @@ import com.dian.demo.utils.ext.visible
 class SearchHistoryFragment : BaseAppVMFragment<FragmentSearchHistoryBinding, SearchViewModel>() {
      var mLocalAdapter:SearchRecordAdapter? = null
 
-    override fun isUserActivityViewModel():Boolean = true
+    override fun isUseActivityViewModel():Boolean = true
 
-    override fun createViewModel(): SearchViewModel = SearchViewModel()
+    override fun getViewModelClass(): Class<SearchViewModel> = SearchViewModel::class.java
 
     override fun getLayoutId(): Int = R.layout.fragment_search_history
 

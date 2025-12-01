@@ -29,7 +29,7 @@ class MineListFragment : BaseAppVMFragment<FragmentMineListBinding, MineListView
     private val dataList: ArrayList<ArticleBean> by lazy { arrayListOf() }
 
     override fun getLayoutId(): Int = R.layout.fragment_mine_list
-    override fun createViewModel(): MineListViewModel = MineListViewModel()
+    override fun getViewModelClass(): Class<MineListViewModel> = MineListViewModel::class.java
 
     private var mListPage = 0
 

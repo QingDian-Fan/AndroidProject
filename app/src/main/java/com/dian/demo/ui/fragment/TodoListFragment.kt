@@ -18,7 +18,7 @@ class TodoListFragment : BaseAppVMFragment<FragmentTodoListBinding, TodoViewMode
         fun getFragment() = TodoListFragment()
     }
 
-    override fun createViewModel(): TodoViewModel = TodoViewModel()
+    override fun getViewModelClass(): Class<TodoViewModel> = TodoViewModel::class.java
 
     override fun getLayoutId(): Int = R.layout.fragment_todo_list
 

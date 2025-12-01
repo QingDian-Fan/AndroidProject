@@ -69,7 +69,7 @@ class SettingFragment : BaseAppVMFragment<FragmentSettingBinding, SettingViewMod
         }
     }
 
-    override fun createViewModel(): SettingViewModel  = SettingViewModel()
+    override fun getViewModelClass(): Class<SettingViewModel> = SettingViewModel::class.java
 
 
 }

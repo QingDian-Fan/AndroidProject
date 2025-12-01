@@ -25,7 +25,7 @@ class AnswersFragment : BaseAppVMFragment<FragmentAnswersBinding, AnswersViewMod
     private var mAdapter: GlobalArticleAdapter? = null
     private val dataList: ArrayList<ArticleBean> by lazy { arrayListOf() }
 
-    override fun createViewModel(): AnswersViewModel  = AnswersViewModel()
+    override fun getViewModelClass(): Class<AnswersViewModel> =  AnswersViewModel::class.java
 
     override fun getLayoutId(): Int = R.layout.fragment_answers
 
