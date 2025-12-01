@@ -169,12 +169,34 @@ class DataRepoImpl : DataRepo {
     override suspend fun getSearchList(page: Int,keyword: String): ResponseHolder<ListData<ArticleBean>> {
         map.clear()
         map["k"] = keyword
-        return HttpUtils.getInstance().post(
+        return HttpUtils.getInstance().get(
             url = format("article/query/%d/json", page),
             params = map,
             type = Types.newParameterizedType(
                 Result::class.java,
                 Types.newParameterizedType(ListData::class.java, ArticleBean::class.java)
+            )
+        )
+    }
+
+    override suspend fun getSetupDataList(): ResponseHolder<List<SetUpData>> {
+        return HttpUtils.getInstance().get(
+            url = format("tree/json"),
+            params = map,
+            type = Types.newParameterizedType(
+                Result::class.java,
+                Types.newParameterizedType(List::class.java, SetUpData::class.java)
+            )
+        )
+    }
+
+    override suspend fun getNavigationDataList(): ResponseHolder<List<SetUpData>> {
+        return HttpUtils.getInstance().post(
+            url = format("navi/json"),
+            params = map,
+            type = Types.newParameterizedType(
+                Result::class.java,
+                Types.newParameterizedType(List::class.java, SetUpData::class.java)
             )
         )
     }

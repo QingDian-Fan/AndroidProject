@@ -28,4 +28,8 @@ interface DataRepo {
     suspend fun getSearchHotHistoryRecord(): ResponseHolder<List<SearchRecord>>
 
     suspend fun getSearchList(page:Int,keyword: String): ResponseHolder<ListData<ArticleBean>>
+
+    suspend fun getSetupDataList(): ResponseHolder<List<SetUpData>>
+
+    suspend fun getNavigationDataList(): ResponseHolder<List<SetUpData>>
 }

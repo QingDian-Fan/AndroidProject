@@ -27,11 +27,11 @@ import net.lucode.hackware.magicindicator.buildins.commonnavigator.titles.ColorT
 
 class SetupFragment : BaseAppVMFragment<FragmentSetupBinding, SetupViewModel>() {
 
-    private val titles = mutableListOf<String>("推荐", "视频")
+    private val titles = mutableListOf<String>("体系", "导航")
     private val fragmentList by lazy {
         listOf(
-            SetUpChildFragment.getFragment(),
-            SetUpChildFragment.getFragment()
+            SetUpChildFragment.getFragment(0),
+            SetUpChildFragment.getFragment(1)
         )
     }
 
