@@ -16,4 +16,8 @@
         android:id="@+id/aboutFragment"
         android:name="com.dian.demo.ui.fragment.AboutFragment"
         android:label="AboutFragment" />
+    <fragment
+        android:id="@+id/knowledgeDetailFragment"
+        android:name="com.dian.demo.ui.fragment.KnowledgeDetailFragment"
+        android:label="KnowledgeDetailFragment" />
 </navigation>
