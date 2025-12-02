@@ -19,11 +19,12 @@
             android:layout_marginBottom="@dimen/dp_5"
             android:layout_height="wrap_content" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_data"
-            android:paddingHorizontal="@dimen/dp_12"
+
+        <com.dian.demo.ui.view.FlowLayout
+            android:id="@+id/fl_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:paddingHorizontal="@dimen/dp_12"
+            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 </layout>

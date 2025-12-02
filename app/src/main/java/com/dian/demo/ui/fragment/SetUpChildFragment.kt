@@ -3,19 +3,16 @@ package com.dian.demo.ui.fragment
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.flexbox.FlexboxLayoutManager
 import com.dian.demo.R
-import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.base.BaseAppVMFragment
 import com.dian.demo.databinding.FragmentSetUpChildBinding
+import com.dian.demo.di.model.NavigationData
 import com.dian.demo.di.model.SetUpData
 import com.dian.demo.di.vm.SetupViewModel
+import com.dian.demo.ui.activity.ContainerActivity
 import com.dian.demo.ui.adapter.SetupAdapter
 import com.dian.demo.utils.SmartRefreshUtil
 import com.dian.demo.utils.ext.observeNonNull
-import com.google.android.flexbox.FlexDirection
-import com.google.android.flexbox.FlexWrap
-import com.google.android.flexbox.JustifyContent
 
 
 class SetUpChildFragment : BaseAppVMFragment<FragmentSetUpChildBinding, SetupViewModel>() {
@@ -58,6 +55,9 @@ class SetUpChildFragment : BaseAppVMFragment<FragmentSetUpChildBinding, SetupVie
         if (setupAdapter == null) {
             binding.rvData.layoutManager = LinearLayoutManager(requireContext())
             setupAdapter = SetupAdapter(page == 0)
+            setupAdapter?.setListener { isSetup, titleList, data ->
+                ContainerActivity.start(requireActivity(),0,titleList,data)
+            }
             binding.rvData.adapter = setupAdapter
         }
         setupAdapter?.submitList(dataList)
