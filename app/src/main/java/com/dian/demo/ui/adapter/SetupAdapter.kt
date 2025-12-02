@@ -59,6 +59,7 @@ class SetupAdapter(
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val item = differ.currentList[position]
+
         with(holder) {
             binding.tvTitle.text = item.name ?: ""
             val mList = if (isSetUp) item.children

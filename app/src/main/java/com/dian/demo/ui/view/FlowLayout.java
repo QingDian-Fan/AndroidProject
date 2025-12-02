@@ -1,6 +1,5 @@
 package com.dian.demo.ui.view;
 
-
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.util.AttributeSet;
@@ -11,6 +10,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FlowLayout extends ViewGroup {
+
+    public static final int GRAVITY_TOP = 0;
+    public static final int GRAVITY_CENTER = 1;
+    public static final int GRAVITY_BOTTOM = 2;
+
+    private int itemSpacing = 0;     // 子项左右间距
+    private int lineSpacing = 0;     // 行间距
+    private int maxLines = Integer.MAX_VALUE; // 最大行数
+    private int gravity = GRAVITY_TOP; // 行内对齐方式
+
+    private List<List<View>> lines = new ArrayList<>();
+    private List<Integer> lineHeights = new ArrayList<>();
 
     public FlowLayout(Context context) {
         this(context, null);
@@ -24,139 +35,191 @@ public class FlowLayout extends ViewGroup {
         super(context, attrs, defStyleAttr);
     }
 
-    private List<List<View>> mChildViews = new ArrayList<>();
-    private ArrayList<View> childViews = new ArrayList<>();//每一行的View
-    private int lines;
-    private int mCurrentLines;
+    /********************** 公开 API：不影响你原来的调用 ************************/
+
+    public void setItemSpacing(int itemSpacing) {
+        this.itemSpacing = itemSpacing;
+        requestLayout();
+    }
+
+    public void setLineSpacing(int lineSpacing) {
+        this.lineSpacing = lineSpacing;
+        requestLayout();
+    }
+
+    public void setMaxLines(int maxLines) {
+        this.maxLines = maxLines;
+        requestLayout();
+    }
+
+    public void setGravity(int gravity) {
+        this.gravity = gravity;
+        requestLayout();
+    }
+
+    /********************** Measure ************************/
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        //判断用户是否设置宽度为wrap_content，如果是wrap_content则抛出异常
-        if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.AT_MOST) {
-            throw new RuntimeException("FlowLayout does not allow setting layout_width to wrap_content");
-        }
-        mCurrentLines = 0;
-        //获取View个数
-        int childCount = getChildCount();
-        //获取宽度
+        lines.clear();
+        lineHeights.clear();
+
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        //计算高度
-        int heightSize = getPaddingTop() + getPaddingBottom();
-        int lineWidth = 0;
-        int maxLineHeight = 0;
-        mChildViews.clear();
-        childViews.clear();
-        //循环所有的View计算高度  注意处理Gone,padding margin
+        int widthLimit = widthSize - getPaddingLeft() - getPaddingRight();
+
+        int currentLineWidth = 0;
+        int currentLineHeight = 0;
+        List<View> currentLine = new ArrayList<>();
+
+        int totalHeight = getPaddingTop() + getPaddingBottom();
+        int childCount = getChildCount();
+        int lineCount = 1;
+
         for (int i = 0; i < childCount; i++) {
-            //获取子View
-            View mChildView = getChildAt(i);
-            if (mChildView.getVisibility() == GONE) continue;
-            //这句话执行完毕之后  就可以获取子View的宽高了 因为这句话会调用子View 的measure方法
-            measureChild(mChildView, widthMeasureSpec, heightMeasureSpec);
-            //获取layoutParams  计算最大高度
-            MarginLayoutParams layoutParams = (MarginLayoutParams) mChildView.getLayoutParams();
-            maxLineHeight = Math.max(maxLineHeight, mChildView.getMeasuredHeight() + layoutParams.topMargin + layoutParams.bottomMargin);
-            int mChildWidth = mChildView.getMeasuredWidth() + layoutParams.leftMargin + layoutParams.rightMargin;
 
-            if (lineWidth + mChildWidth > widthSize - getPaddingLeft() - getPaddingRight()) {
-                // 需要换行
-                heightSize += maxLineHeight;
-                maxLineHeight = 0;
-                lineWidth = mChildWidth;
-                mChildViews.add(childViews);
-                childViews = new ArrayList<>();
-                mCurrentLines++;
-                if (lines != 0 && mCurrentLines == lines) break;
-            } else {
-                //未满一行不需要换行
-                lineWidth += mChildWidth;
+            View child = getChildAt(i);
+            if (child.getVisibility() == GONE) continue;
+
+            measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0);
+            MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+
+            int childWidth = child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
+            int childHeight = child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
+
+            // 是否需要换行
+            if (!currentLine.isEmpty()
+                    && currentLineWidth + childWidth + itemSpacing > widthLimit) {
+
+                lines.add(currentLine);
+                lineHeights.add(currentLineHeight);
+
+                totalHeight += currentLineHeight + lineSpacing;
+
+                lineCount++;
+                if (lineCount > maxLines) break;
+
+                currentLine = new ArrayList<>();
+                currentLineWidth = 0;
+                currentLineHeight = 0;
             }
 
-            childViews.add(mChildView);
-            if (i == (childCount - 1)) {
-                heightSize += maxLineHeight;
-                mChildViews.add(childViews);
-            }
+            currentLine.add(child);
+            currentLineWidth += (currentLineWidth == 0 ? childWidth : childWidth + itemSpacing);
+            currentLineHeight = Math.max(currentLineHeight, childHeight);
         }
-        //设置自己的宽高
-        setMeasuredDimension(widthSize, heightSize);
+
+        // 最后一行
+        if (!currentLine.isEmpty() && lineCount <= maxLines) {
+            lines.add(currentLine);
+            lineHeights.add(currentLineHeight);
+            totalHeight += currentLineHeight;
+        }
+
+        setMeasuredDimension(
+                widthSize,
+                resolveSize(totalHeight, heightMeasureSpec)
+        );
     }
+
+    /********************** Layout ************************/
 
     @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 
-        int top = getPaddingTop();
+        int curLeft = getPaddingLeft();
+        int curTop = getPaddingTop();
 
-        for (List<View> lineViews : mChildViews) {
-            int left = getPaddingLeft();
-            int maxHeight = 0;
+        for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
 
-            for (View child : lineViews) {
+            List<View> line = lines.get(lineIndex);
+            int lineHeight = lineHeights.get(lineIndex);
+
+            curLeft = getPaddingLeft();
+
+            for (View child : line) {
+
                 MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
 
-                int childLeft = left + lp.leftMargin;
-                int childTop = top + lp.topMargin;
-                int childRight = childLeft + child.getMeasuredWidth();
-                int childBottom = childTop + child.getMeasuredHeight();
+                int childWidth = child.getMeasuredWidth();
+                int childHeight = child.getMeasuredHeight();
 
-                child.layout(childLeft, childTop, childRight, childBottom);
+                // 行内对齐
+                int childTop;
+                switch (gravity) {
+                    case GRAVITY_CENTER:
+                        childTop = curTop + (lineHeight - childHeight) / 2 + lp.topMargin - lp.bottomMargin;
+                        break;
+                    case GRAVITY_BOTTOM:
+                        childTop = curTop + lineHeight - childHeight - lp.bottomMargin;
+                        break;
+                    case GRAVITY_TOP:
+                    default:
+                        childTop = curTop + lp.topMargin;
+                        break;
+                }
 
-                left += child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
+                int childLeft = curLeft + lp.leftMargin;
 
-                maxHeight = Math.max(maxHeight,
-                        child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);
+                child.layout(
+                        childLeft,
+                        childTop,
+                        childLeft + childWidth,
+                        childTop + childHeight
+                );
+
+                curLeft += childWidth + lp.leftMargin + lp.rightMargin + itemSpacing;
             }
 
-            top += maxHeight; // 换到下一行
+            curTop += lineHeight + lineSpacing;
         }
     }
 
-
-    public void setLines(int lines) {
-        this.lines = lines;
-    }
+    /********************** LayoutParams 支持 Margin ************************/
 
     @Override
     public LayoutParams generateLayoutParams(AttributeSet attrs) {
         return new MarginLayoutParams(getContext(), attrs);
     }
 
-    private FlowLayoutAdapter mAdapter;
-    private DataSetObserver mDataSetObserver;
+    @Override
+    protected LayoutParams generateDefaultLayoutParams() {
+        return new MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+    }
 
+    @Override
+    protected LayoutParams generateLayoutParams(LayoutParams p) {
+        return new MarginLayoutParams(p);
+    }
+
+    /********************** 保持你现有 Adapter 模式 ************************/
+
+    private FlowLayoutAdapter mAdapter;
+    private DataSetObserver mObserver;
 
     public void setAdapter(FlowLayoutAdapter adapter) {
-        if (mAdapter != null && mDataSetObserver != null) {
-            //注销观察者
-            mAdapter.unregisterDataSetObserver(mDataSetObserver);
-            mAdapter = null;
+        if (mAdapter != null && mObserver != null) {
+            mAdapter.unregisterDataSetObserver(mObserver);
         }
 
-        if (adapter == null) throw new NullPointerException("adapter does not allow is null");
+        if (adapter == null) throw new NullPointerException("adapter cannot be null");
 
-
-        this.mAdapter = adapter;
-        //刷新数据
-        mDataSetObserver = new DataSetObserver() {
+        mAdapter = adapter;
+        mObserver = new DataSetObserver() {
             @Override
             public void onChanged() {
                 resetLayout();
             }
         };
-        //注册观察者
-        mAdapter.registerDataSetObserver(mDataSetObserver);
+        mAdapter.registerDataSetObserver(mObserver);
         resetLayout();
     }
 
-    protected final void resetLayout() {
-        this.removeAllViews();
-        int counts = mAdapter.getItemCount();
+    private void resetLayout() {
+        removeAllViews();
         mAdapter.addViewToList(this);
         ArrayList<View> views = mAdapter.getViewList();
-        for (int i = 0; i < counts; i++) {
-            this.addView(views.get(i));
+        for (View v : views) {
+            addView(v);
         }
     }
 }
-
