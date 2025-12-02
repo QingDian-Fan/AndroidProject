@@ -25,6 +25,7 @@ class ContainerActivity : BaseAppBindActivity<ActivityContainerBinding>() {
         fun start(
             mContext: Context,
             mPage: Int,
+            title: String,
             titleList: List<NavigationData>?,
             data: NavigationData?,
         ) {
@@ -39,6 +40,8 @@ class ContainerActivity : BaseAppBindActivity<ActivityContainerBinding>() {
                 val dataString = MoshiUtil.toJson<NavigationData>(it)
                 intent.putExtra("dataString", dataString)
             }
+            intent.putExtra("title", title)
+
             mContext.startActivity(intent)
         }
     }
@@ -56,6 +59,10 @@ class ContainerActivity : BaseAppBindActivity<ActivityContainerBinding>() {
             navController.graph = navGraph
             val dataListString =intent.getStringExtra("dataListString")
             val dataString =intent.getStringExtra("dataString")
+            val title =intent.getStringExtra("title")
+            runOnUiThread {
+                setPageTitle(title?:"")
+            }
             val bundle = Bundle().apply {
                 putString("dataListString", dataListString)
                 putString("dataString", dataString)

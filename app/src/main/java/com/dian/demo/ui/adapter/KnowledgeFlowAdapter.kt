@@ -28,7 +28,6 @@ class KnowledgeFlowAdapter @JvmOverloads constructor(
     ): View? {
         val binding =
             ItemSetupNavigationBinding.inflate(LayoutInflater.from(mContext), parent, false)
-      //  binding.tvContent.text = dataList.getOrNull(position)?.name
         binding.tvContent.text = if (isSetUp) dataList.getOrNull(position)?.name else dataList.getOrNull(position)?.title
         binding.root.setOnClickListener {
             listener?.invoke(dataList.getOrNull(position))

@@ -10,6 +10,7 @@ import com.dian.demo.di.model.NavigationData
 import com.dian.demo.di.model.SetUpData
 import com.dian.demo.di.vm.SetupViewModel
 import com.dian.demo.ui.activity.ContainerActivity
+import com.dian.demo.ui.activity.WebExplorerActivity
 import com.dian.demo.ui.adapter.SetupAdapter
 import com.dian.demo.utils.SmartRefreshUtil
 import com.dian.demo.utils.ext.observeNonNull
@@ -30,12 +31,16 @@ class SetUpChildFragment : BaseAppVMFragment<FragmentSetUpChildBinding, SetupVie
     override fun lazyInit() {
         super.lazyInit()
         val page = arguments?.getInt("page") ?: 0
-        SmartRefreshUtil.with(binding.layoutRefresh).setScrollMode()
-        if (page == 0) {
-            viewModel.getSetUpDataList()
-        } else {
-            viewModel.getNavigationData()
+        SmartRefreshUtil.with(binding.layoutRefresh).autoRefresh()
+        SmartRefreshUtil.with(binding.layoutRefresh).setRefreshListener {
+            if (page == 0) {
+                viewModel.getSetUpDataList()
+            } else {
+                viewModel.getNavigationData()
+            }
+            SmartRefreshUtil.with(binding.layoutRefresh).setScrollMode()
         }
+
 
         viewModel.mSetUpData.observeNonNull(this) {
             if (page == 0) {
@@ -55,8 +60,12 @@ class SetUpChildFragment : BaseAppVMFragment<FragmentSetUpChildBinding, SetupVie
         if (setupAdapter == null) {
             binding.rvData.layoutManager = LinearLayoutManager(requireContext())
             setupAdapter = SetupAdapter(page == 0)
-            setupAdapter?.setListener { isSetup, titleList, data ->
-                ContainerActivity.start(requireActivity(),0,titleList,data)
+            setupAdapter?.setListener { isSetup, titleList, data,title ->
+                if (isSetup){
+                    ContainerActivity.start(requireActivity(),0,title,titleList,data)
+                }else{
+                    WebExplorerActivity.start(requireContext(), urlString = data?.link?:"")
+                }
             }
             binding.rvData.adapter = setupAdapter
         }

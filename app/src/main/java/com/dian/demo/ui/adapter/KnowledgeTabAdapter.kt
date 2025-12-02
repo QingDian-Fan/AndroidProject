@@ -20,7 +20,7 @@ class KnowledgeTabAdapter(val titleList: MutableList<NavigationData>): CommonNav
         index: Int,
     ): IPagerTitleView? {
         val titleView = ColorTransitionPagerTitleView(context).apply {
-            text = titleList[index].title
+            text = titleList[index].name
             normalColor = Color.GRAY
             selectedColor = Color.BLACK
             setTextSize(TypedValue.COMPLEX_UNIT_PX, ResourcesUtil.getDimens(R.dimen.dp_15))

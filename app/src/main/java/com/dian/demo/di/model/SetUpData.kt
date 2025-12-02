@@ -11,5 +11,6 @@ data class NavigationData(
     var title: String? = "",
     var id: String? = "",
     var name: String? = "",
+    var link: String?=""
 )
 

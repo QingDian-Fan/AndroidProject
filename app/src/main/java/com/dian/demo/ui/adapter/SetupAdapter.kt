@@ -22,10 +22,10 @@ class SetupAdapter(
 
     private val pool = sharedPool
 
-    private var listener: ((isSetup: Boolean, titleList: List<NavigationData>?, data: NavigationData?) -> Unit)? =
+    private var listener: ((isSetup: Boolean, titleList: List<NavigationData>?, data: NavigationData?,title: String) -> Unit)? =
         null
 
-    fun setListener(listener: (isSetup: Boolean, titleList: List<NavigationData>?, data: NavigationData?) -> Unit) {
+    fun setListener(listener: (isSetup: Boolean, titleList: List<NavigationData>?, data: NavigationData?,title: String) -> Unit) {
         this.listener = listener
     }
 
@@ -66,7 +66,7 @@ class SetupAdapter(
             mList?.toMutableList()?.let {
                 val mFlowAdapter = KnowledgeFlowAdapter(binding.root.context, it, isSetUp)
                 mFlowAdapter.setClickListener {
-                    listener?.invoke(isSetUp,mList,it)
+                    listener?.invoke(isSetUp,mList,it,item.name ?: "")
                 }
                 binding.flLayout.setAdapter(mFlowAdapter)
             }

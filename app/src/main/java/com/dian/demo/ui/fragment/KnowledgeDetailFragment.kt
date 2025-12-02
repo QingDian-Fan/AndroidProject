@@ -23,7 +23,7 @@ class KnowledgeDetailFragment : BaseAppBindFragment<FragmentKnowledgeDetailBindi
 
     override fun initialize(savedInstanceState: Bundle?) {
         requireActivity().supportFragmentManager.setFragmentResultListener("KEY_KNOWLEDGE_LIST_PAGE", viewLifecycleOwner) { key, bundle ->
-            val dataListString = arguments?.getString("dataListString")
+            val dataListString = bundle.getString("dataListString")
             dataListString?.let {
                 val dataList = MoshiUtil.fromJsonToList<NavigationData>(it)
                 dataList?.toMutableList()?.let { titleList->

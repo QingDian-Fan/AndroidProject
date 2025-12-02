@@ -200,4 +200,17 @@ class DataRepoImpl : DataRepo {
             )
         )
     }
+
+    override suspend fun getKnowledgeDetailData(
+        page: Int,
+        cid: String
+    ): ResponseHolder<ListData<ArticleBean>> {
+        return HttpUtils.getInstance().post(
+            url = format("article/list/0/json?cid=60", page,cid),
+            type = Types.newParameterizedType(
+                Result::class.java,
+                Types.newParameterizedType(ListData::class.java, ArticleBean::class.java)
+            )
+        )
+    }
 }

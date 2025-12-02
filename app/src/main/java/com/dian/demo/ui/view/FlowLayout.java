@@ -85,24 +85,33 @@ public class FlowLayout extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        int left, top = this.getPaddingTop(), right, bottom;
-        int maxLineHeight = 0;
-        //循环所有的
-        for (List<View> mViews : mChildViews) {
-            //新的一行开始
-            left = getPaddingLeft();
-            for (View mView : mViews) {
-                MarginLayoutParams layoutParams = (MarginLayoutParams) mView.getLayoutParams();
-                maxLineHeight = Math.max(maxLineHeight, mView.getMeasuredHeight() + layoutParams.topMargin + layoutParams.bottomMargin);
-                left += layoutParams.leftMargin;
-                right = left + mView.getMeasuredWidth();
-                bottom = top + layoutParams.topMargin + mView.getMeasuredHeight();
-                mView.layout(left, top, right, bottom);
-                left += mView.getMeasuredWidth() + layoutParams.rightMargin;
+
+        int top = getPaddingTop();
+
+        for (List<View> lineViews : mChildViews) {
+            int left = getPaddingLeft();
+            int maxHeight = 0;
+
+            for (View child : lineViews) {
+                MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+
+                int childLeft = left + lp.leftMargin;
+                int childTop = top + lp.topMargin;
+                int childRight = childLeft + child.getMeasuredWidth();
+                int childBottom = childTop + child.getMeasuredHeight();
+
+                child.layout(childLeft, childTop, childRight, childBottom);
+
+                left += child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
+
+                maxHeight = Math.max(maxHeight,
+                        child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);
             }
-            top += maxLineHeight;
+
+            top += maxHeight; // 换到下一行
         }
     }
+
 
     public void setLines(int lines) {
         this.lines = lines;
