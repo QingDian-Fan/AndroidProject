@@ -11,7 +11,7 @@ class KnowledgeChildDetailViewModel: BaseViewModel() {
 
     fun getKnowledgeDetailData(mPage:Int,cid: String){
         launchOnUI {
-            repo.getSearchList(mPage,cid)
+            repo.getKnowledgeDetailData(mPage,cid)
                 .onCompletion {
                     showLoadingView(false)
 

@@ -205,8 +205,8 @@ class DataRepoImpl : DataRepo {
         page: Int,
         cid: String
     ): ResponseHolder<ListData<ArticleBean>> {
-        return HttpUtils.getInstance().post(
-            url = format("article/list/0/json?cid=60", page,cid),
+        return HttpUtils.getInstance().get(
+            url = format("article/list/%d/json?cid=%s", page,cid),
             type = Types.newParameterizedType(
                 Result::class.java,
                 Types.newParameterizedType(ListData::class.java, ArticleBean::class.java)
