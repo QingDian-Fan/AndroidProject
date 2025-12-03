@@ -44,6 +44,7 @@ class ContainerActivity : BaseAppBindActivity<ActivityContainerBinding>() {
 
             mContext.startActivity(intent)
         }
+
     }
 
     override fun getLayoutId(): Int = R.layout.activity_container

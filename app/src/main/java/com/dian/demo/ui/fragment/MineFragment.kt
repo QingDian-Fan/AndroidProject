@@ -33,6 +33,11 @@ class MineFragment : BaseAppVMFragment<FragmentMineBinding, SettingViewModel>() 
 
         SmartRefreshUtil.with(binding.smartLayout).setScrollMode()
 
+        binding.llCoin.singleClick {
+            val coinCount =LoginUtil.getLoginInfo()?.coinInfo?.coinCount?:0
+            LoginContainerActivity.start(requireActivity(),2,"我的积分", coinCount.toString())
+        }
+
         binding.llCollect.singleClick {
             LoginContainerActivity.start(requireActivity(),1)
         }
