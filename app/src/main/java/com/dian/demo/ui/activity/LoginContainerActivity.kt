@@ -13,6 +13,11 @@ import com.dian.annotation.RequireLogin
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityLoginBinding
+import com.dian.demo.ui.dialog.LogFileDialog
+import com.dian.demo.ui.titlebar.CommonTitleBar
+import com.dian.demo.utils.ext.gone
+import com.dian.demo.utils.ext.showAllowStateLoss
+import com.dian.demo.utils.ext.visible
 
 @RequireLogin
 class LoginContainerActivity : BaseAppBindActivity<ActivityLoginBinding>() {
@@ -42,6 +47,25 @@ class LoginContainerActivity : BaseAppBindActivity<ActivityLoginBinding>() {
     override fun getLayoutId(): Int = R.layout.activity_login_container
 
     override fun initialize(savedInstanceState: Bundle?) {
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.fragmentContainerView) as NavHostFragment
+        navHostFragment.navController.addOnDestinationChangedListener { _, destination, _ ->
+            if (destination.id == R.id.coinRecordFragment) {
+                getTitleBarView().rightImageButton.visible()
+                getTitleBarView().setRightIcon(R.mipmap.ic_rank)
+                getTitleBarView().setListener {  _, action, _ ->
+                    if (action== CommonTitleBar.ACTION_LEFT_BUTTON){
+                        onBackPressed()
+                    }else if (action == CommonTitleBar.ACTION_RIGHT_BUTTON) {
+                        val navController = navHostFragment.navController
+                        navController.navigate(R.id.coinRankFragment)
+                    }
+                }
+            }else{
+                getTitleBarView().rightImageButton.gone()
+            }
+        }
+
         val mPage = intent.getIntExtra("mPage", 0)
         if (mPage==0||mPage==1) {
             setPageTitle(if (mPage==0) "我的分享" else "我的收藏")
@@ -64,7 +88,6 @@ class LoginContainerActivity : BaseAppBindActivity<ActivityLoginBinding>() {
             }
             val bundle = Bundle().apply {
                 putString("coinCount", coinCount)
-
             }
             supportFragmentManager.setFragmentResult("KEY_COIN_LIST_PAGE", bundle)
             return

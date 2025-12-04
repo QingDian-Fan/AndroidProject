@@ -35,4 +35,6 @@ interface DataRepo {
     suspend fun getKnowledgeDetailData(page:Int,cid: String): ResponseHolder<ListData<ArticleBean>>
     suspend fun getCoinRecordList(page:Int): ResponseHolder<ListData<CoinCount>>
 
+    suspend fun getCoinRankList(page:Int): ResponseHolder<ListData<CoinCount>>
+
 }

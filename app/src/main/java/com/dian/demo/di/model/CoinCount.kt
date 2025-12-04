@@ -20,5 +20,6 @@ data class CoinCount(
     var reason: String,
     var type: String,
     var userId: String,
-    var userName: String
+    var username: String,
+    var anim: Boolean = false
 )

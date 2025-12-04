@@ -223,4 +223,14 @@ class DataRepoImpl : DataRepo {
             )
         )
     }
+
+    override suspend fun getCoinRankList(page: Int): ResponseHolder<ListData<CoinCount>> {
+        return HttpUtils.getInstance().get(
+            url = format("coin/rank/%d/json", page),
+            type = Types.newParameterizedType(
+                Result::class.java,
+                Types.newParameterizedType(ListData::class.java, CoinCount::class.java)
+            )
+        )
+    }
 }
