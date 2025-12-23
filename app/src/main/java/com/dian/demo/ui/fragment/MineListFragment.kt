@@ -1,10 +1,6 @@
 package com.dian.demo.ui.fragment
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppVMFragment
@@ -17,9 +13,7 @@ import com.dian.demo.utils.CustomDividerItemDecoration
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.SmartRefreshUtil
 import com.dian.demo.utils.ext.observeNonNull
-import com.dian.demo.utils.webview.utils.CollectWebPageUtil
-import com.dian.demo.utils.webview.utils.WebBookMarkUtil
-import com.dian.demo.utils.webview.utils.WebHistoryUtil
+import com.dian.demo.utils.swape.RecyclerTouchListener
 
 
 class MineListFragment : BaseAppVMFragment<FragmentMineListBinding, MineListViewModel>() {
@@ -47,18 +41,18 @@ class MineListFragment : BaseAppVMFragment<FragmentMineListBinding, MineListView
         SmartRefreshUtil.with(binding.layoutRefresh).autoRefresh()
         SmartRefreshUtil.with(binding.layoutRefresh).setRefreshListener {
             page = 0
-            if (mListPage == 0){
+            if (mListPage == 0) {
                 viewModel.getMineShareData(page = page)
-            }else{
+            } else {
                 viewModel.getMineCollectData(page)
             }
 
         }
         SmartRefreshUtil.with(binding.layoutRefresh).setLoadMoreListener {
             page += 1
-            if (mListPage == 0){
+            if (mListPage == 0) {
                 viewModel.getMineShareData(page = page)
-            }else{
+            } else {
                 viewModel.getMineCollectData(page)
             }
         }
@@ -80,6 +74,13 @@ class MineListFragment : BaseAppVMFragment<FragmentMineListBinding, MineListView
                 mAdapter?.setListener { link ->
                     link?.let { WebExplorerActivity.start(requireContext(), it, it) }
                 }
+
+                val onTouchListener = RecyclerTouchListener(activity, binding.rvData)
+                onTouchListener.setSwipeOptionViews(R.id.rl_change)
+                    .setSwipeable(R.id.rl_article, R.id.rl_change) { viewID, position ->
+                        showToast("点击了：$position")
+                    }
+                binding.rvData.addOnItemTouchListener(onTouchListener)
             }
 
             if (page == 0) {

@@ -89,9 +89,7 @@ object MoshiUtil {
      * @return T?
      */
     inline fun <reified T> fromJson(jsonStr: String): T? {
-        Log.e("TAGTAG","TEST1")
         val adapter = moshi.adapter(T::class.java)
-        Log.e("TAGTAG","TEST"+adapter.toString())
         return this.fromJson(adapter, jsonStr)
     }
 

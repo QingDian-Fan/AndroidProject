@@ -5,6 +5,7 @@ import android.os.Bundle
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppVMFragment
 import com.dian.demo.constant.HOOK_AMS_EXTRA_NAME
+import com.dian.demo.constant.LOGIN_DATA_BUS
 import com.dian.demo.databinding.FragmentLoginBinding
 import com.dian.demo.di.vm.LoginViewModel
 import com.dian.demo.ui.activity.LoginActivity
@@ -12,6 +13,7 @@ import com.dian.demo.utils.ToastUtil
 import com.dian.demo.utils.ext.observeNonNull
 import com.dian.demo.utils.ext.singleClick
 import com.dian.demo.utils.LoginUtil
+import com.dian.demo.utils.bus.LiveDataBus
 
 
 /**
@@ -50,6 +52,7 @@ class LoginFragment : BaseAppVMFragment<FragmentLoginBinding, LoginViewModel>() 
             val targetIntent = (activity as? LoginActivity)?.intent?.getParcelableExtra<Intent>(HOOK_AMS_EXTRA_NAME)
             if (targetIntent != null) {
                 startActivity(targetIntent)
+                LiveDataBus.getDefault().postEvent(LOGIN_DATA_BUS,"")
                 activity?.finish()
             }else{
                activity?.finish()

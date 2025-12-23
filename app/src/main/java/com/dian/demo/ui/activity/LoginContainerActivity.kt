@@ -13,6 +13,7 @@ import com.dian.annotation.RequireLogin
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityLoginBinding
+import com.dian.demo.databinding.ActivityLoginContainerBinding
 import com.dian.demo.ui.dialog.LogFileDialog
 import com.dian.demo.ui.titlebar.CommonTitleBar
 import com.dian.demo.utils.ext.gone
@@ -20,7 +21,7 @@ import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.ext.visible
 
 @RequireLogin
-class LoginContainerActivity : BaseAppBindActivity<ActivityLoginBinding>() {
+class LoginContainerActivity : BaseAppBindActivity<ActivityLoginContainerBinding>() {
     companion object {
         fun start(mContext: Context, mListPage: Int) {
             val intent = Intent()

@@ -3,6 +3,7 @@ package com.dian.demo.ui.fragment
 import android.os.Bundle
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppVMFragment
+import com.dian.demo.constant.LOGIN_DATA_BUS
 import com.dian.demo.databinding.FragmentMineBinding
 import com.dian.demo.di.vm.SettingViewModel
 import com.dian.demo.ui.activity.ContainerActivity
@@ -12,6 +13,7 @@ import com.dian.demo.ui.activity.LoginContainerActivity
 import com.dian.demo.ui.activity.TodoListActivity
 import com.dian.demo.utils.LoginUtil
 import com.dian.demo.utils.SmartRefreshUtil
+import com.dian.demo.utils.bus.LiveDataBus
 import com.dian.demo.utils.ext.gone
 import com.dian.demo.utils.ext.observeNonNull
 import com.dian.demo.utils.ext.singleClick
@@ -69,16 +71,14 @@ class MineFragment : BaseAppVMFragment<FragmentMineBinding, SettingViewModel>() 
             }
         }
         initData()
+        LiveDataBus.getDefault().subscribe<String>(LOGIN_DATA_BUS).observe(this){
+            updateUserData()
+        }
     }
 
-    override fun onResume() {
-        super.onResume()
-        updateUserData()
-    }
+
     private fun initData() {
         updateUserData()
-
-
     }
 
     fun updateUserData(){

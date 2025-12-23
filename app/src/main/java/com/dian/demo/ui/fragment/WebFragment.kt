@@ -102,9 +102,9 @@ class WebFragment : BaseAppBindFragment<FragmentWebBinding>(), WebViewCallBack {
         }
     }
 
-    fun getCurrentUrlString(): String = currentUrlString!!
+    fun getCurrentUrlString(): String = currentUrlString?:""
 
-    fun getCurrentTitleString(): String = currentTitleString!!
+    fun getCurrentTitleString(): String = currentTitleString?:""
 
     fun canGoBack(): Boolean = binding.webView.canGoBack()
 
