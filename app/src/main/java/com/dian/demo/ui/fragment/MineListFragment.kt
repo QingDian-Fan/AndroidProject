@@ -79,6 +79,22 @@ class MineListFragment : BaseAppVMFragment<FragmentMineListBinding, MineListView
                 onTouchListener.setSwipeOptionViews(R.id.rl_change)
                     .setSwipeable(R.id.rl_article, R.id.rl_change) { viewID, position ->
                         showToast("点击了：$position")
+                        val mArticleId = mAdapter?.currentList?.getOrNull(position)?.id
+                        if (mListPage == 0) {
+                            mArticleId?.let {
+                                viewModel.deleteShareArticle(it.toString())
+                                val mergeList= mAdapter?.currentList?.toMutableList()
+                                mergeList?.remove(mAdapter?.currentList?.getOrNull(position))
+                                mAdapter?.submitList(mergeList)
+                            }
+                        }else{
+                            mArticleId?.let {
+                                viewModel.cancelCollectArticle(it.toString())
+                               val mergeList= mAdapter?.currentList?.toMutableList()
+                                mergeList?.remove(mAdapter?.currentList?.getOrNull(position))
+                                 mAdapter?.submitList(mergeList)
+                            }
+                        }
                     }
                 binding.rvData.addOnItemTouchListener(onTouchListener)
             }

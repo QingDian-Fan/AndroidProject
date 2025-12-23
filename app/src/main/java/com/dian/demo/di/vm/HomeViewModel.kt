@@ -65,4 +65,48 @@ class HomeViewModel : BaseViewModel() {
         }
 
     }
+
+    @CheckNet
+    fun collectArticle(id: String){
+        launchOnUI {
+            repo.collectArticle(id)
+                .onCompletion {
+                    LogUtil.e("TAG----->Request", "articleList请求结束")
+                }
+                .onSuccess { it ->
+
+                }
+                .onFailure { code, message ->
+                    LogUtil.e("TAG----->Request", "articleList失败：code：${code},message:${message}")
+                }
+                .onCatch {
+                    LogUtil.e(
+                        "TAG----->Request",
+                        "articleList失败：code：${it.errorCode},message:${it.errorMsg}"
+                    )
+                }
+        }
+    }
+
+    @CheckNet
+    fun cancelCollectArticle(id: String){
+        launchOnUI {
+            repo.cancelCollectArticle(id)
+                .onCompletion {
+                    LogUtil.e("TAG----->Request", "articleList请求结束")
+                }
+                .onSuccess { it ->
+
+                }
+                .onFailure { code, message ->
+                    LogUtil.e("TAG----->Request", "articleList失败：code：${code},message:${message}")
+                }
+                .onCatch {
+                    LogUtil.e(
+                        "TAG----->Request",
+                        "articleList失败：code：${it.errorCode},message:${it.errorMsg}"
+                    )
+                }
+        }
+    }
 }

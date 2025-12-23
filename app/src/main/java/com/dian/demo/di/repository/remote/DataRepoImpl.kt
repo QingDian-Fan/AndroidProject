@@ -233,4 +233,24 @@ class DataRepoImpl : DataRepo {
             )
         )
     }
+
+    override suspend fun deleteShareArticle(id: String): ResponseHolder<Any> {
+        return HttpUtils.getInstance().post(
+            url = format("lg/user_article/delete/%s/json",id),
+            type = Types.newParameterizedType(Result::class.java, Any::class.java)
+        )
+    }
+
+    override suspend fun cancelCollectArticle(id: String): ResponseHolder<Any> {
+        return HttpUtils.getInstance().post(
+            url = format("lg/uncollect_originId/%s/json",id),
+            type = Types.newParameterizedType(Result::class.java,Any::class.java)
+        )
+    }
+    override suspend fun collectArticle(id: String): ResponseHolder<Any> {
+        return HttpUtils.getInstance().post(
+            url = format("lg/collect/%s/json",id),
+            type = Types.newParameterizedType(Result::class.java,Any::class.java)
+        )
+    }
 }

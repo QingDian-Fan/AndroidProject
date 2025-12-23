@@ -36,5 +36,9 @@ interface DataRepo {
     suspend fun getCoinRecordList(page:Int): ResponseHolder<ListData<CoinCount>>
 
     suspend fun getCoinRankList(page:Int): ResponseHolder<ListData<CoinCount>>
+    suspend fun deleteShareArticle(id: String): ResponseHolder<Any>
+    suspend fun cancelCollectArticle(id: String): ResponseHolder<Any>
+    suspend fun collectArticle(id: String): ResponseHolder<Any>
+
 
 }

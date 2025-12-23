@@ -22,8 +22,11 @@ object SearchRecordUtil {
 
     fun putLocalHistoryRecord(data:SearchRecord){
         val dataList: MutableList<SearchRecord> = getLocalSearchList()?:emptyList<SearchRecord>().toMutableList()
-        dataList.add(data)
-        val dataString = MoshiUtil.toJson(dataList)
+       val mDataList = dataList.filter{
+           it.name!=data.name
+       }.toMutableList()
+        mDataList.add(data)
+        val dataString = MoshiUtil.toJson(mDataList)
         AppDataStore.putData("LOCAL_SEARCH_HISTORY_RECORD",dataString)
     }
 }

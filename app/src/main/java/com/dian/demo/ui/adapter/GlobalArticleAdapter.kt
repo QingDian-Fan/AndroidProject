@@ -30,7 +30,10 @@ class GlobalArticleAdapter : RecyclerView.Adapter<GlobalArticleAdapter.ItemViewH
             return oldItem == newItem
         }
     }
-
+    private var onCollectArticleListener:((Int,Boolean,ArticleBean)->Unit)?=null
+    fun setCollectListener(onCollectArticleListener:((Int,Boolean,ArticleBean)->Unit)){
+        this.onCollectArticleListener = onCollectArticleListener
+    }
     private val mDiffer = AsyncListDiffer(this, diffCallback)
     val currentList: List<ArticleBean>
         get() = mDiffer.currentList
@@ -99,6 +102,10 @@ class GlobalArticleAdapter : RecyclerView.Adapter<GlobalArticleAdapter.ItemViewH
 
             // 收藏状态
             cvCollect.setChecked(item.collect == true, false)
+
+            cvCollect.setOnCheckedChangeListener {_,isChecked ->
+                onCollectArticleListener?.invoke(position,isChecked,item)
+            }
 
             // 点击
             root.setOnClickListener {

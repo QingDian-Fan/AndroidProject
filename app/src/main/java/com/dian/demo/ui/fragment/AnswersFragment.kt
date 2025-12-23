@@ -54,6 +54,14 @@ class AnswersFragment : BaseAppVMFragment<FragmentAnswersBinding, AnswersViewMod
                 binding.rvData.layoutManager = LinearLayoutManager(requireContext())
                 binding.rvData.addItemDecoration(CustomDividerItemDecoration(2, ResourcesUtil.getColor(R.color.line_color)))
                 binding.rvData.adapter = mAdapter
+                mAdapter?.setCollectListener { position,isChecked,bean->
+                    bean.collect = isChecked
+                    if (isChecked){
+                        viewModel.collectArticle(bean.id.toString())
+                    }else{
+                        viewModel.cancelCollectArticle(bean.id.toString())
+                    }
+                }
                 mAdapter?.setListener { link ->
                     link?.let { WebExplorerActivity.start(requireContext(), it, it) }
                 }

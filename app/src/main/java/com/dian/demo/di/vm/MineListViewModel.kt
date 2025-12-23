@@ -64,4 +64,43 @@ class MineListViewModel : BaseViewModel() {
         }
 
     }
+
+    @CheckNet
+    fun deleteShareArticle(id: String){
+        launchOnUI {
+            repo.deleteShareArticle(id)
+                .onSuccess { it ->
+
+                }
+                .onFailure { code, message ->
+                    LogUtil.e("TAG----->Request", "articleList失败：code：${code},message:${message}")
+                }
+                .onCatch {
+                    LogUtil.e(
+                        "TAG----->Request",
+                        "articleList失败：code：${it.errorCode},message:${it.errorMsg}"
+                    )
+                }
+        }
+    }
+
+
+    @CheckNet
+    fun cancelCollectArticle(id: String){
+        launchOnUI {
+            repo.cancelCollectArticle(id)
+                .onSuccess { it ->
+
+                }
+                .onFailure { code, message ->
+                    LogUtil.e("TAG----->Request", "articleList失败：code：${code},message:${message}")
+                }
+                .onCatch {
+                    LogUtil.e(
+                        "TAG----->Request",
+                        "articleList失败：code：${it.errorCode},message:${it.errorMsg}"
+                    )
+                }
+        }
+    }
 }
