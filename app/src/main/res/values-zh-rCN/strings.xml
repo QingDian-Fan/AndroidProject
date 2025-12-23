@@ -59,4 +59,6 @@
     <string name="empty">暂无数据</string>
     <string name="complete_all">您已完成全部数据</string>
     <string name="str_none" translatable="false" />
+    <string name="expand">expand</string>
+    <string name="shrink">shrink</string>
 </resources>

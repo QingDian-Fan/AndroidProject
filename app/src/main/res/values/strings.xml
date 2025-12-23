@@ -61,6 +61,7 @@
     <string name="complete_all">您已完成全部数据</string>
     <string name="str_none" translatable="false" />
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="expand">expand</string>
+    <string name="shrink">shrink</string>
 
 </resources>
