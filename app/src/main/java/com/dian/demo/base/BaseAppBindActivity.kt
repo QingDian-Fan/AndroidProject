@@ -24,11 +24,11 @@ import skin.support.design.SkinMaterialManager
 abstract class BaseAppBindActivity<B : ViewDataBinding> : BaseActivity() {
 
     protected lateinit var binding: B
-    private lateinit var rootBinding: ActivityRootLayoutBinding
+    private  var rootBinding: ActivityRootLayoutBinding?=null
 
     override fun initContentView() {
         injectDataBinding()
-        rootBinding.titleBar.setListener { _, action, _ ->
+        rootBinding?.titleBar?.setListener { _, action, _ ->
             if (action == CommonTitleBar.ACTION_LEFT_BUTTON) {
                 onBackPressed()
             }
@@ -38,7 +38,7 @@ abstract class BaseAppBindActivity<B : ViewDataBinding> : BaseActivity() {
     private fun injectDataBinding() {
         rootBinding = DataBindingUtil.setContentView(this, R.layout.activity_root_layout)
         initRootView()
-        rootBinding.lifecycleOwner = this
+        rootBinding?.lifecycleOwner = this
     }
 
     private fun initRootView() {
@@ -46,65 +46,65 @@ abstract class BaseAppBindActivity<B : ViewDataBinding> : BaseActivity() {
         binding = DataBindingUtil.inflate(
             LayoutInflater.from(this@BaseAppBindActivity),
             getLayoutId(),
-            rootBinding.flRoot,
+            rootBinding?.flRoot,
             false
         )
-        rootBinding.flRoot.addView(binding.root)
+        rootBinding?.flRoot?.addView(binding.root)
     }
 
     fun setPageTitle(titleString:String){
-        rootBinding.titleBar.setCenterText(titleString)
+        rootBinding?.titleBar?.setCenterText(titleString)
     }
 
     fun hideActionBack(){
-        rootBinding.titleBar.setLeftVisibility(gone)
+        rootBinding?.titleBar?.setLeftVisibility(gone)
     }
 
     fun setPageRightIcon(@DrawableRes drawableRes: Int){
-        rootBinding.titleBar.setRightIcon(drawableRes)
+        rootBinding?.titleBar?.setRightIcon(drawableRes)
     }
     fun setPageLeftIcon(@DrawableRes drawableRes: Int){
-        rootBinding.titleBar.setLeftIcon(drawableRes)
+        rootBinding?.titleBar?.setLeftIcon(drawableRes)
     }
 
-    fun getTitleBarView():CommonTitleBar = rootBinding.titleBar
+    fun getTitleBarView():CommonTitleBar? = rootBinding?.titleBar
 
 
     override fun showLoadingView(isShow: Boolean) {
         if (isShow && !isFinishing) {
-            rootBinding.flRoot.visibility = gone
-            rootBinding.flEmpty.visibility = gone
-            rootBinding.flLoading.visibility = visible
+            rootBinding?.flRoot?.visibility = gone
+            rootBinding?.flEmpty?.visibility = gone
+            rootBinding?.flLoading?.visibility = visible
         } else if (!isFinishing) {
-            rootBinding.flRoot.visibility = visible
-            rootBinding.flEmpty.visibility = gone
-            rootBinding.flLoading.visibility = gone
+            rootBinding?.flRoot?.visibility = visible
+            rootBinding?.flEmpty?.visibility = gone
+            rootBinding?.flLoading?.visibility = gone
         }
     }
 
     override fun showEmptyView(isShow: Boolean) {
         if (isShow && !isFinishing) {
-            rootBinding.flRoot.visibility = gone
-            rootBinding.flLoading.visibility = gone
-            rootBinding.flEmpty.visibility = visible
+            rootBinding?.flRoot?.visibility = gone
+            rootBinding?.flLoading?.visibility = gone
+            rootBinding?.flEmpty?.visibility = visible
         } else if (!isFinishing) {
-            rootBinding.flRoot.visibility = visible
-            rootBinding.flLoading.visibility = gone
-            rootBinding.flEmpty.visibility = gone
+            rootBinding?.flRoot?.visibility = visible
+            rootBinding?.flLoading?.visibility = gone
+            rootBinding?.flEmpty?.visibility = gone
         }
     }
 
     override fun showErrorView(isShow: Boolean) {
         if (isShow && !isFinishing) {
-            rootBinding.flRoot.visibility = gone
-            rootBinding.flLoading.visibility = gone
-            rootBinding.flEmpty.visibility = gone
-            rootBinding.flError.visibility = visible
+            rootBinding?.flRoot?.visibility = gone
+            rootBinding?.flLoading?.visibility = gone
+            rootBinding?.flEmpty?.visibility = gone
+            rootBinding?.flError?.visibility = visible
         } else if (!isFinishing) {
-            rootBinding.flRoot.visibility = visible
-            rootBinding.flLoading.visibility = gone
-            rootBinding.flEmpty.visibility = gone
-            rootBinding.flError.visibility = gone
+            rootBinding?.flRoot?.visibility = visible
+            rootBinding?.flLoading?.visibility = gone
+            rootBinding?.flEmpty?.visibility = gone
+            rootBinding?.flError?.visibility = gone
         }
     }
 

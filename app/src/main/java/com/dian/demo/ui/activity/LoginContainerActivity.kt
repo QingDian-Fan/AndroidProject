@@ -52,9 +52,9 @@ class LoginContainerActivity : BaseAppBindActivity<ActivityLoginContainerBinding
             .findFragmentById(R.id.fragmentContainerView) as NavHostFragment
         navHostFragment.navController.addOnDestinationChangedListener { _, destination, _ ->
             if (destination.id == R.id.coinRecordFragment) {
-                getTitleBarView().rightImageButton.visible()
-                getTitleBarView().setRightIcon(R.mipmap.ic_rank)
-                getTitleBarView().setListener {  _, action, _ ->
+                getTitleBarView()?.rightImageButton.visible()
+                getTitleBarView()?.setRightIcon(R.mipmap.ic_rank)
+                getTitleBarView()?.setListener {  _, action, _ ->
                     if (action== CommonTitleBar.ACTION_LEFT_BUTTON){
                         onBackPressed()
                     }else if (action == CommonTitleBar.ACTION_RIGHT_BUTTON) {
@@ -63,7 +63,7 @@ class LoginContainerActivity : BaseAppBindActivity<ActivityLoginContainerBinding
                     }
                 }
             }else{
-                getTitleBarView().rightImageButton.gone()
+                getTitleBarView()?.rightImageButton.gone()
             }
         }
 

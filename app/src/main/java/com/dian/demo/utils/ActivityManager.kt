@@ -11,12 +11,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import androidx.collection.ArrayMap
 import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
+import com.dian.demo.DataProtoOuterClass
 import kotlin.system.exitProcess
 
 
@@ -131,6 +133,23 @@ class ActivityManager private constructor() : ActivityLifecycleCallbacks {
     }
 
     fun restartAPP(context: Context) {
+
+        val data = DataProtoOuterClass.DataProto.newBuilder()
+            .setName("张三")
+            .setAge(15)
+            .addCourse("数学")
+            .addCourse("英语")
+            .build()
+
+        Log.e("TAG--->","name::${data.name}")
+        Log.e("TAG--->","age::${data.age}")
+        data.courseList.forEachIndexed { index, value ->
+            Log.e("TAG--->","course ::index${index} value::${value}")
+        }
+        //序列化并返回一个包含其原始字节的字节数组
+        val byteArray: ByteArray = data.toByteArray()
+        //反序列化从字节数组中解析消息
+        val mData =DataProtoOuterClass.DataProto.parseFrom(byteArray)
 
 
         val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)

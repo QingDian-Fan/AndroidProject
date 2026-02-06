@@ -7,6 +7,7 @@ import com.dian.demo.constant.LOGIN_DATA_BUS
 import com.dian.demo.databinding.FragmentMineBinding
 import com.dian.demo.di.vm.SettingViewModel
 import com.dian.demo.ui.activity.ContainerActivity
+import com.dian.demo.ui.activity.CustomViewActivity
 import com.dian.demo.ui.activity.DemoActivity
 import com.dian.demo.ui.activity.LoginActivity
 import com.dian.demo.ui.activity.LoginContainerActivity
@@ -60,6 +61,7 @@ class MineFragment : BaseAppVMFragment<FragmentMineBinding, SettingViewModel>() 
         }
         binding.sbMenu.singleClick {
             DemoActivity.start(requireActivity())
+           // CustomViewActivity.start(requireActivity())
         }
         binding.llSetting.setOnClickListener {
             ContainerActivity.start(requireActivity(),false,0)

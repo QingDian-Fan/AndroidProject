@@ -35,7 +35,7 @@ class ImagePreviewActivity : BaseAppBindActivity<ActivityImagePreviewBinding>() 
 
     override fun initialize(savedInstanceState: Bundle?) {
 
-        getTitleBarView().visibility = gone
+        getTitleBarView()?.visibility = gone
         val position = intent.getIntExtra("position", 0)
         val dataList = intent.getStringArrayListExtra("dataList")
         binding.viewPager.offscreenPageLimit = 3

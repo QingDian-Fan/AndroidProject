@@ -26,8 +26,17 @@ class GlobalArticleAdapter : RecyclerView.Adapter<GlobalArticleAdapter.ItemViewH
             return oldItem.id == newItem.id  // 推荐用 id，对 title 不保险
         }
 
-        override fun areContentsTheSame(oldItem: ArticleBean, newItem: ArticleBean): Boolean {
-            return oldItem == newItem
+        override fun areContentsTheSame(old: ArticleBean, new: ArticleBean): Boolean {
+            return old.title == new.title &&
+                    old.desc == new.desc &&
+                    old.envelopePic == new.envelopePic &&
+                    old.author == new.author &&
+                    old.collect == new.collect &&
+                    old.fresh == new.fresh &&
+                    old.top == new.top &&
+                    old.niceDate == new.niceDate &&
+                    old.superChapterName == new.superChapterName &&
+                    old.chapterName == new.chapterName
         }
     }
     private var onCollectArticleListener:((Int,Boolean,ArticleBean)->Unit)?=null

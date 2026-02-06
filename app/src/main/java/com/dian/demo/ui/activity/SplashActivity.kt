@@ -24,14 +24,14 @@ class SplashActivity : BaseAppBindActivity<ActivitySplashBinding>() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) initShortCut()
 
-        getTitleBarView().visibility = gone
+        getTitleBarView()?.visibility = gone
         if (PermissionsUtil.hasPermission(
                 this@SplashActivity,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA
             )
         ) {
-            getTitleBarView().postDelayed({
+            getTitleBarView()?.postDelayed({
                 HomeActivity.start(this@SplashActivity)
                 finish()
             }, 500)
@@ -48,7 +48,7 @@ class SplashActivity : BaseAppBindActivity<ActivitySplashBinding>() {
     }
 
     fun toPage() {
-        getTitleBarView().postDelayed({
+        getTitleBarView()?.postDelayed({
             HomeActivity.start(this@SplashActivity)
             finish()
         }, 500)

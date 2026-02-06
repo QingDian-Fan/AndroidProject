@@ -264,6 +264,7 @@ dependencies {
     // skin-support-constraint-layout ConstraintLayout 控件支持[可选]
 
     implementation 'com.google.android:flexbox:1.0.0'
+    implementation 'androidx.paging:paging-runtime-ktx:3.1.1'
 
 
 }
@@ -271,9 +272,13 @@ dependencies {
 protobuf {
     protoc {
         if (osdetector.os == "osx") {
-            artifact = 'com.google.protobuf:protoc::4.33.0:osx-x86_64'
+            if (osdetector.arch == "aarch_64") {
+                artifact = "com.google.protobuf:protoc:4.33.0:osx-aarch_64"
+            } else {
+                artifact = "com.google.protobuf:protoc:4.33.0:osx-x86_64"
+            }
         } else {
-            artifact = 'com.google.protobuf:protoc::4.33.0'
+            artifact = "com.google.protobuf:protoc:4.33.0"
         }
     }
 

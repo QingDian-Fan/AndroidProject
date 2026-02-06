@@ -1,7 +1,6 @@
 package com.dian.demo.ui.activity
 
-import android.Manifest
-import android.annotation.SuppressLint
+
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -15,22 +14,16 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.config.AppConfig.getBaseUrl
 import com.dian.demo.databinding.ActivityDebugBinding
-import com.dian.demo.ui.dialog.ConfirmDialog
 import com.dian.demo.ui.dialog.DebugDialog
 import com.dian.demo.ui.dialog.LogFileDialog
-import com.dian.demo.ui.dialog.TipDialog
 import com.dian.demo.ui.titlebar.CommonTitleBar
 import com.dian.demo.utils.ActivityManager
 import com.dian.demo.utils.DomainUtil
-import com.dian.demo.utils.ExceptionHandlerUtil
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.bus.LiveDataBus
 import com.dian.demo.utils.datastore.AppDataStore
 import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.ext.singleClick
-import com.dian.demo.utils.permissions.DefaultPermissionInterceptor
-import com.dian.demo.utils.permissions.LivePermissions
-import com.dian.demo.utils.permissions.PermissionResult
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -64,7 +57,7 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
     override fun initialize(savedInstanceState: Bundle?) {
         setPageTitle(ResourcesUtil.getString(R.string.debug_page_title))
         setPageRightIcon(R.mipmap.icon_share)
-        getTitleBarView().setListener { _, action, _ ->
+        getTitleBarView()?.setListener { _, action, _ ->
             if (action == CommonTitleBar.ACTION_LEFT_BUTTON) {
                 onBackPressed()
             } else if (action == CommonTitleBar.ACTION_RIGHT_BUTTON) {

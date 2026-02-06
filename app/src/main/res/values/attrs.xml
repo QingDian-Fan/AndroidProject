@@ -210,4 +210,10 @@
         <attr name="tvea_textShrink" format="string" />
         <attr name="tvea_textExpand" format="string" />
     </declare-styleable>
+
+    <declare-styleable name="AutoSizeAppCompatTextView">
+        <attr name="minTextSize" format="dimension"/>
+        <attr name="maxTextSize" format="dimension"/>
+        <attr name="stepGranularity" format="dimension"/>
+    </declare-styleable>
 </resources>

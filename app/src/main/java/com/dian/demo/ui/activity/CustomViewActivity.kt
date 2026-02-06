@@ -23,6 +23,6 @@ class CustomViewActivity : BaseAppBindActivity<ActivityCustomViewBinding>() {
     override fun getLayoutId(): Int = R.layout.activity_custom_view
 
     override fun initialize(savedInstanceState: Bundle?) {
-
+        setPageTitle("自定义View")
     }
 }

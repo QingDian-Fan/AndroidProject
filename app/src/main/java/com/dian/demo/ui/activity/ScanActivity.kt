@@ -56,7 +56,7 @@ class ScanActivity : BaseAppBindActivity<ActivityScanBinding>(), QRCodeView.Dele
 
 
     override fun initialize(savedInstanceState: Bundle?) {
-        getTitleBarView().visibility = gone
+        getTitleBarView()?.visibility = gone
         binding.zxingView.setDelegate(this@ScanActivity)
        val mCameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         val cameraIdList = mCameraManager.cameraIdList

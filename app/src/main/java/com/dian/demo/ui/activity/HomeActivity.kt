@@ -49,11 +49,11 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
 
     override fun initialize(savedInstanceState: Bundle?) {
 
-        getTitleBarView().leftImageButton.visibility = gone
+        getTitleBarView()?.leftImageButton?.visibility = gone
         setPageTitle("首页")
-        getTitleBarView().setLeftIcon(R.mipmap.ic_scan)
-        getTitleBarView().setRightIcon(R.mipmap.ic_search)
-        getTitleBarView().setListener { _, action, _ ->
+        getTitleBarView()?.setLeftIcon(R.mipmap.ic_scan)
+        getTitleBarView()?.setRightIcon(R.mipmap.ic_search)
+        getTitleBarView()?.setListener { _, action, _ ->
             if (action == CommonTitleBar.ACTION_LEFT_BUTTON) {
                 ScanActivity.start(this@HomeActivity)
             }else if (action == CommonTitleBar.ACTION_RIGHT_BUTTON){
@@ -65,39 +65,39 @@ class HomeActivity : BaseAppBindActivity<ActivityHomeBinding>() {
         binding.tabHome.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.tab_home -> {
-                    getTitleBarView().mainView.visible()
-                    getTitleBarView().bottomLine.visible()
-                    getTitleBarView().setCenterText(it.title)
-                    getTitleBarView().leftImageButton.visible()
-                    getTitleBarView().rightImageButton.visible()
-                    getTitleBarView().setLeftIcon(R.mipmap.ic_scan)
-                    getTitleBarView().setRightIcon(R.mipmap.ic_search)
+                    getTitleBarView()?.mainView.visible()
+                    getTitleBarView()?.bottomLine.visible()
+                    getTitleBarView()?.setCenterText(it.title)
+                    getTitleBarView()?.leftImageButton.visible()
+                    getTitleBarView()?.rightImageButton.visible()
+                    getTitleBarView()?.setLeftIcon(R.mipmap.ic_scan)
+                    getTitleBarView()?.setRightIcon(R.mipmap.ic_search)
                     binding.vpContent.currentItem = 0
                 }
 
                 R.id.tab_answers -> {
-                    getTitleBarView().mainView.visible()
-                    getTitleBarView().bottomLine.visible()
-                    getTitleBarView().setCenterText(it.title)
-                    getTitleBarView().leftImageButton.gone()
-                    getTitleBarView().rightImageButton.gone()
+                    getTitleBarView()?.mainView.visible()
+                    getTitleBarView()?.bottomLine.visible()
+                    getTitleBarView()?.setCenterText(it.title)
+                    getTitleBarView()?.leftImageButton.gone()
+                    getTitleBarView()?.rightImageButton.gone()
                     binding.vpContent.currentItem = 1
                 }
 
                 R.id.tab_setup -> {
-                    getTitleBarView().mainView.gone()
-                    getTitleBarView().bottomLine.gone()
-                    getTitleBarView().leftImageButton.gone()
-                    getTitleBarView().rightImageButton.gone()
+                    getTitleBarView()?.mainView.gone()
+                    getTitleBarView()?.bottomLine.gone()
+                    getTitleBarView()?.leftImageButton.gone()
+                    getTitleBarView()?.rightImageButton.gone()
                     binding.vpContent.currentItem = 2
                 }
 
                 R.id.tab_mine -> {
-                    getTitleBarView().mainView.visible()
-                    getTitleBarView().bottomLine.visible()
-                    getTitleBarView().setCenterText(it.title)
-                    getTitleBarView().leftImageButton.gone()
-                    getTitleBarView().rightImageButton.gone()
+                    getTitleBarView()?.mainView.visible()
+                    getTitleBarView()?.bottomLine.visible()
+                    getTitleBarView()?.setCenterText(it.title)
+                    getTitleBarView()?.leftImageButton.gone()
+                    getTitleBarView()?.rightImageButton.gone()
                     binding.vpContent.currentItem = 3
                 }
             }

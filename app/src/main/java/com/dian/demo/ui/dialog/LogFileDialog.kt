@@ -63,9 +63,7 @@ class LogFileDialog: AppCompatDialogFragment() {
             it.setCanceledOnTouchOutside(true)
             it.window?.run {
                 navigationBarColor = Color.WHITE
-
                 addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-
                 setBackgroundDrawableResource(android.R.color.transparent)
                 val params = attributes
                 params.width = ViewGroup.LayoutParams.MATCH_PARENT

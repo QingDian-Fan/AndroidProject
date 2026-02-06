@@ -32,10 +32,10 @@ class H5ContainerActivity : BaseAppBindActivity<ActivityH5ContainerBinding>() {
     override fun getLayoutId(): Int  =R.layout.activity_h5_container
 
     override fun initialize(savedInstanceState: Bundle?) {
-        getTitleBarView().mainView.gone()
-        getTitleBarView().setOpenStatusBar(true)
-        getTitleBarView().setStatusBarColor(ResourcesUtil.getColor(R.color.text_blue_color))
-        getTitleBarView().bottomLine.gone()
+        getTitleBarView()?.mainView.gone()
+        getTitleBarView()?.setOpenStatusBar(true)
+        getTitleBarView()?.setStatusBarColor(ResourcesUtil.getColor(R.color.text_blue_color))
+        getTitleBarView()?.bottomLine.gone()
         val urlString = intent.getStringExtra("urlString")
         val bundle = Bundle().apply {
             putString("urlString", urlString)

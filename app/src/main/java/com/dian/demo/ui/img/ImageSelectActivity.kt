@@ -65,18 +65,18 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
     override fun getLayoutId(): Int = R.layout.activity_image_select
 
     override fun initialize(savedInstanceState: Bundle?) {
-        getTitleBarView().setCenterText(getString(R.string.text_image_select))
-        getTitleBarView().setRightText(
+        getTitleBarView()?.setCenterText(getString(R.string.text_image_select))
+        getTitleBarView()?.setRightText(
             getString(R.string.text_all_image),
             ResourcesUtil.getColor(R.color.text_light_color),
             14.dpToPx
         )
-        getTitleBarView().setListener { _, action, _ ->
+        getTitleBarView()?.setListener { _, action, _ ->
             if (action == ACTION_RIGHT_TEXT) {
                 initAlbum()
             }
         }
-        getTitleBarView().leftImageButton.setOnClickListener {
+        getTitleBarView()?.leftImageButton?.setOnClickListener {
             onBackPressed()
         }
         val maxSelect = intent.getIntExtra(SELECT_IMAGE_MAX_SELECT, 9)
@@ -158,7 +158,7 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         dialog?.onChooseAlbumListener = {
             if (it.getName() == ResourcesUtil.getString(R.string.text_all_image) && (mAdapter.getData() != allImage)) {
                 mAdapter.setData(allImage)
-                getTitleBarView().setRightText(
+                getTitleBarView()?.setRightText(
                     getString(R.string.text_all_image),
                     ResourcesUtil.getColor(R.color.text_light_color),
                     14.dpToPx
@@ -168,7 +168,7 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
                     val dataList = allAlbum[key]
                     if (it.getName() == key && dataList != null && dataList.isNotEmpty() && (mAdapter.getData() != dataList)) {
                         mAdapter.setData(dataList)
-                        getTitleBarView().setRightText(
+                        getTitleBarView()?.setRightText(
                             key,
                             ResourcesUtil.getColor(R.color.text_light_color),
                             14.dpToPx

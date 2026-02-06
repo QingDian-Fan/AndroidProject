@@ -50,7 +50,7 @@ class LoginActivity : BaseAppBindActivity<ActivityLoginBinding>() {
             }
         }
 
-        getTitleBarView().setListener { v, action, extra ->
+        getTitleBarView()?.setListener { v, action, extra ->
             if (action == CommonTitleBar.ACTION_RIGHT_TEXT) {
                 Navigation.findNavController(binding.fragmentContainerView).navigate(R.id.registerFragment)
             }else  if (action == CommonTitleBar.ACTION_LEFT_BUTTON) {
@@ -63,11 +63,11 @@ class LoginActivity : BaseAppBindActivity<ActivityLoginBinding>() {
         LogUtil.e("TAG--->","isLoginPage::${isLoginPage}")
         if (isLoginPage){
             setPageTitle("登录")
-            getTitleBarView().setRightText("注册", "#FF40a9ff".toColorInt(), ScreenUtils.dp2PxInt(this, 16f))
-            getTitleBarView().rightTextView.visible()
+            getTitleBarView()?.setRightText("注册", "#FF40a9ff".toColorInt(), ScreenUtils.dp2PxInt(this, 16f))
+            getTitleBarView()?.rightTextView.visible()
         }else{
             setPageTitle("注册")
-            getTitleBarView().rightTextView.gone()
+            getTitleBarView()?.rightTextView.gone()
         }
     }
 }

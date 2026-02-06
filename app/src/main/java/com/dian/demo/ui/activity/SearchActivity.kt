@@ -42,10 +42,10 @@ class SearchActivity : BaseAppVMActivity<ActivitySearchBinding, SearchViewModel>
 
 
     override fun initialize(savedInstanceState: Bundle?) {
-        getTitleBarView().mainView.gone()
-        getTitleBarView().bottomLine.gone()
-        getTitleBarView().setOpenStatusBar(true)
-        getTitleBarView().setStatusBarColor(ResourcesUtil.getColor(R.color.colorPink))
+        getTitleBarView()?.mainView.gone()
+        getTitleBarView()?.bottomLine.gone()
+        getTitleBarView()?.setOpenStatusBar(true)
+        getTitleBarView()?.setStatusBarColor(ResourcesUtil.getColor(R.color.colorPink))
         binding.ivBack.setOnClickListener {
             onBackPressed()
         }

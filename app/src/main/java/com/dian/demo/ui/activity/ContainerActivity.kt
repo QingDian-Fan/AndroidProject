@@ -98,7 +98,7 @@ class ContainerActivity : BaseAppBindActivity<ActivityContainerBinding>() {
             }
         }
 
-        getTitleBarView().setListener { v, action, extra ->
+        getTitleBarView()?.setListener { v, action, extra ->
             if (action == CommonTitleBar.ACTION_LEFT_BUTTON) {
                 onBackPressed()
             }

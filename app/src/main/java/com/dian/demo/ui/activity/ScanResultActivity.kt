@@ -27,7 +27,7 @@ class ScanResultActivity : BaseAppBindActivity<ActivityScanResultBinding>() {
 
     override fun initialize(savedInstanceState: Bundle?) {
 
-        getTitleBarView().setLeftIcon(R.mipmap.ic_close)
+        getTitleBarView()?.setLeftIcon(R.mipmap.ic_close)
         val resultString = intent.getStringExtra("result")
         binding.tvResult.text = resultString
 

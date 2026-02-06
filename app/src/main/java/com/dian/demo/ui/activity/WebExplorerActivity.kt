@@ -66,7 +66,7 @@ open class WebExplorerActivity : BaseAppBindActivity<ActivityWebExplorerBinding>
             .replace(R.id.fl_container, mWebFragment!!)
             .commitAllowingStateLoss()
         initShare()
-        getTitleBarView().setListener { _, action, _ ->
+        getTitleBarView()?.setListener { _, action, _ ->
             if (action == CommonTitleBar.ACTION_LEFT_BUTTON) {
                 onBackPressed()
             } else if (action == CommonTitleBar.ACTION_RIGHT_BUTTON) {

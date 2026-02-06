@@ -26,7 +26,7 @@ class VideoPlayerActivity : BaseAppBindActivity<ActivityVideoPlayerBinding>() {
     override fun getLayoutId(): Int = R.layout.activity_video_player
 
     override fun initialize(savedInstanceState: Bundle?) {
-        getTitleBarView().visibility = gone
+        getTitleBarView()?.visibility = gone
         StatusBarUtil.hideStatusBar(this)
         binding.videoView.initData()
         binding.videoView.setVideoPath("https://media.w3.org/2010/05/sintel/trailer.mp4")

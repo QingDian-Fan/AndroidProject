@@ -69,7 +69,7 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
 
 
     override fun initialize(savedInstanceState: Bundle?) {
-        getTitleBarView().setCenterText(ResourcesUtil.getString(R.string.demo_title_text))
+        getTitleBarView()?.setCenterText(ResourcesUtil.getString(R.string.demo_title_text))
 
 
         val isGray = AppDataStore.getData("isGray", false)

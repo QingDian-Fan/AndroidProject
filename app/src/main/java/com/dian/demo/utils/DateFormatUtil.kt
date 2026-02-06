@@ -11,10 +11,10 @@ import java.util.*
 
 
 object DateFormatUtil {
-    private const val DATE_FORMAT_TIME_SHARE = "yyyy-MM-dd HH:mm"
     private const val DATE_FORMAT_TIME = "yyyy-MM-dd"
     private const val DATE_FORMAT_TIME_24H = "HH:mm"
     private const val MM_DD_HH_MM = "MM-dd HH:mm"
+    private const val DATE_FORMAT_TIME_SHARE = "yyyy-MM-dd HH:mm"
 
     @JvmStatic
     fun getShareDate(): String {

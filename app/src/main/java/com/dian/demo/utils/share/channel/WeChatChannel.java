@@ -18,6 +18,7 @@ import com.dian.demo.config.AppConfig;
 import com.dian.demo.utils.ResourcesUtil;
 import com.dian.demo.utils.share.ShareUtils;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.opensdk.modelmsg.WXFileObject;
 import com.tencent.mm.opensdk.modelmsg.WXImageObject;
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
 import com.tencent.mm.opensdk.modelmsg.WXTextObject;

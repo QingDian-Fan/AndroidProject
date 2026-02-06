@@ -25,7 +25,7 @@ class CameraActivity : BaseAppBindActivity<ActivityCameraBinding>() {
     override fun getLayoutId(): Int = R.layout.activity_camera
 
     override fun initialize(savedInstanceState: Bundle?) {
-        getTitleBarView().visibility = gone
+        getTitleBarView()?.visibility = gone
         val fragment = CameraFragment.getFragment()
         val mFragmentTransaction =
             supportFragmentManager.beginTransaction().add(R.id.fl_container, fragment)
