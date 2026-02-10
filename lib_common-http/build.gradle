@@ -1,0 +1,83 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+
+}
+
+android {
+    namespace 'com.common.http'
+    compileSdk build_versions.compile_sdk
+
+    defaultConfig {
+        minSdk build_versions.min_sdk
+        targetSdk build_versions.target_sdk
+        versionCode build_versions.version_code
+        versionName build_versions.version_name
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += [
+                        "room.schemaLocation"  : "$projectDir/schemas".toString(),
+                        "room.incremental"     : "true",
+                        "room.expandProjection": "true"]
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // Library 依然可以使用 Proguard
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.10.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    implementation project(":lib_common-utils")
+    implementation project(":lib_common-theme")
+
+
+    /*================================网络请求==============================================*/
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
+    implementation "com.squareup.retrofit2:converter-gson:3.0.0"
+    implementation "com.squareup.retrofit2:converter-scalars:2.9.0"
+    implementation "com.squareup.retrofit2:adapter-rxjava:2.9.0"
+    implementation "com.squareup.okhttp3:okhttp:4.9.1"
+    implementation 'com.squareup.okhttp3:okhttp-sse:4.9.1'
+
+    debugImplementation "com.github.chuckerteam.chucker:library:4.2.0"
+    releaseImplementation "com.github.chuckerteam.chucker:library-no-op:4.2.0"
+    /*================================网络请求==============================================*/
+
+
+
+
+    /*================================数据库===============================================*/
+    implementation 'androidx.room:room-runtime:2.7.2'
+    kapt 'androidx.room:room-compiler:2.7.2'
+    debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'
+    /*================================数据库===============================================*/
+}

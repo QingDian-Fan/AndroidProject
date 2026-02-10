@@ -1,7 +1,6 @@
 package com.dian.demo.utils
 
 import android.util.Log
-import com.dian.demo.BuildConfig
 
 
 object LogUtil {
