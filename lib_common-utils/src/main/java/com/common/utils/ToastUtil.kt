@@ -58,7 +58,8 @@ object ToastUtil {
 
     fun cancelToast(toast: Toast?) {
         try {
-            if (toast?.view!!.isShown) {
+            val toastView = toast?.view ?: return
+            if (toastView.isShown) {
                 toast.cancel()
             }
         } catch (_: Exception) {

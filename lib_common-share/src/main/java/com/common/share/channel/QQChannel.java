@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.Gravity;
 
 
@@ -44,6 +45,9 @@ public class QQChannel extends CustomChannel {
 
     @Override
     public void shareText(String text) {
+        if (context == null || context.isFinishing() || TextUtils.isEmpty(text)) {
+            return;
+        }
         if (!isQQZone) {
             Intent intent = new Intent("android.intent.action.SEND");
             intent.setType("text/plain");
@@ -60,11 +64,17 @@ public class QQChannel extends CustomChannel {
 
     @Override
     public void shareBitmap(Bitmap bitmap) {
+        if (context == null || context.isFinishing() || bitmap == null || bitmap.isRecycled()) {
+            return;
+        }
 
         Bundle params = new Bundle();
         // 保存图片bitmap到本地
       //  String bmpUri = saveImageToLocal(bitmap);
         String bmpUri = FileShareHelper.getBitmapPath(Utils.INSTANCE.getAppContext(),bitmap);
+        if (TextUtils.isEmpty(bmpUri)) {
+            return;
+        }
         if (!isQQZone) {
             params.putString(QQShare.SHARE_TO_QQ_IMAGE_LOCAL_URL, bmpUri);
             params.putString(QQShare.SHARE_TO_QQ_APP_NAME, "");
@@ -84,6 +94,9 @@ public class QQChannel extends CustomChannel {
 
     @Override
     public void shareLink(String title, String des, String link, Bitmap bitmap) {
+        if (context == null || context.isFinishing() || TextUtils.isEmpty(link)) {
+            return;
+        }
         Bundle params = new Bundle();
         // 保存图片bitmap到本地
         if (bitmap == null) {
@@ -91,6 +104,9 @@ public class QQChannel extends CustomChannel {
         }
    //     String bmpUri = saveImageToLocal(bitmap);
         String bmpUri = FileShareHelper.getBitmapPath(Utils.INSTANCE.getAppContext(),bitmap);
+        if (TextUtils.isEmpty(bmpUri)) {
+            return;
+        }
 
         if (!isQQZone) {
             params.putInt(QQShare.SHARE_TO_QQ_KEY_TYPE, QQShare.SHARE_TO_QQ_TYPE_DEFAULT);

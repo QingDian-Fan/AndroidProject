@@ -1,8 +1,10 @@
 package com.common.share.dialog;
 
 import android.app.Dialog;
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -56,7 +58,8 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         Dialog dialog = super.onCreateDialog(savedInstanceState);
-        View mView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_share_layout, null, false);
+        Context context = requireContext();
+        View mView = LayoutInflater.from(context).inflate(R.layout.dialog_share_layout, null, false);
         dialog.setContentView(mView);
         initView(mView);
         initPlatformData();
@@ -80,33 +83,47 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
         mTvShareTitle.setText(isHeaderShow ? (title != null ? title : "") : "");
         mTvShareContent.setText(isHeaderShow ? (content != null ? content : "") : "");
 
+        if (shareModel == null) {
+            mSvShare.setVisibility(View.GONE);
+            mIvShare.setVisibility(View.GONE);
+            return;
+        }
         mSvShare.setVisibility(BITMAP_TYPE == 0 ? View.GONE : View.VISIBLE);
         mIvShare.setVisibility(BITMAP_TYPE == 0 ? View.GONE : View.VISIBLE);
-        if (BITMAP_TYPE == 1) {
+        if (BITMAP_TYPE == 1 && shareModel.bitmap != null && !shareModel.bitmap.isRecycled()) {
             mIvShare.setImageBitmap(shareModel.bitmap);
-        } else if (BITMAP_TYPE == 2) {
-            Glide.with(requireContext()).load(shareModel.imgLink).into(mIvShare);
+        } else if (BITMAP_TYPE == 2 && !TextUtils.isEmpty(shareModel.imgLink)) {
+            Glide.with(this).load(shareModel.imgLink).into(mIvShare);
         }
     }
 
     private void initPlatformData() {
-        if (IntentUtil.isInstalled(requireContext(), Channel.PACKAGE_QQ)) {
+        Context context = getContext();
+        if (context == null) {
+            return;
+        }
+        platformList.clear();
+        if (IntentUtil.isInstalled(context, Channel.PACKAGE_QQ)) {
             platformList.add(new PlatformData(1, ResourcesUtil.getString(R.string.share_qq), Channel.PACKAGE_QQ, ResourcesUtil.getDrawable(R.drawable.icon_share_qq), Channel.QQ));
             platformList.add(new PlatformData(2, ResourcesUtil.getString(R.string.share_qzone), Channel.PACKAGE_QQ, ResourcesUtil.getDrawable(R.drawable.icon_share_qzone), Channel.QQ_ZONE));
         }
-        if (IntentUtil.isInstalled(requireContext(), Channel.PACKAGE_WECHAT)) {
+        if (IntentUtil.isInstalled(context, Channel.PACKAGE_WECHAT)) {
             platformList.add(new PlatformData(3, ResourcesUtil.getString(R.string.share_wechat), Channel.PACKAGE_WECHAT, ResourcesUtil.getDrawable(R.drawable.icon_share_wechat), Channel.WECHAT));
             platformList.add(new PlatformData(4, ResourcesUtil.getString(R.string.share_moment), Channel.PACKAGE_WECHAT, ResourcesUtil.getDrawable(R.drawable.icon_share_moment), Channel.WECHAT_TIMELINE));
         }
-        if (IntentUtil.isInstalled(requireContext(), Channel.PACKAGE_WEIBO)) {
+        if (IntentUtil.isInstalled(context, Channel.PACKAGE_WEIBO)) {
             platformList.add(new PlatformData(7, ResourcesUtil.getString(R.string.share_weibo), Channel.PACKAGE_WEIBO, ResourcesUtil.getDrawable(R.drawable.icon_share_weibo), Channel.WEIBO));
+        }
+        if (shareModel == null) {
+            initShareAdapter(context);
+            return;
         }
         if (shareModel.type == ShareModel.TYPE_HTML) {
             platformList.add(new PlatformData(5, ResourcesUtil.getString(R.string.share_link), Channel.PACKAGE_THIS, ResourcesUtil.getDrawable(R.drawable.icon_share_link), Channel.COPY_LINK));
         } else if (shareModel.type == ShareModel.TYPE_BITMAP) {
             platformList.add(new PlatformData(6, ResourcesUtil.getString(R.string.share_save_img), Channel.PACKAGE_THIS, ResourcesUtil.getDrawable(R.drawable.icon_share_save_img), Channel.SAVE_LOCAL));
         }
-        initShareAdapter();
+        initShareAdapter(context);
     }
 
     private void initData() {
@@ -187,9 +204,9 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
         return this;
     }
 
-    private void initShareAdapter() {
-        ShareAdapter mAdapter = new ShareAdapter(getContext(), platformList);
-        mRvSharePlatform.setLayoutManager(new GridLayoutManager(getContext(), Math.max(1,platformList.size())));
+    private void initShareAdapter(Context context) {
+        ShareAdapter mAdapter = new ShareAdapter(context, platformList);
+        mRvSharePlatform.setLayoutManager(new GridLayoutManager(context, Math.max(1, platformList.size())));
         mRvSharePlatform.setAdapter(mAdapter);
         mAdapter.setItemOnClickListener(this);
     }
@@ -211,37 +228,59 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
 
     @Override
     public void CallBack(int position) {
+        if (position < 0 || position >= platformList.size() || shareModel == null) {
+            return;
+        }
         PlatformData platformData = platformList.get(position);
         if (platformData == null) return;
+        Context context = getContext();
+        Activity activity = getActivity();
         dismissAllowingStateLoss();
         if (platformData.shareChannel == Channel.COPY_LINK) {
-            getContext().getSystemService(ClipboardManager.class).setPrimaryClip(ClipData.newPlainText("url", shareModel.link));
+            if (context == null) {
+                return;
+            }
+            ClipboardManager clipboardManager = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            if (clipboardManager != null) {
+                clipboardManager.setPrimaryClip(ClipData.newPlainText("url", shareModel.link));
+            }
             ToastUtil.showToast(Utils.INSTANCE.getAppContext(), ResourcesUtil.getString(R.string.link_is_copy), false, Gravity.CENTER);
             return;
         } else if (platformData.shareChannel == Channel.SAVE_LOCAL) {
-            if (shareModel.bitmap != null) {
-                ShareUtils.saveBmp2Uri(getContext(), shareModel.bitmap, "share" + System.currentTimeMillis());
-            } else {
-                Glide.with(this).asBitmap().load(shareModel.imgLink).into(new SimpleTarget<Bitmap>() {
+            if (context == null) {
+                return;
+            }
+            Context appContext = context.getApplicationContext();
+            if (shareModel.bitmap != null && !shareModel.bitmap.isRecycled()) {
+                ShareUtils.saveBmp2Uri(appContext, shareModel.bitmap, "share" + System.currentTimeMillis());
+            } else if (!TextUtils.isEmpty(shareModel.imgLink)) {
+                Glide.with(appContext).asBitmap().load(shareModel.imgLink).into(new SimpleTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
-                        ShareUtils.saveBmp2Uri(getContext(), bitmap, "share" + System.currentTimeMillis());
+                        ShareUtils.saveBmp2Uri(appContext, bitmap, "share" + System.currentTimeMillis());
                     }
                 });
             }
             ToastUtil.showToast(Utils.INSTANCE.getAppContext(), ResourcesUtil.getString(R.string.img_is_save), false, Gravity.CENTER);
             return;
         }
-        CustomChannel customChannel = ShareFactory.newChannel(getActivity(), platformData.shareChannel);
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+            return;
+        }
+        Context appContext = activity.getApplicationContext();
+        CustomChannel customChannel = ShareFactory.newChannel(activity, platformData.shareChannel);
+        if (customChannel == null) {
+            return;
+        }
         switch (shareModel.type) {
             case ShareModel.TYPE_TEXT:
                 customChannel.shareText(shareModel.des);
                 break;
             case ShareModel.TYPE_BITMAP:
-                if (shareModel.bitmap != null) {
+                if (shareModel.bitmap != null && !shareModel.bitmap.isRecycled()) {
                     customChannel.shareBitmap(shareModel.bitmap);
-                } else {
-                    Glide.with(this).asBitmap().load(shareModel.imgLink).into(new SimpleTarget<Bitmap>() {
+                } else if (!TextUtils.isEmpty(shareModel.imgLink)) {
+                    Glide.with(appContext).asBitmap().load(shareModel.imgLink).into(new SimpleTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
                             customChannel.shareBitmap(bitmap);
@@ -250,10 +289,10 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
                 }
                 break;
             case ShareModel.TYPE_HTML:
-                if (shareModel.bitmap != null) {
+                if (shareModel.bitmap != null && !shareModel.bitmap.isRecycled()) {
                     customChannel.shareLink(shareModel.title, shareModel.des, shareModel.link, shareModel.bitmap);
                 } else if (!TextUtils.isEmpty(shareModel.imgLink)) {
-                    Glide.with(requireContext()).asBitmap().load(Uri.parse(shareModel.imgLink)).into(new SimpleTarget<Bitmap>() {
+                    Glide.with(appContext).asBitmap().load(Uri.parse(shareModel.imgLink)).into(new SimpleTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
                             customChannel.shareLink(shareModel.title, shareModel.des, shareModel.link, bitmap);

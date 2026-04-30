@@ -17,6 +17,9 @@ public class FileShareHelper {
 
 
     public static  String getBitmapPath(Context context, Bitmap bitmap){
+        if (context == null || bitmap == null || bitmap.isRecycled()) {
+            return null;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             return saveBitmap(context,bitmap);
         }else {
@@ -24,6 +27,9 @@ public class FileShareHelper {
         }
     }
     private static String saveBitmap(Context context, Bitmap bitmap) {
+        if (context == null || bitmap == null || bitmap.isRecycled()) {
+            return null;
+        }
         String fileName = "share_" + System.currentTimeMillis() + ".jpg";
         OutputStream os = null;
 
@@ -67,20 +73,22 @@ public class FileShareHelper {
     }
 
     private static String saveImageToLocal(Bitmap bmp) {
+        if (bmp == null || bmp.isRecycled()) {
+            return null;
+        }
         String storePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "share";// 首先保存图片
         File appDir = new File(storePath);
-        if (!appDir.exists()) {
-            appDir.mkdir();
+        if (!appDir.exists() && !appDir.mkdirs()) {
+            return null;
         }
         String fileName = System.currentTimeMillis() + ".jpg";
         File file = new File(appDir, fileName);
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             bmp.compress(Bitmap.CompressFormat.JPEG, 60, fos);//通过io流的方式来压缩保存图片
             fos.flush();
-            fos.close();
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
         return storePath + File.separator + fileName;
     }

@@ -14,10 +14,14 @@ open class BaseApplication : Application() {
         private var instance: BaseApplication? = null
 
         @JvmStatic
-        fun getAppContext(): Context = mContext!!
+        fun getAppContext(): Context = checkNotNull(mContext) {
+            "BaseApplication context is not initialized."
+        }
 
         @JvmStatic
-        fun getAppInstance(): BaseApplication = instance!!
+        fun getAppInstance(): BaseApplication = checkNotNull(instance) {
+            "BaseApplication instance is not initialized."
+        }
 
     }
 

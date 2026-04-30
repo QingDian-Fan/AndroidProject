@@ -14,7 +14,7 @@ object Utils {
         if (channel.isNullOrBlank()) {
             channel = WalleChannelReader.getChannel(context) ?: "official"
         }
-        return channel!!
+        return channel.orEmpty().ifBlank { "official" }
     }
     private lateinit var appContext: Context
     private lateinit var mApplication: Application

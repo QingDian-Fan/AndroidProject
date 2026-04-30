@@ -19,7 +19,7 @@ class SingleClickAspect {
      * 定义切点，标记切点为所有被@SingleClick注解的方法
      * 自己项目中SingleClick这个类的全路径哦
      */
-    @Pointcut("execution(@com.dian.demo.utils.aop.SingleClick * *(..))")
+    @Pointcut("execution(@com.common.aop.SingleClick * *(..))")
     fun methodAnnotated() {
     }
 

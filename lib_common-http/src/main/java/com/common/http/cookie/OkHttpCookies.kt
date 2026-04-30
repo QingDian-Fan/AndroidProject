@@ -15,15 +15,11 @@ class OkHttpCookies : Serializable {
     private constructor()
 
     constructor(cookies: Cookie?) {
-        this.cookies = cookies!!
+        this.cookies = requireNotNull(cookies) { "cookie == null" }
     }
 
     fun getCookies(): Cookie {
-        var bestCookies: Cookie = cookies
-        if (clientCookies != null) {
-            bestCookies = clientCookies as Cookie
-        }
-        return bestCookies
+        return clientCookies ?: cookies
     }
 
     @Throws(IOException::class)

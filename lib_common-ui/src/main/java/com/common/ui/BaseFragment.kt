@@ -179,10 +179,13 @@ abstract class BaseFragment : Fragment(), ILazyLoad, ViewBehavior {
     }
 
     override fun showToast(event: ToastEvent) {
-        if (event.content != null) {
-            ToastUtil.showToast(requireContext(), event.content!!, event.showLong)
-        } else if (event.contentResId != null) {
-            ToastUtil.showToast(requireContext(), getString(event.contentResId!!), event.showLong)
+        val safeContext = context ?: return
+        event.content?.let {
+            ToastUtil.showToast(safeContext, it, event.showLong)
+            return
+        }
+        event.contentResId?.let {
+            ToastUtil.showToast(safeContext, safeContext.getString(it), event.showLong)
         }
     }
 
@@ -190,7 +193,9 @@ abstract class BaseFragment : Fragment(), ILazyLoad, ViewBehavior {
 
 
     override fun navigate(page: Any) {
-        startActivity(Intent(requireContext(), page as Class<*>))
+        val safeContext = context ?: return
+        val targetPage = page as? Class<*> ?: return
+        startActivity(Intent(safeContext, targetPage))
     }
 
     override fun backPress(arg: Any?) {

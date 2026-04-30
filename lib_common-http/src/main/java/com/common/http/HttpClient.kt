@@ -2,12 +2,10 @@ package com.common.http
 
 import android.content.Context
 import android.net.ParseException
-import android.text.TextUtils
 import android.util.Log
 import android.view.Gravity
 import android.webkit.MimeTypeMap
-import com.common.theme.BaseApplication
-import com.common.utils.MoshiUtil
+import com.common.utils.moshi.MoshiUtil
 import com.common.utils.ToastUtil
 import com.common.utils.Utils
 import com.google.gson.JsonParseException
@@ -247,7 +245,8 @@ open class HttpClient : HttpClientBase() {
         response: Response<String>,
         type: Type
     ): ResponseHolder<T> {
-        val resp = MoshiUtil.fromJson<Result<T>>(response.body()!!,type)!!
+        val body = response.body() ?: return emptyBodyError(response)
+        val resp = MoshiUtil.fromJson<Result<T>>(body, type) ?: return parseBodyError(response)
         if (resp.isSuccessful()) {
             return ResponseHolder.Success(resp.data)
         } else {
@@ -272,9 +271,28 @@ open class HttpClient : HttpClientBase() {
         response: Response<String>,
         type: Type
     ): ResponseHolder<T> {
-        val resp = MoshiUtil.fromJson<Result<T>>(response.body()!!,type)!!
+        val body = response.body() ?: return emptyBodyError(response)
+        val resp = MoshiUtil.fromJson<Result<T>>(body, type) ?: return parseBodyError(response)
         return ResponseHolder.Success(resp.data)
     }
+
+    private fun emptyBodyError(response: Response<String>): ResponseHolder.Error =
+        ResponseHolder.Error(
+            HttpError(
+                httpCode = response.code(),
+                errorCode = HttpError.PARSE_ERROR,
+                errorMsg = "响应体为空"
+            )
+        )
+
+    private fun parseBodyError(response: Response<String>): ResponseHolder.Error =
+        ResponseHolder.Error(
+            HttpError(
+                httpCode = response.code(),
+                errorCode = HttpError.PARSE_ERROR,
+                errorMsg = "数据解析失败"
+            )
+        )
 
     /**
      * 解析失败的网络请求返回的响应
@@ -327,14 +345,9 @@ open class HttpClient : HttpClientBase() {
             )
             else -> HttpError(
                 errorCode = HttpError.UNKNOW_ERROR,
-                errorMsg = if (TextUtils.isEmpty(cause.message)) {
-                    "未知错误"
-                } else {
-                    cause.message!!
-                },
+                errorMsg = cause.message?.takeIf { it.isNotBlank() } ?: "未知错误",
                 cause = cause
             )
         }
     }
 }
-

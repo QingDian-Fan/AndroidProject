@@ -23,7 +23,7 @@ import org.aspectj.lang.reflect.MethodSignature
 @Aspect
 class CheckPermissionsAspect {
 
-    @Pointcut("execution(@com.dian.demo.utils.aop.CheckPermissions * *(..))")
+    @Pointcut("execution(@com.common.aop.CheckPermissions * *(..))")
     fun methodPermissions() {
 
     }
@@ -43,7 +43,10 @@ class CheckPermissionsAspect {
         }
         if ((mActivity == null) || mActivity.isFinishing || mActivity.isDestroyed) {
             LogUtil.e("TAGTAG", "AOP-CheckPermissions-mActivity is null")
-            mActivity = ActivityManager.getInstance().getTopActivity() as AppCompatActivity
+            mActivity = ActivityManager.getInstance().getTopActivity() as? AppCompatActivity
+        }
+        if (mActivity == null || mActivity.isFinishing || mActivity.isDestroyed) {
+            return
         }
         val methodSignature = joinPoint.signature as MethodSignature
         val method = methodSignature.method

@@ -65,13 +65,16 @@ public class WeChatChannel extends CustomChannel {
 
     @Override
     public void shareBitmap(Bitmap bitmap) {
-        if (iwxapi == null || bitmap == null) {
+        if (iwxapi == null || bitmap == null || bitmap.isRecycled()) {
             return;
         }
         WXImageObject imgObj;
         String path;
         if (bitmap.getByteCount() > 1000000) {
             path = saveImageToLocal(bitmap);
+            if (TextUtils.isEmpty(path)) {
+                return;
+            }
             imgObj = new WXImageObject();
             imgObj.setImagePath(path);
         } else {
@@ -80,7 +83,6 @@ public class WeChatChannel extends CustomChannel {
         WXMediaMessage msg = new WXMediaMessage();
         msg.mediaObject = imgObj;
         Bitmap thumbBmp = Bitmap.createScaledBitmap(bitmap, THUMB_SIZE, THUMB_SIZE, true);
-        bitmap.recycle();
         msg.thumbData = ShareUtils.bmpToByteArray(thumbBmp, true);
         SendMessageToWX.Req req = new SendMessageToWX.Req();
         req.transaction = buildTransaction("img");
@@ -91,7 +93,7 @@ public class WeChatChannel extends CustomChannel {
 
     @Override
     public void shareLink(String title, String des, String link, Bitmap bitmap) {
-        if (iwxapi == null) {
+        if (iwxapi == null || context == null || TextUtils.isEmpty(link)) {
             return;
         }
         WXWebpageObject webpage = new WXWebpageObject();
@@ -100,13 +102,20 @@ public class WeChatChannel extends CustomChannel {
         msg.title = title;
         msg.description = des;
         Bitmap bmp;
-        if (bitmap == null) {
+        boolean shouldRecycleSource = false;
+        if (bitmap == null || bitmap.isRecycled()) {
             bmp = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
+            shouldRecycleSource = true;
         } else {
             bmp = bitmap;
         }
+        if (bmp == null || bmp.isRecycled()) {
+            return;
+        }
         Bitmap thumbBmp = Bitmap.createScaledBitmap(bmp, THUMB_SIZE, THUMB_SIZE, true);
-        bmp.recycle();
+        if (shouldRecycleSource && !bmp.isRecycled()) {
+            bmp.recycle();
+        }
         msg.thumbData = ShareUtils.bmpToByteArray(thumbBmp, true);
         SendMessageToWX.Req req = new SendMessageToWX.Req();
         req.transaction = buildTransaction("webpage");
@@ -117,29 +126,34 @@ public class WeChatChannel extends CustomChannel {
 
 
     public String saveImageToLocal(Bitmap bmp) {
+        if (bmp == null || bmp.isRecycled()) {
+            return null;
+        }
         String storePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "share";// 首先保存图片
         File appDir = new File(storePath);
-        if (!appDir.exists()) {
-            appDir.mkdir();
+        if (!appDir.exists() && !appDir.mkdirs()) {
+            return null;
         }
         String fileName = System.currentTimeMillis() + ".jpg";
         File file = new File(appDir, fileName);
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             bmp.compress(Bitmap.CompressFormat.JPEG, 90, fos);//通过io流的方式来压缩保存图片
             fos.flush();
-            fos.close();
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
         if (checkVersionValid(Utils.INSTANCE.getAppContext()) && checkAndroidNotBelowN()) {
             String fileUri = getFileUri(Utils.INSTANCE.getAppContext(), file);
-            return fileUri;
+            return TextUtils.isEmpty(fileUri) ? null : fileUri;
         }
         return storePath + File.separator + fileName;
     }
 
     public boolean checkVersionValid(Context context) { // 判断微信版本是否为7.0.13及以上
+        if (context == null) {
+            return false;
+        }
         IWXAPI api = WXAPIFactory.createWXAPI(context, ShareConfig.WX_APPID, true);
         return api.getWXAppSupportAPI() >= 0x27000D00;
     }
@@ -151,13 +165,18 @@ public class WeChatChannel extends CustomChannel {
 
 
     public String getFileUri(Context context, File file) {//android7.0以上 获取文件路径
-        if (file == null) {
+        if (context == null || file == null) {
             return null;
         }
-        Uri contentUri = FileProvider.getUriForFile(context, Utils.INSTANCE.getApplicationId() + ".provider", file);
-        // 授权给微信访问路径
-        context.grantUriPermission("com.tencent.mm", contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);// 这里填微信包名
-        return contentUri.toString();   // contentUri.toString() 即是以"content://"开头的用于共享的路径
+        try {
+            Uri contentUri = FileProvider.getUriForFile(context, Utils.INSTANCE.getApplicationId() + ".provider", file);
+            // 授权给微信访问路径
+            context.grantUriPermission("com.tencent.mm", contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);// 这里填微信包名
+            return contentUri.toString();   // contentUri.toString() 即是以"content://"开头的用于共享的路径
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private String buildTransaction(final String type) {

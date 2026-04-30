@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.text.TextUtils
 import android.util.Log
-import com.common.theme.BaseApplication
 import com.common.utils.Utils
 import okhttp3.Cookie
 import okhttp3.HttpUrl
@@ -26,7 +25,8 @@ class PersistentCookieStore {
     init {
         val prefsMap = cookiePrefs.all
         for (entry in prefsMap) {
-            val cookieNames = TextUtils.split(entry.value as String, ",")
+            val cookieValue = entry.value as? String ?: continue
+            val cookieNames = TextUtils.split(cookieValue, ",")
             for (name in cookieNames) {
                 val encodedCookie = cookiePrefs.getString(name, null)
                 if (encodedCookie != null) {
@@ -70,7 +70,7 @@ class PersistentCookieStore {
     fun get(url: HttpUrl): List<Cookie> {
         val list: ArrayList<Cookie> = ArrayList()
         if (cookies.containsKey(url.host)) {
-            list.addAll(cookies[url.host]?.values!!)
+            cookies[url.host]?.values?.let(list::addAll)
         }
         return list
     }
@@ -86,7 +86,7 @@ class PersistentCookieStore {
 
     fun remove(url: HttpUrl, cookie: Cookie): Boolean {
         val name = getCookieToken(cookie)
-        return if (cookies.containsKey(url.host) && cookies[url.host]?.containsKey(name)!!) {
+        return if (cookies[url.host]?.containsKey(name) == true) {
             cookies[url.host]?.remove(name)
 
             val prefsWriter = cookiePrefs.edit()
@@ -107,7 +107,7 @@ class PersistentCookieStore {
     fun getCookies(): List<Cookie> {
         val ret = ArrayList<Cookie>()
         for (key in cookies.keys) {
-            ret.addAll(cookies[key]?.values!!)
+            cookies[key]?.values?.let(ret::addAll)
         }
         return ret
     }
@@ -141,19 +141,20 @@ class PersistentCookieStore {
      * @return cookie object
      */
     private fun decodeCookie(cookieString: String): Cookie? {
-        val bytes = hexStringToByteArray(cookieString)
-        val byteArrayInputStream = ByteArrayInputStream(bytes)
-        var cookie: Cookie? = null
         try {
+            val bytes = hexStringToByteArray(cookieString)
+            val byteArrayInputStream = ByteArrayInputStream(bytes)
             val objectInputStream = ObjectInputStream(byteArrayInputStream)
-            cookie = (objectInputStream.readObject() as OkHttpCookies).getCookies()
+            return (objectInputStream.readObject() as OkHttpCookies).getCookies()
         } catch (e: IOException) {
             Log.d(LOG_TAG, "IOException in decodeCookie", e)
         } catch (e: ClassNotFoundException) {
             Log.d(LOG_TAG, "ClassNotFoundException in decodeCookie", e)
+        } catch (e: RuntimeException) {
+            Log.d(LOG_TAG, "RuntimeException in decodeCookie", e)
         }
 
-        return cookie
+        return null
     }
 
     /**
@@ -182,10 +183,14 @@ class PersistentCookieStore {
      */
     private fun hexStringToByteArray(hexString: String): ByteArray {
         val len = hexString.length
+        require(len % 2 == 0) { "Invalid hex length" }
         val data = ByteArray(len / 2)
         var i = 0
         while (i < len) {
-            data[i / 2] = ((Character.digit(hexString[i], 16) shl 4) + Character.digit(hexString[i + 1], 16)).toByte()
+            val first = Character.digit(hexString[i], 16)
+            val second = Character.digit(hexString[i + 1], 16)
+            require(first != -1 && second != -1) { "Invalid hex character" }
+            data[i / 2] = ((first shl 4) + second).toByte()
             i += 2
         }
         return data

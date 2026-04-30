@@ -1,16 +1,10 @@
-package com.common.utils
-
-import android.util.Log
-import com.common.utils.moshi.NullSafeKotlinJsonAdapterFactory
-import com.common.utils.moshi.NullSafeStandardJsonAdapters
+package com.common.utils.moshi
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
-import java.lang.reflect.Type
 import java.lang.reflect.ParameterizedType
-
-
+import java.lang.reflect.Type
 
 object MoshiUtil {
 
@@ -116,4 +110,3 @@ object MoshiUtil {
     }
 
 }
-

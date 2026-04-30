@@ -98,7 +98,10 @@ dependencies {
     implementation project(':lib_common-ui')
     implementation project(':lib_common-http')
     implementation project(':lib_common-aop')
+    implementation project(':lib_common-share')
 
     implementation project(':lib_annotation')
     kapt project(':lib_processor')
+
+
 }

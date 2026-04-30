@@ -30,6 +30,9 @@ public class WeiBoChannel extends CustomChannel {
 
     @Override
     public void shareText(String text) {
+        if (mWBAPI == null || mActivity == null || mActivity.isFinishing()) {
+            return;
+        }
         WeiboMultiMessage message = new WeiboMultiMessage();
         TextObject textObject = new TextObject();
         textObject.text = text;
@@ -39,6 +42,9 @@ public class WeiBoChannel extends CustomChannel {
 
     @Override
     public void shareBitmap(Bitmap bitmap) {
+        if (mWBAPI == null || mActivity == null || mActivity.isFinishing() || bitmap == null || bitmap.isRecycled()) {
+            return;
+        }
         WeiboMultiMessage message = new WeiboMultiMessage();
         ImageObject imageObject = new ImageObject();
         imageObject.setImageData(bitmap);
@@ -48,12 +54,18 @@ public class WeiBoChannel extends CustomChannel {
 
     @Override
     public void shareLink(String title, String des, String link, Bitmap bitmap) {
+        if (mWBAPI == null || mActivity == null || mActivity.isFinishing()) {
+            return;
+        }
         WeiboMultiMessage message = new WeiboMultiMessage();
         WebpageObject webObject = new WebpageObject();
         webObject.identify = UUID.randomUUID().toString();
         webObject.title = title;
         webObject.description = des;
-        Bitmap thumbBitmap = bitmap != null ? bitmap : BitmapFactory.decodeResource(mActivity.getResources(), R.mipmap.ic_launcher);
+        Bitmap thumbBitmap = bitmap != null && !bitmap.isRecycled() ? bitmap : BitmapFactory.decodeResource(mActivity.getResources(), R.mipmap.ic_launcher);
+        if (thumbBitmap == null || thumbBitmap.isRecycled()) {
+            return;
+        }
         ByteArrayOutputStream os = null;
         try {
             os = new ByteArrayOutputStream();
