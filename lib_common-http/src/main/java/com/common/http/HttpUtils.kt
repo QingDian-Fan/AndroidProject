@@ -1,6 +1,7 @@
 package com.common.http
 
 import android.content.Context
+import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.common.http.cookie.AddCookieInterceptor
 import com.common.http.cookie.SaveCookieInterceptor
 import com.common.http.interceptor.CacheInterceptor
@@ -8,6 +9,7 @@ import com.common.http.interceptor.NetCacheInterceptor
 import com.common.http.interceptor.OfflineCacheInterceptor
 import com.common.http.interceptor.ParamsInterceptor
 import com.common.http.interceptor.curl.CurlLogInterceptor
+import com.common.theme.BaseApplication
 import com.common.utils.LogUtil
 import com.common.utils.Utils
 
@@ -42,7 +44,7 @@ class HttpUtils {
     }
 
 
-    fun init(context: Context) {
+    fun init(context: Context= Utils.getAppContext()) {
         val config = HttpClientConfig.builder()
             .addInterceptor(AddCookieInterceptor())
             .addInterceptor(SaveCookieInterceptor())
@@ -50,7 +52,7 @@ class HttpUtils {
             .addInterceptor(NetCacheInterceptor())
             .addInterceptor(OfflineCacheInterceptor())
             .addInterceptor(ParamsInterceptor())
-            //.addInterceptor(ChuckerInterceptor(ProjectApplication.getAppContext()))
+            .addInterceptor(ChuckerInterceptor(context))
             .addNetworkInterceptor(CurlLogInterceptor(), true)
             .openLog(Utils.isDebug)
             .retryOnConnectionFailure(true)

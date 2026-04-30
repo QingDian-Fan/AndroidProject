@@ -13,7 +13,6 @@ import android.provider.Settings
 import androidx.annotation.RequiresPermission
 import androidx.core.content.FileProvider
 import java.io.File
-import com.dian.demo.BuildConfig
 
 object IntentUtil {
 
@@ -91,7 +90,7 @@ object IntentUtil {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             uri = FileProvider.getUriForFile(
                 context,
-                BuildConfig.APPLICATION_ID + ".provider",
+                Utils.getApplicationId()+ ".provider",
                 apkFile
             )
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)

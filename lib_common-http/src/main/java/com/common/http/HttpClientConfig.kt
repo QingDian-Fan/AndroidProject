@@ -1,7 +1,12 @@
 package com.common.http
 
-import com.dian.demo.BuildConfig
 
+import com.common.http.APIConfig.getBaseUrl
+import com.common.utils.Utils
+import com.common.utils.moshi.NullSafeKotlinJsonAdapterFactory
+import com.common.utils.moshi.NullSafeStandardJsonAdapters
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Cache
 import okhttp3.Dns
 import okhttp3.Interceptor
@@ -110,7 +115,7 @@ class HttpClientConfigBuilder {
         interceptor: Interceptor,
         isDebug: Boolean = false
     ): HttpClientConfigBuilder {
-        if (isDebug && !BuildConfig.DEBUG) {
+        if (isDebug && !Utils.isDebug) {
             return this
         }
         config.interceptors.add(interceptor)
@@ -121,7 +126,7 @@ class HttpClientConfigBuilder {
         interceptor: Interceptor,
         isDebug: Boolean = false
     ): HttpClientConfigBuilder {
-        if (isDebug && !BuildConfig.DEBUG) {
+        if (isDebug && !Utils.isDebug) {
             return this
         }
         config.netInterceptors.add(interceptor)

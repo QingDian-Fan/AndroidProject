@@ -46,7 +46,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 
-import com.dian.demo.ProjectApplication;
+import com.common.theme.BaseApplication;
 
 import java.io.InputStream;
 import java.lang.annotation.Retention;
@@ -717,7 +717,7 @@ public class SpannableStringUtil {
             }
             if (imageIsBitmap || imageIsDrawable || imageIsUri || imageIsResourceId) {
                 if (imageIsBitmap) {
-                    mBuilder.setSpan(new CustomImageSpan(ProjectApplication.getAppContext(), bitmap, align), start, end, flag);
+                    mBuilder.setSpan(new CustomImageSpan(Utils.INSTANCE.getAppContext(), bitmap, align), start, end, flag);
                     bitmap = null;
                     imageIsBitmap = false;
                 } else if (imageIsDrawable) {
@@ -725,11 +725,11 @@ public class SpannableStringUtil {
                     drawable = null;
                     imageIsDrawable = false;
                 } else if (imageIsUri) {
-                    mBuilder.setSpan(new CustomImageSpan(ProjectApplication.getAppContext(), uri, align), start, end, flag);
+                    mBuilder.setSpan(new CustomImageSpan(Utils.INSTANCE.getAppContext(), uri, align), start, end, flag);
                     uri = null;
                     imageIsUri = false;
                 } else {
-                    mBuilder.setSpan(new CustomImageSpan(ProjectApplication.getAppContext(), resourceId, align), start, end, flag);
+                    mBuilder.setSpan(new CustomImageSpan(Utils.INSTANCE.getAppContext(), resourceId, align), start, end, flag);
                     resourceId = 0;
                     imageIsResourceId = false;
                 }

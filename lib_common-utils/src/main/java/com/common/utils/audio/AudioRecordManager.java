@@ -10,6 +10,7 @@ import androidx.core.app.ActivityCompat;
 
 
 import com.common.theme.BaseApplication;
+import com.common.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,8 +82,8 @@ public class AudioRecordManager {
         int audioFormat = params.getEncodingFormat();
         // 根据AudioRecord提供的api拿到最小缓存大小
         int bufferSize = AudioRecord.getMinBufferSize(simpleRate, channelConfig, audioFormat);
-        if (ActivityCompat.checkSelfPermission(BaseApplication.getAppContext(),Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
-            Toast.makeText(BaseApplication.getAppContext(),"请赋予RECORD_AUDIO权限",Toast.LENGTH_LONG).show();
+        if (ActivityCompat.checkSelfPermission(Utils.INSTANCE.getAppContext(),Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
+            Toast.makeText(Utils.INSTANCE.getAppContext(),"请赋予RECORD_AUDIO权限",Toast.LENGTH_LONG).show();
             return;
         }
         //创建Record对象

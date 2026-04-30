@@ -23,9 +23,9 @@ object NetWorkUtil {
      * @return
      */
     @JvmStatic
-    fun isNetworkAvailable():Boolean = isNetworkAvailable(BaseApplication.getAppContext())
+    fun isNetworkAvailable():Boolean = isNetworkAvailable(Utils.getAppContext())
 
-    fun isNetworkAvailable(context: Context = BaseApplication.getAppContext()): Boolean {
+    fun isNetworkAvailable(context: Context = Utils.getAppContext()): Boolean {
         val manager =
             context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val info = manager.activeNetworkInfo
@@ -38,7 +38,7 @@ object NetWorkUtil {
      * @param context
      * @return
      */
-    fun isNetworkConnected(context: Context = BaseApplication.getAppContext()): Boolean {
+    fun isNetworkConnected(context: Context = Utils.getAppContext()): Boolean {
         val manager =
             context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val info = manager.activeNetworkInfo

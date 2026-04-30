@@ -16,7 +16,7 @@ public class PreferenceUtil {
      * @param fileName
      */
     private static SharedPreferences getSharedPreference(String fileName) {
-        return BaseApplication.getAppInstance().getSharedPreferences(fileName, Context.MODE_PRIVATE);
+        return Utils.INSTANCE.getAppInstance().getSharedPreferences(fileName, Context.MODE_PRIVATE);
     }
 
     /**

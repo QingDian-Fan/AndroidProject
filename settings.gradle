@@ -27,7 +27,10 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "AndroidProject"
+
 include ':app'
+include ':demoproject'
+
 
 include ':lib_annotation'
 include ':lib_processor'
@@ -37,3 +40,4 @@ include ':lib_common-utils'
 include ':lib_common-theme'
 include ':lib_common-weight'
 include ':lib_common-aop'
+include ':lib_common-share'

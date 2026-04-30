@@ -1,0 +1,116 @@
+package com.common.share.channel;
+
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.view.Gravity;
+
+
+import com.common.share.QQShareListener;
+import com.common.share.R;
+import com.common.share.ShareConfig;
+import com.common.share.utils.FileShareHelper;
+import com.common.utils.ResourcesUtil;
+import com.common.utils.ToastUtil;
+import com.common.utils.Utils;
+import com.tencent.connect.share.QQShare;
+import com.tencent.connect.share.QzonePublish;
+import com.tencent.connect.share.QzoneShare;
+import com.tencent.tauth.Tencent;
+import java.util.ArrayList;
+
+public class QQChannel extends CustomChannel {
+    private boolean isQQZone;
+    private Activity context;
+    private Tencent mTencent;
+    private QQShareListener listener = new QQShareListener();
+
+
+    public QQChannel(boolean isQQZone, Activity context) {
+        super(Channel.PACKAGE_QQ, context);
+        this.isQQZone = isQQZone;
+        this.context = context;
+        mTencent = Tencent.createInstance(ShareConfig.QQ_APPID, context.getApplicationContext());
+    }
+
+    @Override
+    public void shareText(String text) {
+        if (!isQQZone) {
+            Intent intent = new Intent("android.intent.action.SEND");
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_SUBJECT, "分享");
+            intent.putExtra(Intent.EXTRA_TEXT, text);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setComponent(new ComponentName("com.tencent.mobileqq", "com.tencent.mobileqq.activity.JumpActivity"));
+            Utils.INSTANCE.getAppContext().startActivity(intent);
+        } else {
+            ToastUtil.showToast(Utils.INSTANCE.getAppContext(),"暂不支持分享纯文本",false, Gravity.CENTER);
+        }
+
+    }
+
+    @Override
+    public void shareBitmap(Bitmap bitmap) {
+
+        Bundle params = new Bundle();
+        // 保存图片bitmap到本地
+      //  String bmpUri = saveImageToLocal(bitmap);
+        String bmpUri = FileShareHelper.getBitmapPath(Utils.INSTANCE.getAppContext(),bitmap);
+        if (!isQQZone) {
+            params.putString(QQShare.SHARE_TO_QQ_IMAGE_LOCAL_URL, bmpUri);
+            params.putString(QQShare.SHARE_TO_QQ_APP_NAME, "");
+            params.putInt(QQShare.SHARE_TO_QQ_KEY_TYPE, QQShare.SHARE_TO_QQ_TYPE_IMAGE);
+            mTencent.shareToQQ(context, params, listener);
+        } else {
+            params.putInt(QzoneShare.SHARE_TO_QZONE_KEY_TYPE, QzonePublish.PUBLISH_TO_QZONE_TYPE_PUBLISHMOOD);
+            params.putString(QzoneShare.SHARE_TO_QQ_SUMMARY, "");//"摘要"
+            ArrayList<String> bmpUriList = new ArrayList<>();
+            bmpUriList.add(bmpUri);
+            params.putStringArrayList(QzoneShare.SHARE_TO_QQ_IMAGE_URL, bmpUriList);
+            Bundle extParams = new Bundle();
+            params.putBundle(QzonePublish.PUBLISH_TO_QZONE_EXTMAP, extParams);
+            mTencent.publishToQzone(context, params, listener);
+        }
+    }
+
+    @Override
+    public void shareLink(String title, String des, String link, Bitmap bitmap) {
+        Bundle params = new Bundle();
+        // 保存图片bitmap到本地
+        if (bitmap == null) {
+            bitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
+        }
+   //     String bmpUri = saveImageToLocal(bitmap);
+        String bmpUri = FileShareHelper.getBitmapPath(Utils.INSTANCE.getAppContext(),bitmap);
+
+        if (!isQQZone) {
+            params.putInt(QQShare.SHARE_TO_QQ_KEY_TYPE, QQShare.SHARE_TO_QQ_TYPE_DEFAULT);
+            params.putString(QQShare.SHARE_TO_QQ_TITLE, title);
+            params.putString(QQShare.SHARE_TO_QQ_APP_NAME, ResourcesUtil.getString(R.string.app_name));
+            params.putString(QQShare.SHARE_TO_QQ_SUMMARY, des);//"摘要"
+            params.putString(QQShare.SHARE_TO_QQ_TARGET_URL, link);
+            params.putString(QQShare.SHARE_TO_QQ_IMAGE_URL, bmpUri);
+            mTencent.shareToQQ(context, params, listener);
+        } else {
+            params.putInt(QzoneShare.SHARE_TO_QZONE_KEY_TYPE, QzoneShare.SHARE_TO_QZONE_TYPE_IMAGE_TEXT);
+            params.putString(QzoneShare.SHARE_TO_QQ_TITLE, title);
+            params.putString(QzoneShare.SHARE_TO_QQ_SUMMARY, des);//"摘要"
+            params.putString(QzoneShare.SHARE_TO_QQ_TARGET_URL, link);
+            ArrayList<String> bmpUriList = new ArrayList();
+            bmpUriList.add(bmpUri);
+            params.putStringArrayList(QzoneShare.SHARE_TO_QQ_IMAGE_URL, bmpUriList);
+            mTencent.shareToQzone(context, params, listener);
+        }
+    }
+
+
+}

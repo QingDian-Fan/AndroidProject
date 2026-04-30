@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.common.theme.BaseApplication
 import com.common.utils.ScreenShotListenManager
 import com.common.utils.ToastUtil
-
+import com.common.utils.Utils
 
 
 /**
@@ -22,7 +22,7 @@ import com.common.utils.ToastUtil
 abstract class BaseActivity : AppCompatActivity(), ViewBehavior {
 
     protected val TAG = "${this.javaClass.simpleName}----->"
-    private val manager = ScreenShotListenManager(BaseApplication.getAppContext())
+    private val manager = ScreenShotListenManager(Utils.getAppContext())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)

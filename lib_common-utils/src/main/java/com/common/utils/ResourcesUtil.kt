@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable
 import android.view.View
 import androidx.annotation.*
 import androidx.core.content.ContextCompat
-import com.common.theme.BaseApplication
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -15,12 +14,12 @@ import java.io.InputStreamReader
 object ResourcesUtil {
 
     private fun getResources(): Resources {
-        return BaseApplication.getAppContext().resources
+        return Utils.getAppContext().resources
     }
 
     @JvmStatic
     fun getDrawable(@DrawableRes id: Int): Drawable? {
-        return ContextCompat.getDrawable(BaseApplication.getAppContext(), id)
+        return ContextCompat.getDrawable(Utils.getAppContext(), id)
     }
 
 
@@ -35,7 +34,7 @@ object ResourcesUtil {
 
 
     fun getColor(@ColorRes id: Int): Int {
-        return ContextCompat.getColor(BaseApplication.getAppContext(), id)
+        return ContextCompat.getColor(Utils.getAppContext(), id)
     }
 
     fun getColor(context: Context, @ColorRes id: Int): Int {
@@ -65,7 +64,7 @@ object ResourcesUtil {
     fun getAssets(fileName: String?): String {
         val stringBuilder = StringBuilder()
         try {
-            val assetManager: AssetManager = BaseApplication.getAppContext().assets
+            val assetManager: AssetManager = Utils.getAppContext().assets
             val bf = BufferedReader(
                 InputStreamReader(
                     assetManager.open(

@@ -1,47 +1,61 @@
 package com.common.utils.datastore
 
-import android.text.TextUtils
+import android.content.Context
 import androidx.datastore.core.DataStore
-import androidx.datastore.dataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
-import com.common.theme.BaseApplication
+import androidx.datastore.preferences.preferencesDataStoreFile
+import com.common.utils.Utils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 
 object AppDataStore {
+    private lateinit var dataStore: DataStore<Preferences>
 
+    fun init(context: Context = Utils.getAppContext()) {
+        if (::dataStore.isInitialized) return
 
-    // 创建DataStore
-    private val BaseApplication.appDataStore: DataStore<Preferences> by preferencesDataStore(
-        name = "App"
-    )
+        dataStore = PreferenceDataStoreFactory.create(
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+            produceFile = {
+                context.applicationContext
+                    .preferencesDataStoreFile("App")
+            }
+        )
+    }
 
-    // DataStore变量
-    private val dataStore = BaseApplication.getAppInstance().appDataStore
+    private fun checkInit() {
+        if (!::dataStore.isInitialized) {
+            init()
+        }
+    }
 
     fun <T> putData(key: String, value: T) {
+        checkInit()
         dataStore.putData(key, value)
     }
 
     fun <T> getData(key: String, value: T): T {
+        checkInit()
         return dataStore.getData(key, value)
     }
 
     fun clear() {
+        checkInit()
         dataStore.clear()
     }
 
     fun clearKey(key: String) {
+        checkInit()
         dataStore.clearKey(key)
     }
 
 
-
-
-
-/*
-    */
-/**
+    /*
+        */
+    /**
      * 创建 ProtoBufDataStore  案例待测试
      *//*
 

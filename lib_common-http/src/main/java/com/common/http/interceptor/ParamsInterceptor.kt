@@ -82,7 +82,7 @@ class ParamsInterceptor : Interceptor {
         val modifiedUrl = originalRequest.url.newBuilder()
             .addQueryParameter("app_version", Utils.getVersionName())
             .addQueryParameter("language", ResourcesUtil.getString(com.common.theme.R.string.language))
-            .addQueryParameter("uuid", DeviceIdUtil.getInstance().getDeviceId(BaseApplication.getAppContext()))
+            .addQueryParameter("uuid", DeviceIdUtil.getInstance().getDeviceId(Utils.getAppContext()))
             .addQueryParameter("sdk_version", DeviceIdUtil.getInstance().deviceSDK.toString())
             .addQueryParameter("device_brand", DeviceIdUtil.getInstance().deviceBrand)
             .addQueryParameter("device_model", DeviceIdUtil.getInstance().deviceModel)

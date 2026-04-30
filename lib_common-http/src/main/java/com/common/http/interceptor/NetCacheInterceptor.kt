@@ -3,6 +3,7 @@ package com.common.http.interceptor
 
 import com.common.theme.BaseApplication
 import com.common.utils.NetWorkUtil
+import com.common.utils.Utils
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -12,7 +13,7 @@ class NetCacheInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val response = chain.proceed(request)
-        if (NetWorkUtil.isNetworkAvailable(BaseApplication.getAppContext())) {
+        if (NetWorkUtil.isNetworkAvailable(Utils.getAppContext())) {
             val maxAge = 60 * 3
             // 有网络时 设置缓存超时时间0时 ,意思就是不读取缓存数据,只对get有用,post没有缓冲
             response.newBuilder()

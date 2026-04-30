@@ -18,7 +18,7 @@ object ToastUtil {
 
     @JvmStatic
     fun showToast(
-        context: Context = BaseApplication.getAppContext(),
+        context: Context = Utils.getAppContext(),
         str: String,
         showLong: Boolean = false,
         gravity: Int = Gravity.CENTER

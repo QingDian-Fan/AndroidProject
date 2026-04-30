@@ -2,6 +2,7 @@ package com.common.http.interceptor
 
 import com.common.theme.BaseApplication
 import com.common.utils.NetWorkUtil
+import com.common.utils.Utils
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -11,7 +12,7 @@ class OfflineCacheInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val response = chain.proceed(request)
-        if (!NetWorkUtil.isNetworkAvailable(BaseApplication.getAppContext())) {
+        if (!NetWorkUtil.isNetworkAvailable(Utils.getAppContext())) {
             // 无网络时，设置超时为4周  只对get有用,post没有缓冲
             val maxStale = 60 * 60 * 24 * 28
             response.newBuilder()

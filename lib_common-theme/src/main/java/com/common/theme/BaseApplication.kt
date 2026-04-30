@@ -5,7 +5,7 @@ import android.content.Context
 
 
 
-class BaseApplication : Application() {
+open class BaseApplication : Application() {
     companion object {
 
         private var mContext: Context? = null

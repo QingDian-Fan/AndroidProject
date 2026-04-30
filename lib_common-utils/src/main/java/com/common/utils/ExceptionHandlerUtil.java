@@ -103,19 +103,19 @@ public class ExceptionHandlerUtil implements UncaughtExceptionHandler {
     public static void doShareExceptionFile() {
         File file = new File(LOG_PATH_SDCARD_DIR, LOG_NAME);
         if (!file.exists()) {
-            ToastUtil.showToast(BaseApplication.getAppContext(), "木有找到日志文件", false, Gravity.CENTER);
+            ToastUtil.showToast(Utils.INSTANCE.getAppContext(), "木有找到日志文件", false, Gravity.CENTER);
             return;
         }
         //Uri logUri = Uri.parse(file.getAbsolutePath());
-        Uri logUri = FileProvider.getUriForFile(BaseApplication.getAppInstance(),
-                BuildConfig.APPLICATION_ID + ".provider", file);
+        Uri logUri = FileProvider.getUriForFile(Utils.INSTANCE.getAppInstance(),
+                Utils.INSTANCE.getApplicationId() + ".provider", file);
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra("subject", "DomeProject日志"); //
         intent.putExtra(Intent.EXTRA_STREAM, logUri); // 添加附件，附件为file对象
         intent.setType("text/plain"); // 纯文本则用text/plain的mime
-        BaseApplication.getAppContext().startActivity(intent);
+        Utils.INSTANCE.getAppContext().startActivity(intent);
     }
 
 

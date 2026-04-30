@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.text.TextUtils
 import android.util.Log
 import com.common.theme.BaseApplication
+import com.common.utils.Utils
 import okhttp3.Cookie
 import okhttp3.HttpUrl
 import java.io.*
@@ -20,7 +21,7 @@ class PersistentCookieStore {
     private val cookies: HashMap<String, ConcurrentHashMap<String, Cookie>> = HashMap()
 
     private val cookiePrefs: SharedPreferences =
-        BaseApplication.getAppContext().getSharedPreferences(COOKIE_PREFS, Context.MODE_PRIVATE)
+        Utils.getAppContext().getSharedPreferences(COOKIE_PREFS, Context.MODE_PRIVATE)
 
     init {
         val prefsMap = cookiePrefs.all

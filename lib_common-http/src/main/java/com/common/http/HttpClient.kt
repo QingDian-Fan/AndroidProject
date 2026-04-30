@@ -9,6 +9,7 @@ import android.webkit.MimeTypeMap
 import com.common.theme.BaseApplication
 import com.common.utils.MoshiUtil
 import com.common.utils.ToastUtil
+import com.common.utils.Utils
 import com.google.gson.JsonParseException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -252,9 +253,9 @@ open class HttpClient : HttpClientBase() {
         } else {
             // 请求成功，返回失败响应
             if (resp.isNotLogin()) {
-              //  SchemaUtil.schemaToPage(BaseApplication.getAppContext(), "dian://login")
+                APIConfig.toLoginActivity()
                 ToastUtil.showToast(
-                    BaseApplication.getAppContext(),
+                    Utils.getAppContext(),
                     resp.errorMsg,
                     false,
                     gravity = Gravity.CENTER

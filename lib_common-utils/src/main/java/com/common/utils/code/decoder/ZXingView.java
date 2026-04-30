@@ -95,10 +95,9 @@ public class ZXingView extends QRCodeView {
             } else {
                 source = new PlanarYUVLuminanceSource(data, width, height, 0, 0, width, height, false);
             }
-
-            rawResult = mMultiFormatReader.decodeWithState(new BinaryBitmap(new GlobalHistogramBinarizer(source)));
+            rawResult = mMultiFormatReader.decodeWithState(new BinaryBitmap(new HybridBinarizer(source)));
             if (rawResult == null) {
-                rawResult = mMultiFormatReader.decodeWithState(new BinaryBitmap(new HybridBinarizer(source)));
+                rawResult = mMultiFormatReader.decodeWithState(new BinaryBitmap(new GlobalHistogramBinarizer(source)));
                 if (rawResult != null) {
                     BGAQRCodeUtil.d("GlobalHistogramBinarizer 没识别到，HybridBinarizer 能识别到");
                 }
@@ -130,7 +129,6 @@ public class ZXingView extends QRCodeView {
                 pointArr[pointIndex] = new PointF(resultPoint.getX(), resultPoint.getY());
                 pointIndex++;
             }
-
             if (transformToViewCoordinates(pointArr, scanBoxAreaRect, isNeedAutoZoom, result)) {
                 return null;
             }

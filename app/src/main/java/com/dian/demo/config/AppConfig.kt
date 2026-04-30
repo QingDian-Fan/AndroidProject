@@ -30,6 +30,5 @@ object AppConfig {
         return if (BuildConfig.DEBUG) {
             AppDataStore.getData(DEBUG_URL_CONFIG, BASE_URL)
         } else BASE_URL
-
     }
 }
