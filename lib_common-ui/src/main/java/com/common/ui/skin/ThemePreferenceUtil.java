@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
  class ThemePreferenceUtil {
-    private static final String CONFIG = "app_theme";
+    private static final String CONFIG = SkinConfig.SP_NAME;
 
 
     /**

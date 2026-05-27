@@ -16,6 +16,7 @@
 - `BaseViewModel`: 页面事件、加载态、空态、错误态、导航和返回事件。
 - `ViewBehavior`、`ILazyLoad`: 页面行为和懒加载协议。
 - `skin/*`: 换肤、语言和主题偏好相关基础类。
+- `SkinNightMode`: 支持默认、夜间和跟随系统三种资源模式。
 
 ## 依赖关系
 
@@ -28,3 +29,6 @@
 - 新页面优先继承本模块基类，统一生命周期和状态处理。
 - ViewModel 与页面通信优先使用基类提供的事件通道，减少 Activity/Fragment 之间的强耦合。
 - 页面状态布局资源建议在本模块统一维护，业务模块只关注内容区域。
+- 夜间颜色放在 `res/values-night/color_night.xml`，颜色名需要与 `res/values/colors.xml` 保持一致。
+- 夜间图片放在 `res/drawable-night/`，文件名需要与 `res/drawable/` 中的默认图片保持一致。
+- 需要无刷新感知换肤的 View 可使用 `android:tag="skin:bg=background;text=textMain"`，图片可使用 `skin:bgDrawable=xxx` 或 `skin:src=xxx`。

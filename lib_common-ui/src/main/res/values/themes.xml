@@ -32,13 +32,4 @@
         <item name="skinColorOnMain">@color/text_main</item>
     </style>
 
-    <style name="Theme.SkinDemo.Black" parent="Theme.AndroidProject">
-        <item name="colorPrimary">@color/black_main</item>
-        <item name="skinColorMain">@color/black_main</item>
-        <item name="skinColorBackground">@color/black_page_bg</item>
-        <item name="skinColorSurface">@color/black_card_bg</item>
-        <item name="skinColorOnMain">@color/white</item>
-        <item name="skinColorTextMain">@color/black_text_main</item>
-        <item name="skinColorTextSecond">@color/black_text_second</item>
-    </style>
 </resources>
