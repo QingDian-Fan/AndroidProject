@@ -28,16 +28,20 @@ object CacheUtil {
     }
 
     fun deleteDir(dir: File?): Boolean {
-        if (dir != null && dir.isDirectory) {
-            val children = dir.list() ?: return false
+        val targetDir = dir ?: return false
+        if (!targetDir.exists()) {
+            return true
+        }
+        if (targetDir.isDirectory) {
+            val children = targetDir.list() ?: return false
             for (i in children.indices) {
-                val success = deleteDir(File(dir, children[i]))
+                val success = deleteDir(File(targetDir, children[i]))
                 if (!success) {
                     return false
                 }
             }
         }
-        return dir!!.delete()
+        return targetDir.delete()
     }
 
     // 获取文件

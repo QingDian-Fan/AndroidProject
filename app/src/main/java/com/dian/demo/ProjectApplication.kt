@@ -105,7 +105,7 @@ class ProjectApplication : SkinApplication() {
         ActivityManager.getInstance().init(this)
        // LifecycleLogger().install(this)
 
-        CrashReport.initCrashReport(applicationContext, "2e9e288d60", true)
+        CrashReport.initCrashReport(applicationContext, "2e9e288d60", BuildConfig.DEBUG)
         CrashReport.setAppChannel(applicationContext, Utils.getChannel())
         CrashReport.setAppVersion(applicationContext, BuildConfig.VERSION_NAME)
         CrashReport.setAppPackage(applicationContext, packageName)

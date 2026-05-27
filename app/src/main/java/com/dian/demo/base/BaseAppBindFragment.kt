@@ -46,13 +46,15 @@ abstract class BaseAppBindFragment<B : ViewDataBinding> : BaseFragment() {
     }
 
     override fun onDestroyView() {
-        binding.unbind()
+        if (::binding.isInitialized) {
+            binding.unbind()
+        }
         super.onDestroyView()
     }
     fun setPageTitle(titleString:String){
-        (activity as BaseAppBindActivity<*>).setPageTitle(titleString)
+        (activity as? BaseAppBindActivity<*>)?.setPageTitle(titleString)
     }
-    fun getTitleBarView():CommonTitleBar? = (activity as BaseAppBindActivity<*>).getTitleBarView()
+    fun getTitleBarView():CommonTitleBar? = (activity as? BaseAppBindActivity<*>)?.getTitleBarView()
     override fun showLoadingView(isShow: Boolean) {
         if (isShow) {
             rootBinding.flRoot.visibility = gone

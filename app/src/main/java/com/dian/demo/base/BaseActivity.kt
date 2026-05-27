@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.Window
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
-import com.dian.demo.ProjectApplication
 import com.dian.demo.utils.ScreenShotListenManager
 import com.dian.demo.utils.ToastUtil
 import com.dian.demo.utils.share.ShareActivity
@@ -21,7 +20,7 @@ import com.dian.demo.utils.share.ShareActivity
 abstract class BaseActivity : ShareActivity(), ViewBehavior {
 
     protected val TAG = "${this.javaClass.simpleName}----->"
-    private val manager = ScreenShotListenManager(ProjectApplication.getAppContext())
+    private val manager by lazy { ScreenShotListenManager(applicationContext) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
@@ -53,15 +52,18 @@ abstract class BaseActivity : ShareActivity(), ViewBehavior {
     }
 
     override fun showToast(event: ToastEvent) {
-        if (event.content != null) {
-            ToastUtil.showToast(this, event.content!!, event.showLong)
-        } else if (event.contentResId != null) {
-            ToastUtil.showToast(this, getString(event.contentResId!!), event.showLong)
+        event.content?.let {
+            ToastUtil.showToast(this, it, event.showLong)
+            return
+        }
+        event.contentResId?.let {
+            ToastUtil.showToast(this, getString(it), event.showLong)
         }
     }
 
     override fun navigate(page: Any) {
-        startActivity(Intent(this, page as Class<*>))
+        val targetPage = page as? Class<*> ?: return
+        startActivity(Intent(this, targetPage))
     }
 
     override fun backPress(arg: Any?) {

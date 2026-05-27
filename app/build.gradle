@@ -4,7 +4,6 @@ plugins {
     id 'com.google.protobuf'
     id 'kotlin-parcelize'
     id 'kotlin-kapt'
-    id 'walle'
 }
 
 
@@ -21,6 +20,12 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         multiDexEnabled true
+        buildConfigField "String",
+                "DEMO_LOGIN_USERNAME",
+                buildConfigString(readLocalOrEnv("demo.login.username", "DEMO_LOGIN_USERNAME"))
+        buildConfigField "String",
+                "DEMO_LOGIN_PASSWORD",
+                buildConfigString(readLocalOrEnv("demo.login.password", "DEMO_LOGIN_PASSWORD"))
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -53,6 +58,15 @@ android {
 
     def releaseFile = file(build_key.keystoreReleaseFilepath)
     def debugFile = file(build_key.keystoreDebugFilepath)
+    def hasText = { value -> value != null && value.toString().trim().length() > 0 }
+    def hasReleaseSigning = releaseFile.exists()
+            && hasText(build_key.keystoreAlias)
+            && hasText(build_key.keystorePSW)
+            && hasText(build_key.keystoreAliasPSW)
+    def hasDebugSigning = debugFile.exists()
+            && hasText(build_key.debugKeystoreAlias)
+            && hasText(build_key.debugKeystorePSW)
+            && hasText(build_key.debugKeystoreAliasPSW)
     signingConfigs {
         release {
             storeFile releaseFile
@@ -63,8 +77,8 @@ android {
         beta {
             storeFile debugFile
             keyAlias build_key.debugKeystoreAlias
-            storePassword build_key.keystorePSW
-            keyPassword build_key.keystoreAliasPSW
+            storePassword build_key.debugKeystorePSW
+            keyPassword build_key.debugKeystoreAliasPSW
         }
     }
 
@@ -75,8 +89,9 @@ android {
             shrinkResources true
             resValue "string", "app_name", "玩Android"
             buildConfigField "boolean", "isDebug", "false"
+            manifestPlaceholders = [usesCleartextTraffic: "false"]
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            if (releaseFile.exists()) {
+            if (hasReleaseSigning) {
                 println("WITH -> buildTypes -> release: using jks key")
                 signingConfig signingConfigs.release
             } else {
@@ -89,8 +104,9 @@ android {
             applicationIdSuffix '.debug'
             resValue "string", "app_name", "玩Android-Debug"
             buildConfigField "boolean", "isDebug", "true"
+            manifestPlaceholders = [usesCleartextTraffic: "true"]
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            if (debugFile.exists()) {
+            if (hasDebugSigning) {
                 println("WITH -> buildTypes -> debug: using jks key")
                 signingConfig signingConfigs.beta
             } else {
@@ -231,7 +247,7 @@ dependencies {
     /*=============================== walle ===============================================*/
 
     /*=============================== bugly ===============================================*/
-    implementation 'com.tencent.bugly:crashreport:latest.release'
+    implementation 'com.tencent.bugly:crashreport:4.1.9.3'
     /*=============================== bugly ===============================================*/
 
 
@@ -293,15 +309,6 @@ protobuf {
         }
     }
 }
-
-allprojects {
-    configurations.all {
-        resolutionStrategy {
-            force 'androidx.appcompat:appcompat:1.2.0'
-        }
-    }
-}
-
 
 //aop aspectj
 import org.aspectj.bridge.IMessage

@@ -39,6 +39,7 @@ object Utils {
         return appContext
     }
 
+    @JvmStatic
     fun getAppInstance(): Context {
         if (!::mApplication.isInitialized) {
             throw IllegalStateException("Utils not initialized. Call Utils.init(context) first.")

@@ -1,11 +1,7 @@
 package com.dian.demo.utils.permissions
 
-import android.Manifest
-import android.annotation.TargetApi
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import com.dian.demo.utils.permissions.PermissionConversionUtil.conversionPermission
@@ -38,7 +34,9 @@ internal class LiveFragment : Fragment() {
         if (tempPermission.isEmpty()) {
             liveData.value = PermissionResult.Grant
         } else {
-            interceptor?.launchPermissionRequest(requireActivity(), permissions)
+            activity?.let {
+                interceptor?.launchPermissionRequest(it, permissions)
+            }
             requestPermissions(tempPermission.toTypedArray(), PERMISSIONS_REQUEST_CODE)
         }
     }
@@ -49,9 +47,15 @@ internal class LiveFragment : Fragment() {
         grantResults: IntArray
     ) {
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            if (!::liveData.isInitialized) {
+                return
+            }
             val denyPermission = ArrayList<String>()
             val rationalePermission = ArrayList<String>()
             for ((index, value) in grantResults.withIndex()) {
+                if (index >= permissions.size) {
+                    continue
+                }
                 if (value == PackageManager.PERMISSION_DENIED) {
                     if (shouldShowRequestPermissionRationale(permissions[index])) {
                         rationalePermission.add(permissions[index])
@@ -70,7 +74,9 @@ internal class LiveFragment : Fragment() {
                 }
             }
         }
-        interceptor?.finishPermissionRequest(requireActivity(), permissions)
+        activity?.let {
+            interceptor?.finishPermissionRequest(it, permissions)
+        }
     }
 
 }

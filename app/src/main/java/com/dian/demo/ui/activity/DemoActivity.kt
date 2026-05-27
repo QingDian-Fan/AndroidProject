@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.View
 import androidx.room.Room
 import com.demo.project.utils.ext.gone
+import com.dian.demo.BuildConfig
 import com.dian.demo.ProjectApplication
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppVMActivity
@@ -191,7 +192,13 @@ class DemoActivity : BaseAppVMActivity<ActivityDemoBinding, DemoViewModel>() {
             }
 
             R.id.btn_network_request_post -> {
-                viewModel.doLogin("QingDian_Fan", "dian3426")
+                val username = BuildConfig.DEMO_LOGIN_USERNAME
+                val password = BuildConfig.DEMO_LOGIN_PASSWORD
+                if (username.isBlank() || password.isBlank()) {
+                    ToastUtil.showToast(this@DemoActivity, "请先配置演示登录账号")
+                } else {
+                    viewModel.doLogin(username, password)
+                }
             }
 
             R.id.btn_video_play -> {

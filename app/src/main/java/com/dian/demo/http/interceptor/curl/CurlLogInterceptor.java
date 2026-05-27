@@ -122,7 +122,7 @@ public class CurlLogInterceptor implements Interceptor {
         }
         return body;
     }
-//curl -X POST -H "Content-Type:application/x-www-form-urlencoded" -d 'password=dian3426&username=QingDian_Fan' "https://www.wanandroid.com/user/login?language=ch"
+//curl -X POST -H "Content-Type:application/x-www-form-urlencoded" -d 'password=***&username=***' "https://www.wanandroid.com/user/login?language=ch"
     public  String getShareCurlCommand(CurlLogTransaction transaction) {
         boolean compressed = false;
         String curlCmd = "curl";

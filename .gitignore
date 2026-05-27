@@ -7,5 +7,9 @@
 /.kotlin
 build
 /build
-
+local.properties
+*.jks
+*.keystore
+*.p12
+*.pem
 

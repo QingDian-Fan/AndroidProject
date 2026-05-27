@@ -1,7 +1,5 @@
 package com.dian.demo.utils.permissions
 
-import android.os.Handler
-import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -34,10 +32,13 @@ class LivePermissions {
 
     private fun getInstance(fragmentManager: FragmentManager) =
         liveFragment ?: synchronized(this) {
-            liveFragment ?: if (fragmentManager.findFragmentByTag(TAG) == null) LiveFragment().run {
+            val existingFragment = fragmentManager.findFragmentByTag(TAG)
+            liveFragment ?: if (existingFragment is LiveFragment) {
+                existingFragment
+            } else LiveFragment().run {
                 fragmentManager.beginTransaction().add(this, TAG).commitNow()
                 this
-            } else fragmentManager.findFragmentByTag(TAG) as LiveFragment
+            }
         }
 
     private var interceptor: IPermissionInterceptor? = null
@@ -52,11 +53,14 @@ class LivePermissions {
     }
 
     fun requestArray(permissions: Array<out String>): MutableLiveData<PermissionResult> {
-        interceptor?.apply {
-            liveFragment!!.addInterceptor(interceptor)
+        val fragment = liveFragment ?: return MutableLiveData<PermissionResult>().apply {
+            value = PermissionResult.Deny(permissions.toList().toTypedArray())
         }
-        liveFragment!!.requestPermissions(permissions)
-        return liveFragment!!.liveData
+        interceptor?.apply {
+            fragment.addInterceptor(interceptor)
+        }
+        fragment.requestPermissions(permissions)
+        return fragment.liveData
     }
 
 }

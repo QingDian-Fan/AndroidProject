@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.dian.demo.utils.ext.observeNonNull
 
@@ -58,7 +57,7 @@ abstract class BaseAppVMFragment<B : ViewDataBinding, VM : BaseViewModel> :
         }
 
         // 统一注入 Application
-        viewModel.application = requireContext().applicationContext as android.app.Application
+        viewModel.application = requireActivity().application
 
         // lifecycleObserver 安全添加
         lifecycle.addObserver(viewModel)
@@ -96,11 +95,12 @@ abstract class BaseAppVMFragment<B : ViewDataBinding, VM : BaseViewModel> :
     //----------------------------------------------------------------------
     override fun onDestroyView() {
         super.onDestroyView()
-        binding.unbind()
     }
 
     override fun onDestroy() {
-        lifecycle.removeObserver(viewModel)
+        if (::viewModel.isInitialized) {
+            lifecycle.removeObserver(viewModel)
+        }
         super.onDestroy()
     }
 }

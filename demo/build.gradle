@@ -22,6 +22,15 @@ android {
 
     def releaseFile = file(build_key.keystoreReleaseFilepath)
     def debugFile = file(build_key.keystoreDebugFilepath)
+    def hasText = { value -> value != null && value.toString().trim().length() > 0 }
+    def hasReleaseSigning = releaseFile.exists()
+            && hasText(build_key.keystoreAlias)
+            && hasText(build_key.keystorePSW)
+            && hasText(build_key.keystoreAliasPSW)
+    def hasDebugSigning = debugFile.exists()
+            && hasText(build_key.debugKeystoreAlias)
+            && hasText(build_key.debugKeystorePSW)
+            && hasText(build_key.debugKeystoreAliasPSW)
     signingConfigs {
         release {
             storeFile releaseFile
@@ -32,8 +41,8 @@ android {
         beta {
             storeFile debugFile
             keyAlias build_key.debugKeystoreAlias
-            storePassword build_key.keystorePSW
-            keyPassword build_key.keystoreAliasPSW
+            storePassword build_key.debugKeystorePSW
+            keyPassword build_key.debugKeystoreAliasPSW
         }
     }
     buildFeatures {
@@ -45,9 +54,9 @@ android {
             zipAlignEnabled true
             shrinkResources true
             resValue "string", "app_name", "DemoProject"
-            buildConfigField "boolean", "isDebug", "true"
+            buildConfigField "boolean", "isDebug", "false"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            if (releaseFile.exists()) {
+            if (hasReleaseSigning) {
                 println("WITH -> buildTypes -> release: using jks key")
                 signingConfig signingConfigs.release
             } else {
@@ -59,9 +68,9 @@ android {
             minifyEnabled false
             applicationIdSuffix '.debug'
             resValue "string", "app_name", "DemoProject-Debug"
-            buildConfigField "boolean", "isDebug", "false"
+            buildConfigField "boolean", "isDebug", "true"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            if (debugFile.exists()) {
+            if (hasDebugSigning) {
                 println("WITH -> buildTypes -> debug: using jks key")
                 signingConfig signingConfigs.beta
             } else {
