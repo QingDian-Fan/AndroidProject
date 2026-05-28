@@ -18,11 +18,9 @@ import com.dian.demo.di.model.CityData
 import com.dian.demo.ui.adapter.AddressPageAdapter
 import com.dian.demo.ui.adapter.AddressTabAdapter
 import com.dian.demo.ui.adapter.AddressType
-import com.dian.demo.ui.view.NoScrollViewPager
 import com.dian.demo.utils.ToastUtil
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.singleClick
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.IOException

@@ -3,22 +3,14 @@ package com.dian.demo.ui.activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
-import com.dian.annotation.LoginPage
 import com.dian.annotation.RequireLogin
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
-import com.dian.demo.databinding.ActivityLoginBinding
 import com.dian.demo.databinding.ActivityLoginContainerBinding
-import com.dian.demo.ui.dialog.LogFileDialog
 import com.dian.demo.ui.titlebar.CommonTitleBar
-import com.dian.demo.utils.ext.gone
-import com.dian.demo.utils.ext.showAllowStateLoss
-import com.dian.demo.utils.ext.visible
+import com.project.common.utils.ext.gone
+import com.project.common.utils.ext.visible
 
 @RequireLogin
 class LoginContainerActivity : BaseAppBindActivity<ActivityLoginContainerBinding>() {

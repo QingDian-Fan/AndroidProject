@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         tools:context="com.demo.project.ui.activity.ScanActivity">
 
-        <com.dian.demo.utils.code.decoder.ZXingView
+        <com.project.common.view.code.decoder.ZXingView
             android:id="@+id/zxing_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

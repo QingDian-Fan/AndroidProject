@@ -26,8 +26,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.dian.demo.ProjectApplication;
 import com.dian.demo.R;
-import com.dian.demo.utils.LogUtil;
-import com.dian.demo.utils.NetWorkUtil;
+import com.project.common.utils.LogUtil;
+import com.project.common.utils.NetWorkUtil;
 
 import org.jetbrains.annotations.NotNull;
 

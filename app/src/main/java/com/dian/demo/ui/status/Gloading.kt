@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.dian.demo.ui.status.Gloading.Companion.debug
-import com.dian.demo.utils.LogUtil
+import com.project.common.utils.LogUtil
 
 /**
  * manage loading status view<br></br>

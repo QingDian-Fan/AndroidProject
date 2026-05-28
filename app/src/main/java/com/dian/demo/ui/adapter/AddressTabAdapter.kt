@@ -4,12 +4,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.project.utils.ext.gone
-import com.demo.project.utils.ext.textColor
 import com.demo.project.utils.ext.visible
 import com.dian.demo.R
 import com.dian.demo.databinding.ItemAddressTabBinding
 import com.dian.demo.utils.ResourcesUtil
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.singleClick
 
 class AddressTabAdapter(private val dataList: List<String>) :
     RecyclerView.Adapter<AddressTabAdapter.ItemViewHolder>() {

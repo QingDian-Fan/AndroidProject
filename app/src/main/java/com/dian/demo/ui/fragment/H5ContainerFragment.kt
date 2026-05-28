@@ -20,16 +20,16 @@ import com.dian.demo.databinding.FragmentH5ContainerBinding
 import com.dian.demo.ui.activity.ContainerActivity
 import com.dian.demo.ui.dialog.WebMenuDialog
 import com.dian.demo.ui.dialog.WebShareDialog
-import com.dian.demo.utils.InputMethodUtils
-import com.dian.demo.utils.ext.showAllowStateLoss
-import com.dian.demo.utils.webview.bean.WebDataEntry
-import com.dian.demo.utils.webview.callback.IShareCallBack
-import com.dian.demo.utils.webview.callback.IWebMenuListener
-import com.dian.demo.utils.webview.callback.LoadProgressCallBack
-import com.dian.demo.utils.webview.callback.WebViewCallBack
-import com.dian.demo.utils.webview.utils.CollectWebPageUtil
-import com.dian.demo.utils.webview.utils.WebBookMarkUtil
-import com.dian.demo.utils.webview.utils.WebHistoryUtil
+import com.project.common.utils.InputMethodUtils
+import com.project.common.utils.ext.showAllowStateLoss
+import com.project.common.view.webview.bean.WebDataEntry
+import com.project.common.view.webview.callback.IShareCallBack
+import com.project.common.view.webview.callback.IWebMenuListener
+import com.project.common.view.webview.callback.LoadProgressCallBack
+import com.project.common.view.webview.callback.WebViewCallBack
+import com.project.common.view.webview.utils.CollectWebPageUtil
+import com.project.common.view.webview.utils.WebBookMarkUtil
+import com.project.common.view.webview.utils.WebHistoryUtil
 
 class H5ContainerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), WebViewCallBack {
     private var currentTitleString: String? = null

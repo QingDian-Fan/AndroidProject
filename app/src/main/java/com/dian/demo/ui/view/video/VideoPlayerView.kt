@@ -3,12 +3,10 @@ package com.dian.demo.ui.view.video
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.ofInt
 import android.content.Context
-import android.content.res.Resources
 import android.media.AudioManager
 import android.os.Build
 import android.provider.Settings
 import android.util.AttributeSet
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.view.View.OnClickListener
@@ -22,11 +20,7 @@ import androidx.appcompat.widget.AppCompatSeekBar
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import com.demo.project.utils.ext.centerInParent
-import com.demo.project.utils.ext.center_horizontal
-import com.demo.project.utils.ext.layout_gravity
 import com.dian.demo.R
-import com.dian.demo.utils.aop.SingleClick
 import tv.danmaku.ijk.media.player.IMediaPlayer
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import java.util.*

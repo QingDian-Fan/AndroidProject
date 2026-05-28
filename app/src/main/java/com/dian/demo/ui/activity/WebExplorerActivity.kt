@@ -2,7 +2,6 @@ package com.dian.demo.ui.activity
 
 
 import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -16,7 +15,7 @@ import com.dian.demo.databinding.ActivityWebExplorerBinding
 import com.dian.demo.ui.fragment.WebFragment
 import com.dian.demo.ui.titlebar.CommonTitleBar
 import com.dian.demo.utils.ResourcesUtil
-import com.dian.demo.utils.share.dialog.ShareDialog
+import com.project.common.share.dialog.ShareDialog
 
 
 open class WebExplorerActivity : BaseAppBindActivity<ActivityWebExplorerBinding>() {

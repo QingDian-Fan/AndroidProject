@@ -1,9 +1,7 @@
 package com.dian.demo
 
 import android.content.Context
-import android.net.Uri
 import android.os.Build
-import android.util.Log
 import android.webkit.WebView
 import androidx.annotation.RequiresApi
 import com.dian.demo.BuildConfig
@@ -15,13 +13,13 @@ import com.dian.demo.skin.SkinApplication
 import com.dian.demo.ui.status.Gloading.Companion.debug
 import com.dian.demo.ui.status.Gloading.Companion.initDefault
 import com.dian.demo.ui.status.GlobalAdapter
-import com.dian.demo.utils.ActivityManager
-import com.dian.demo.utils.ExceptionHandlerUtil
-import com.dian.demo.utils.LogFileUtil
+import com.project.common.utils.ActivityManager
+import com.project.common.utils.ExceptionHandlerUtil
+import com.project.common.utils.LogFileUtil
 import com.dian.demo.utils.LoginHookUtil
 import com.dian.demo.utils.Utils
-import com.dian.demo.utils.datastore.AppDataStore
-import com.dian.demo.utils.gray.GlobalGray
+import com.project.common.utils.datastore.AppDataStore
+import com.project.common.utils.gray.GlobalGray
 import com.scwang.smart.refresh.footer.ClassicsFooter
 import com.scwang.smart.refresh.header.ClassicsHeader
 import com.scwang.smart.refresh.layout.SmartRefreshLayout

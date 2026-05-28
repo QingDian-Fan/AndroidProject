@@ -2,14 +2,12 @@ package com.dian.demo.ui.adapter
 
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.dian.demo.databinding.ItemHomeArticleBinding
 import com.dian.demo.di.model.ArticleBean
-import com.dian.demo.ui.activity.WebExplorerActivity
 import com.dian.demo.ui.adapter.HomeArticleAdapter.*
-import com.dian.demo.utils.DateFormatUtil
+import com.project.common.utils.DateFormatUtil
 
 class HomeArticleAdapter(val dataList: List<ArticleBean>) : RecyclerView.Adapter<ItemViewHolder>() {
 

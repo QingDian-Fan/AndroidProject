@@ -10,10 +10,9 @@ import com.dian.demo.databinding.FragmentLoginBinding
 import com.dian.demo.di.vm.LoginViewModel
 import com.dian.demo.ui.activity.LoginActivity
 import com.dian.demo.utils.ToastUtil
-import com.dian.demo.utils.ext.observeNonNull
-import com.dian.demo.utils.ext.singleClick
-import com.dian.demo.utils.LoginUtil
-import com.dian.demo.utils.bus.LiveDataBus
+import com.project.common.utils.ext.observeNonNull
+import com.project.common.utils.ext.singleClick
+import com.project.common.utils.bus.LiveDataBus
 
 
 /**

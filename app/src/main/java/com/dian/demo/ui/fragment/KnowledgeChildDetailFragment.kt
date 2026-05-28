@@ -1,26 +1,20 @@
 package com.dian.demo.ui.fragment
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dian.demo.R
-import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.base.BaseAppVMFragment
 import com.dian.demo.databinding.FragmentKnowledgeChildDetailBinding
-import com.dian.demo.databinding.FragmentKnowledgeDetailBinding
 import com.dian.demo.di.model.NavigationData
 import com.dian.demo.di.vm.KnowledgeChildDetailViewModel
 import com.dian.demo.ui.activity.WebExplorerActivity
 import com.dian.demo.ui.adapter.GlobalArticleAdapter
-import com.dian.demo.utils.CustomDividerItemDecoration
-import com.dian.demo.utils.MoshiUtil
+import com.project.common.utils.CustomDividerItemDecoration
+import com.project.common.utils.MoshiUtil
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.SmartRefreshUtil
-import com.dian.demo.utils.ext.observeNonNull
+import com.project.common.utils.ext.observeNonNull
 
 
 class KnowledgeChildDetailFragment :

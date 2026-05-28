@@ -1,6 +1,5 @@
 package com.dian.demo.ui.dialog
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +8,7 @@ import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.appcompat.widget.AppCompatTextView
 import com.dian.demo.R
 import com.dian.demo.utils.SchemaUtil
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.singleClick
 
 class ConfirmDialog : AppCompatDialogFragment() {
 

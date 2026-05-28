@@ -1,6 +1,5 @@
 package com.dian.demo.ui.dialog
 
-import android.app.Dialog
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -13,9 +12,8 @@ import androidx.appcompat.app.AppCompatDialogFragment
 import com.dian.demo.R
 import com.dian.demo.databinding.DialogKeyboardBinding
 import com.dian.demo.ui.titlebar.ScreenUtils
-import com.dian.demo.utils.InputMethodUtils
-import com.dian.demo.utils.keyboard.KeyboardHelper
-import kotlin.compareTo
+import com.project.common.utils.InputMethodUtils
+import com.project.common.utils.keyboard.KeyboardHelper
 
 class KeyBoardDialog : AppCompatDialogFragment() {
 

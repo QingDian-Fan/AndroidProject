@@ -1,6 +1,5 @@
 package com.dian.demo.ui.dialog
 
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
@@ -9,14 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDialogFragment
-import androidx.core.content.FileProvider
-import com.dian.demo.ProjectApplication.Companion.getAppContext
-import com.dian.demo.ProjectApplication.Companion.getAppInstance
 import com.dian.demo.databinding.DialogLogFileBinding
-import com.dian.demo.utils.ExceptionHandlerUtil
-import com.dian.demo.utils.LogFileUtil
-import com.dian.demo.utils.ToastUtil.showToast
-import java.io.File
+import com.project.common.utils.ExceptionHandlerUtil
+import com.project.common.utils.LogFileUtil
 
 class LogFileDialog: AppCompatDialogFragment() {
     companion object {

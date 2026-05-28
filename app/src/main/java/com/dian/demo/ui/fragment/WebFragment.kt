@@ -1,13 +1,12 @@
 package com.dian.demo.ui.fragment
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
-import com.dian.demo.utils.webview.callback.LoadProgressCallBack
-import com.dian.demo.utils.webview.callback.WebViewCallBack
+import com.project.common.view.webview.callback.LoadProgressCallBack
+import com.project.common.view.webview.callback.WebViewCallBack
 import com.demo.project.utils.ext.gone
 import com.demo.project.utils.ext.visible
 import com.dian.demo.R

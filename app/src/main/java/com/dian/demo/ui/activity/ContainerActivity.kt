@@ -9,8 +9,7 @@ import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityContainerBinding
 import com.dian.demo.di.model.NavigationData
 import com.dian.demo.ui.titlebar.CommonTitleBar
-import com.dian.demo.utils.MoshiUtil
-import com.squareup.moshi.Moshi
+import com.project.common.utils.MoshiUtil
 
 class ContainerActivity : BaseAppBindActivity<ActivityContainerBinding>() {
     companion object {

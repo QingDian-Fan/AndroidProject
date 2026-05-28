@@ -15,9 +15,9 @@ import com.dian.demo.databinding.ActivityImageSelectBinding
 import com.dian.demo.ui.titlebar.CommonTitleBar.ACTION_RIGHT_TEXT
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.aop.CheckPermissions
-import com.dian.demo.utils.ext.dpToPx
-import com.dian.demo.utils.ext.showAllowStateLoss
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.dpToPx
+import com.project.common.utils.ext.showAllowStateLoss
+import com.project.common.utils.ext.singleClick
 import java.io.File
 
 class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {

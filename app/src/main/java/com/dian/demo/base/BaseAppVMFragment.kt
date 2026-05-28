@@ -5,9 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.dian.demo.utils.ext.observeNonNull
+import com.project.common.utils.ext.observeNonNull
 
 abstract class BaseAppVMFragment<B : ViewDataBinding, VM : BaseViewModel> :
     BaseAppBindFragment<B>() {

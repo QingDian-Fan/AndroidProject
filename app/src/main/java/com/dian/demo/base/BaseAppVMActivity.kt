@@ -2,8 +2,8 @@ package com.dian.demo.base
 
 import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.ViewModelProvider
-import com.dian.demo.utils.ext.observeNonNull
-import com.dian.demo.utils.ext.observeNullable
+import com.project.common.utils.ext.observeNonNull
+import com.project.common.utils.ext.observeNullable
 
 
 /**

@@ -5,10 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.navigation.fragment.NavHostFragment
 import com.dian.demo.R
@@ -18,10 +14,9 @@ import com.dian.demo.di.model.SearchRecord
 import com.dian.demo.di.vm.SearchData
 import com.dian.demo.di.vm.SearchViewModel
 import com.dian.demo.utils.ResourcesUtil
-import com.dian.demo.utils.SearchRecordUtil
-import com.dian.demo.utils.ext.gone
-import com.dian.demo.utils.ext.observeNonNull
-import com.dian.demo.utils.ext.visible
+import com.project.common.utils.ext.gone
+import com.project.common.utils.ext.observeNonNull
+import com.project.common.utils.ext.visible
 
 class SearchActivity : BaseAppVMActivity<ActivitySearchBinding, SearchViewModel>() {
 

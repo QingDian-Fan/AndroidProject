@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.dian.demo.databinding.ItemAlbumBinding
 import com.dian.demo.ui.img.AlbumAdapter.*
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.singleClick
 
 class AlbumAdapter(private val mContext: Context, private val dataList: ArrayList<AlbumInfo>) :
     RecyclerView.Adapter<ItemViewHolder>() {

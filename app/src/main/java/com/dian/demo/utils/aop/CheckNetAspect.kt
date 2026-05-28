@@ -1,9 +1,6 @@
 package com.dian.demo.utils.aop
 
-import android.util.Log
-import com.dian.demo.ProjectApplication
-import com.dian.demo.utils.LogUtil
-import com.dian.demo.utils.NetWorkUtil
+import com.project.common.utils.NetWorkUtil
 import com.dian.demo.utils.ToastUtil
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around

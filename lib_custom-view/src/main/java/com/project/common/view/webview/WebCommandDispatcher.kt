@@ -1,0 +1,64 @@
+package com.project.common.view.webview
+
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
+import android.os.RemoteException
+import com.dian.demo.MainToWebInterface
+import com.dian.demo.ProjectApplication
+import com.dian.demo.WebToMainInterface
+import com.project.common.utils.LogUtil
+import com.project.common.view.webview.webview.BaseWebView
+
+
+class WebCommandDispatcher private constructor() : ServiceConnection {
+    private var iWebviewProcessToMainProcessInterface: WebToMainInterface? = null
+
+    companion object {
+        val instance by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
+            WebCommandDispatcher()
+        }
+    }
+
+    fun initAidlConnection() {
+        val intent = Intent("com.dian.demo.utils.webview.mainprocess.MainCommandService")
+        intent.setPackage(ProjectApplication.getAppContext().packageName)
+        val isBindService = ProjectApplication.getAppContext().bindService(intent, this, Context.BIND_AUTO_CREATE)
+    }
+
+    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+        LogUtil.e("TAG--->WebView","onServiceConnected")
+        iWebviewProcessToMainProcessInterface =
+            WebToMainInterface.Stub.asInterface(service)
+    }
+
+    override fun onServiceDisconnected(name: ComponentName?) {
+        LogUtil.e("TAG--->WebView","onServiceDisconnected")
+        iWebviewProcessToMainProcessInterface = null
+        initAidlConnection()
+    }
+
+    override fun onBindingDied(name: ComponentName?) {
+        LogUtil.e("TAG--->WebView","onBindingDied")
+        iWebviewProcessToMainProcessInterface = null
+        initAidlConnection()
+    }
+
+    fun executeCommand(commandName: String, params: String?, baseWebView: BaseWebView) {
+        LogUtil.e("TAG--->WebView","commandName:$commandName - params:$params")
+        try {
+            iWebviewProcessToMainProcessInterface?.handleWebCommand(
+                commandName,
+                params,
+                object : MainToWebInterface.Stub() {
+                    override fun onResult(callbackname: String, response: String?) {
+                        baseWebView.handleCallback(callbackname, response)
+                    }
+                })
+        } catch (e: RemoteException) {
+            e.printStackTrace()
+        }
+    }
+}

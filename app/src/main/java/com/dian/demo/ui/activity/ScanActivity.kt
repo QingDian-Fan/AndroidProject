@@ -16,14 +16,13 @@ import com.demo.project.utils.ext.gone
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityScanBinding
-import com.dian.demo.utils.BitmapUtil
+import com.project.common.utils.BitmapUtil
 import com.dian.demo.utils.PictureSelector
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.aop.CheckPermissions
-import com.dian.demo.utils.bus.LiveDataBus
-import com.dian.demo.utils.code.core.QRCodeView
-import com.dian.demo.utils.code.decoder.QRCodeDecoder
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.view.code.core.QRCodeView
+import com.project.common.view.code.decoder.QRCodeDecoder
+import com.project.common.utils.ext.singleClick
 import java.util.concurrent.Executors
 
 

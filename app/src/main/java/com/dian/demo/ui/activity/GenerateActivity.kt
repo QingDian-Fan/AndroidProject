@@ -19,13 +19,13 @@ import androidx.core.view.drawToBitmap
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityGenerateBinding
-import com.dian.demo.utils.BitmapUtil
+import com.project.common.utils.BitmapUtil
 import com.dian.demo.utils.PictureSelector
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.aop.CheckPermissions
-import com.dian.demo.utils.bus.LiveDataBus
-import com.dian.demo.utils.code.generate.GenerateCodeUtils
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.bus.LiveDataBus
+import com.project.common.view.code.generate.GenerateCodeUtils
+import com.project.common.utils.ext.singleClick
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException

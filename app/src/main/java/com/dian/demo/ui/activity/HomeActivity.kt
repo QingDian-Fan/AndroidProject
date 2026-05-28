@@ -17,8 +17,8 @@ import com.dian.demo.ui.fragment.MineFragment
 import com.dian.demo.ui.fragment.SetupFragment
 import com.dian.demo.ui.titlebar.CommonTitleBar
 import com.dian.demo.utils.ResourcesUtil
-import com.dian.demo.utils.ext.gone
-import com.dian.demo.utils.ext.visible
+import com.project.common.utils.ext.gone
+import com.project.common.utils.ext.visible
 import kotlin.system.exitProcess
 
 

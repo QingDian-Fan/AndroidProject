@@ -12,7 +12,7 @@ import com.dian.demo.R
 import com.dian.demo.constant.ANDROID_ASSET_URI
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.SchemaUtil
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.singleClick
 
 
 class DebugDialog : DialogFragment() {

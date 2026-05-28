@@ -4,21 +4,19 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.graphics.toColorInt
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
-import com.demo.project.utils.ext.gone
 import com.dian.annotation.LoginPage
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityLoginBinding
 import com.dian.demo.ui.titlebar.CommonTitleBar
 import com.dian.demo.ui.titlebar.ScreenUtils
-import com.dian.demo.utils.LogUtil
-import com.dian.demo.utils.ext.gone
-import com.dian.demo.utils.ext.visible
+import com.project.common.utils.LogUtil
+import com.project.common.utils.ext.gone
+import com.project.common.utils.ext.visible
 
 
 @LoginPage

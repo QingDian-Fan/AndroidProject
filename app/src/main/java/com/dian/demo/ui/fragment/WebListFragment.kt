@@ -1,21 +1,17 @@
 package com.dian.demo.ui.fragment
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.databinding.FragmentWebListBinding
 import com.dian.demo.ui.adapter.WebRecordAdapter
-import com.dian.demo.utils.CustomDividerItemDecoration
+import com.project.common.utils.CustomDividerItemDecoration
 import com.dian.demo.utils.ResourcesUtil
-import com.dian.demo.utils.webview.bean.WebDataEntry
-import com.dian.demo.utils.webview.utils.CollectWebPageUtil
-import com.dian.demo.utils.webview.utils.WebBookMarkUtil
-import com.dian.demo.utils.webview.utils.WebHistoryUtil
+import com.project.common.view.webview.bean.WebDataEntry
+import com.project.common.view.webview.utils.CollectWebPageUtil
+import com.project.common.view.webview.utils.WebBookMarkUtil
+import com.project.common.view.webview.utils.WebHistoryUtil
 
 class WebListFragment : BaseAppBindFragment<FragmentWebListBinding>() {
     override fun getLayoutId(): Int = R.layout.fragment_web_list

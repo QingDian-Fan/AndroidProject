@@ -8,7 +8,7 @@ import androidx.annotation.StringRes
 import com.dian.demo.ProjectApplication
 import com.dian.demo.utils.ScreenShotListenManager
 import com.dian.demo.utils.ToastUtil
-import com.dian.demo.utils.share.ShareActivity
+import com.project.common.share.ShareActivity
 
 
 /**

@@ -1,7 +1,7 @@
 package com.dian.demo.utils.aop
 
 import android.view.View
-import com.dian.demo.utils.FastClickUtil.isFastClick
+import com.project.common.utils.FastClickUtil.isFastClick
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect

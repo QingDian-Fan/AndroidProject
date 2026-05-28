@@ -3,9 +3,8 @@ package com.dian.demo.di.vm
 import androidx.lifecycle.MutableLiveData
 import com.dian.demo.base.BaseViewModel
 import com.dian.demo.di.model.ArticleBean
-import com.dian.demo.di.model.ArticleEntity
 import com.dian.demo.di.model.BannerBean
-import com.dian.demo.utils.LogUtil
+import com.project.common.utils.LogUtil
 import com.dian.demo.utils.aop.CheckNet
 
 class HomeViewModel : BaseViewModel() {

@@ -1,21 +1,14 @@
 package com.dian.demo.ui.img
 
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
-import android.text.TextUtils
 import androidx.viewpager2.widget.ViewPager2
 import com.demo.project.utils.ext.gone
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivityImagePreviewBinding
-import com.dian.demo.ui.activity.DemoActivity
-import java.io.File
 import java.util.ArrayList
-import java.util.HashMap
 
 class ImagePreviewActivity : BaseAppBindActivity<ActivityImagePreviewBinding>() {
 

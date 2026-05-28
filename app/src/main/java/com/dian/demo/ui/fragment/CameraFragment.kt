@@ -1,7 +1,6 @@
 package com.dian.demo.ui.fragment
 
 import android.Manifest
-import android.animation.ObjectAnimator
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.media.MediaScannerConnection
@@ -40,9 +39,6 @@ import com.dian.demo.databinding.FragmentCameraBinding
 import com.dian.demo.ui.view.CameraButtonView
 import com.dian.demo.ui.view.FocusCornerDrawable
 import com.dian.demo.utils.aop.CheckPermissions
-import com.dian.demo.utils.permissions.DefaultPermissionInterceptor
-import com.dian.demo.utils.permissions.LivePermissions
-import com.dian.demo.utils.permissions.PermissionResult
 import java.io.File
 import java.util.concurrent.TimeUnit
 

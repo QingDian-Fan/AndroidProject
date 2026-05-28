@@ -4,9 +4,8 @@ package com.dian.demo.config
 import com.dian.demo.BuildConfig
 import com.dian.demo.config.Constant.DEBUG_URL_CONFIG
 import com.dian.demo.R
-import com.dian.demo.utils.LogUtil
 import com.dian.demo.utils.ResourcesUtil
-import com.dian.demo.utils.datastore.AppDataStore
+import com.project.common.utils.datastore.AppDataStore
 
 
 object AppConfig {

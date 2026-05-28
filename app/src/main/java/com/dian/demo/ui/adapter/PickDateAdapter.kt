@@ -1,12 +1,11 @@
 package com.dian.demo.ui.adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.dian.demo.databinding.ItemPickerDateBinding
 import com.dian.demo.ui.adapter.PickDateAdapter.*
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.singleClick
 
 class PickDateAdapter(val datalist:ArrayList<String>) :RecyclerView.Adapter<ItemViewHolder>(){
 

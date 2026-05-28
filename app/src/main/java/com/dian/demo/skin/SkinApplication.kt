@@ -2,13 +2,12 @@ package com.dian.demo.skin
 
 import android.app.Application
 import android.content.res.Configuration
-import com.dian.demo.utils.LogUtil
+import com.project.common.utils.LogUtil
 import com.dian.demo.utils.mode.UIModeManager
 import skin.support.SkinCompatManager
 import skin.support.app.SkinAppCompatViewInflater
 import skin.support.app.SkinCardViewInflater
 import skin.support.constraint.app.SkinConstraintViewInflater
-import skin.support.design.app.SkinMaterialViewInflater
 
 
 open class SkinApplication: Application() {

@@ -1,7 +1,6 @@
 package com.dian.demo.ui.fragment
 
 import android.os.Bundle
-import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dian.demo.R
@@ -11,12 +10,10 @@ import com.dian.demo.di.model.ArticleBean
 import com.dian.demo.di.vm.AnswersViewModel
 import com.dian.demo.ui.activity.WebExplorerActivity
 import com.dian.demo.ui.adapter.GlobalPagingArticleAdapter
-import com.dian.demo.utils.CustomDividerItemDecoration
+import com.project.common.utils.CustomDividerItemDecoration
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.SmartRefreshUtil
-import com.dian.demo.utils.ext.observeNonNull
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import com.project.common.utils.ext.observeNonNull
 
 
 class AnswersFragment : BaseAppVMFragment<FragmentAnswersBinding, AnswersViewModel>() {

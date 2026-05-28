@@ -1,14 +1,9 @@
 package com.dian.demo.ui.fragment
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.navigation.Navigation
 import com.dian.demo.ProjectApplication
 import com.dian.demo.R
-import com.dian.demo.base.BaseAppBindFragment
 import com.dian.demo.base.BaseAppVMFragment
 import com.dian.demo.constant.ANDROID_ASSET_URI
 import com.dian.demo.databinding.FragmentSettingBinding
@@ -16,13 +11,12 @@ import com.dian.demo.di.vm.SettingViewModel
 import com.dian.demo.ui.activity.DebugActivity
 import com.dian.demo.ui.activity.H5ContainerActivity
 import com.dian.demo.ui.activity.LoginActivity
-import com.dian.demo.utils.CacheUtil
+import com.project.common.utils.CacheUtil
 import com.dian.demo.utils.LoginUtil
-import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.SmartRefreshUtil
 import com.dian.demo.utils.ToastUtil
-import com.dian.demo.utils.ext.observeNonNull
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.observeNonNull
+import com.project.common.utils.ext.singleClick
 
 
 class SettingFragment : BaseAppVMFragment<FragmentSettingBinding, SettingViewModel>() {

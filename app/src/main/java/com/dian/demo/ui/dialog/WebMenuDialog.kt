@@ -1,19 +1,15 @@
 package com.dian.demo.ui.dialog
 
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDialogFragment
-import com.dian.demo.R
-import com.dian.demo.databinding.DialogKeyboardBinding
 import com.dian.demo.databinding.DialogWebMenuBinding
-import com.dian.demo.utils.webview.callback.IWebMenuListener
+import com.project.common.view.webview.callback.IWebMenuListener
 
 class WebMenuDialog : AppCompatDialogFragment() {
     companion object {

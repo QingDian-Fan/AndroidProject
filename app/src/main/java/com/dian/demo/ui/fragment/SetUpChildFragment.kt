@@ -6,14 +6,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppVMFragment
 import com.dian.demo.databinding.FragmentSetUpChildBinding
-import com.dian.demo.di.model.NavigationData
 import com.dian.demo.di.model.SetUpData
 import com.dian.demo.di.vm.SetupViewModel
 import com.dian.demo.ui.activity.ContainerActivity
 import com.dian.demo.ui.activity.WebExplorerActivity
 import com.dian.demo.ui.adapter.SetupAdapter
 import com.dian.demo.utils.SmartRefreshUtil
-import com.dian.demo.utils.ext.observeNonNull
+import com.project.common.utils.ext.observeNonNull
 
 
 class SetUpChildFragment : BaseAppVMFragment<FragmentSetUpChildBinding, SetupViewModel>() {

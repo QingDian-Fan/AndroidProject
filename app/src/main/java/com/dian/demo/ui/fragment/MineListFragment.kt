@@ -9,11 +9,11 @@ import com.dian.demo.di.model.ArticleBean
 import com.dian.demo.di.vm.MineListViewModel
 import com.dian.demo.ui.activity.WebExplorerActivity
 import com.dian.demo.ui.adapter.GlobalArticleAdapter
-import com.dian.demo.utils.CustomDividerItemDecoration
+import com.project.common.utils.CustomDividerItemDecoration
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.SmartRefreshUtil
-import com.dian.demo.utils.ext.observeNonNull
-import com.dian.demo.utils.swape.RecyclerTouchListener
+import com.project.common.utils.ext.observeNonNull
+import com.project.common.view.swape.RecyclerTouchListener
 
 
 class MineListFragment : BaseAppVMFragment<FragmentMineListBinding, MineListViewModel>() {

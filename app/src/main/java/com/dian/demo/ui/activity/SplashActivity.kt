@@ -10,7 +10,7 @@ import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
 import com.dian.demo.databinding.ActivitySplashBinding
 import com.dian.demo.utils.ShortCutUtil
-import com.dian.demo.utils.permissions.PermissionsUtil
+import com.project.common.utils.permissions.PermissionsUtil
 
 
 class SplashActivity : BaseAppBindActivity<ActivitySplashBinding>() {

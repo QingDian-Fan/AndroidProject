@@ -1,23 +1,16 @@
 package com.dian.demo.ui.dialog
 
-import android.app.Dialog
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
-import androidx.fragment.app.DialogFragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.dian.demo.R
 import com.dian.demo.databinding.DialogDatePickBinding
 import com.dian.demo.ui.adapter.PickDateAdapter
-import com.dian.demo.ui.view.PickerLayoutManager
 import com.dian.demo.ui.view.PickerLayoutManager.*
-import com.dian.demo.utils.LogUtil
-import com.dian.demo.utils.ToastUtil
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.singleClick
 import java.util.*
 
 class DatePickDialog : AppCompatDialogFragment(), Runnable, OnPickerListener {

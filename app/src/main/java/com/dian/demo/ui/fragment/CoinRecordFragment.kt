@@ -7,10 +7,10 @@ import com.dian.demo.base.BaseAppVMFragment
 import com.dian.demo.databinding.FragmentCoinRecordBinding
 import com.dian.demo.di.vm.CoinRecordViewModel
 import com.dian.demo.ui.adapter.CoinRecordAdapter
-import com.dian.demo.utils.CustomDividerItemDecoration
+import com.project.common.utils.CustomDividerItemDecoration
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.SmartRefreshUtil
-import com.dian.demo.utils.ext.observeNonNull
+import com.project.common.utils.ext.observeNonNull
 
 
 class CoinRecordFragment : BaseAppVMFragment<FragmentCoinRecordBinding, CoinRecordViewModel>() {

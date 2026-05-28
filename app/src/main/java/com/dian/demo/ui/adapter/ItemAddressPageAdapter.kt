@@ -3,11 +3,10 @@ package com.dian.demo.ui.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.dian.demo.R
 import com.dian.demo.databinding.ItemAddressPageChildBinding
 import com.dian.demo.di.model.CityData
 import com.dian.demo.ui.adapter.ItemAddressPageAdapter.*
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.singleClick
 import org.json.JSONObject
 
 class ItemAddressPageAdapter(val type: AddressType) :

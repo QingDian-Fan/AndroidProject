@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
 
-import com.dian.demo.utils.LogUtil;
+import com.project.common.utils.LogUtil;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;

@@ -1,20 +1,14 @@
 package com.dian.demo.ui.fragment
 
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppVMFragment
 import com.dian.demo.databinding.FragmentSearchHistoryBinding
 import com.dian.demo.di.vm.SearchViewModel
 import com.dian.demo.ui.adapter.SearchRecordAdapter
-import com.dian.demo.utils.SearchRecordUtil
-import com.dian.demo.utils.ext.gone
-import com.dian.demo.utils.ext.observeNonNull
-import com.dian.demo.utils.ext.visible
+import com.project.common.utils.ext.gone
+import com.project.common.utils.ext.observeNonNull
+import com.project.common.utils.ext.visible
 
 class SearchHistoryFragment : BaseAppVMFragment<FragmentSearchHistoryBinding, SearchViewModel>() {
      var mLocalAdapter:SearchRecordAdapter? = null

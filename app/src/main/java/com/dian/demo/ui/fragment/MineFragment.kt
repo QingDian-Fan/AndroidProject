@@ -7,18 +7,17 @@ import com.dian.demo.constant.LOGIN_DATA_BUS
 import com.dian.demo.databinding.FragmentMineBinding
 import com.dian.demo.di.vm.SettingViewModel
 import com.dian.demo.ui.activity.ContainerActivity
-import com.dian.demo.ui.activity.CustomViewActivity
 import com.dian.demo.ui.activity.DemoActivity
 import com.dian.demo.ui.activity.LoginActivity
 import com.dian.demo.ui.activity.LoginContainerActivity
 import com.dian.demo.ui.activity.TodoListActivity
 import com.dian.demo.utils.LoginUtil
 import com.dian.demo.utils.SmartRefreshUtil
-import com.dian.demo.utils.bus.LiveDataBus
-import com.dian.demo.utils.ext.gone
-import com.dian.demo.utils.ext.observeNonNull
-import com.dian.demo.utils.ext.singleClick
-import com.dian.demo.utils.ext.visible
+import com.project.common.utils.bus.LiveDataBus
+import com.project.common.utils.ext.gone
+import com.project.common.utils.ext.observeNonNull
+import com.project.common.utils.ext.singleClick
+import com.project.common.utils.ext.visible
 
 
 class MineFragment : BaseAppVMFragment<FragmentMineBinding, SettingViewModel>() {

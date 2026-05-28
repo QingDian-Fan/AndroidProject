@@ -1,10 +1,9 @@
 package com.dian.demo.di.vm
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.dian.demo.base.BaseViewModel
 import com.dian.demo.di.model.UserInfo
-import com.dian.demo.utils.LogUtil
+import com.project.common.utils.LogUtil
 
 class SettingViewModel:BaseViewModel() {
      val isLoginOut = MutableLiveData<Boolean>()

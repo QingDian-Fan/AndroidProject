@@ -1,25 +1,21 @@
 package com.dian.demo.ui.dialog
 
 import android.os.Bundle
-import android.os.Environment
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
-import androidx.fragment.app.DialogFragment
 import com.demo.project.utils.ext.gone
 import com.demo.project.utils.ext.invisible
 import com.demo.project.utils.ext.visible
-import com.dian.demo.R
 import com.dian.demo.config.Constant.apkPath
 import com.dian.demo.databinding.DialogUpdateBinding
 import com.dian.demo.http.HttpUtils
 import com.dian.demo.http.SingleDownloader
-import com.dian.demo.utils.ExceptionHandlerUtil
-import com.dian.demo.utils.IntentUtil
-import com.dian.demo.utils.LogUtil
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.IntentUtil
+import com.project.common.utils.LogUtil
+import com.project.common.utils.ext.singleClick
 import java.io.File
 
 

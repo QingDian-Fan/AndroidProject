@@ -5,8 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.dian.demo.databinding.ItemWebRecordBinding
 import com.dian.demo.ui.activity.H5ContainerActivity
-import com.dian.demo.utils.DateFormatUtil
-import com.dian.demo.utils.webview.bean.WebDataEntry
+import com.project.common.utils.DateFormatUtil
+import com.project.common.view.webview.bean.WebDataEntry
 
 class WebRecordAdapter(val dataList: List<WebDataEntry>): RecyclerView.Adapter<WebRecordAdapter.ItemViewHolder>()  {
     override fun onCreateViewHolder(

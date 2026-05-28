@@ -12,7 +12,7 @@ import com.dian.demo.databinding.ItemImageSelectBinding
 import com.dian.demo.ui.img.ImageSelectAdapter.*
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.ToastUtil
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.singleClick
 import java.util.ArrayList
 
 class ImageSelectAdapter(

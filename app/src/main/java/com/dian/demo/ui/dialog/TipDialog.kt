@@ -1,7 +1,5 @@
 package com.dian.demo.ui.dialog
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -9,11 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.fragment.app.DialogFragment
 import com.dian.demo.R
-import com.dian.demo.ui.activity.DemoActivity
 import com.dian.demo.utils.SchemaUtil
-import com.dian.demo.utils.ext.singleClick
+import com.project.common.utils.ext.singleClick
 
 class TipDialog : AppCompatDialogFragment() {
 

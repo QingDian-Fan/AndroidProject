@@ -1,29 +1,20 @@
 package com.dian.demo.ui.fragment
 
 import android.os.Bundle
-import android.util.Log
-import android.view.View
-import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import com.dian.demo.ProjectApplication
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppVMFragment
 import com.dian.demo.databinding.FragmentHomeBinding
 import com.dian.demo.di.model.ArticleBean
-import com.dian.demo.di.model.BannerBean
 import com.dian.demo.di.vm.HomeViewModel
 import com.dian.demo.ui.activity.WebExplorerActivity
 import com.dian.demo.ui.adapter.GlobalArticleAdapter
-import com.dian.demo.ui.adapter.HomeArticleAdapter
-import com.dian.demo.utils.CustomDividerItemDecoration
+import com.project.common.utils.CustomDividerItemDecoration
 import com.dian.demo.utils.ResourcesUtil
 import com.dian.demo.utils.SmartRefreshUtil
-import com.dian.demo.utils.ToastUtil
-import com.dian.demo.utils.Utils
-import com.dian.demo.utils.ext.observeNonNull
-import com.stx.xhb.androidx.XBanner
+import com.project.common.utils.ext.observeNonNull
 import com.stx.xhb.androidx.transformers.Transformer
 
 

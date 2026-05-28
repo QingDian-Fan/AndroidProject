@@ -5,7 +5,7 @@
 
     <data>
 
-        <import type="com.dian.demo.utils.CacheUtil" />
+        <import type="com.project.common.utils.CacheUtil" />
 
         <import type="com.dian.demo.utils.ResourcesUtil" />
 

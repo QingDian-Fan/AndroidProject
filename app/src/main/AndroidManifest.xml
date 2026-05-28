@@ -41,6 +41,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".media.PreviewContainerActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.AudioTrackActivity"
             android:exported="false" />
         <activity
@@ -206,7 +209,7 @@
         </activity>
 
         <service
-            android:name=".utils.webview.mainprocess.MainCommandService"
+            android:name="com.project.common.view.webview.mainprocess.MainCommandService"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.dian.demo.utils.webview.mainprocess.MainCommandService" />

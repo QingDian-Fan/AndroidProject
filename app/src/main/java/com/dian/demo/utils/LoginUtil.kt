@@ -1,10 +1,10 @@
 package com.dian.demo.utils
 
-import android.util.Log
 import com.dian.annotation.CheckLogin
-import com.dian.demo.di.model.UserBean
 import com.dian.demo.di.model.UserInfo
-import com.dian.demo.utils.datastore.AppDataStore
+import com.project.common.utils.datastore.AppDataStore
+import com.project.common.utils.LogUtil
+import com.project.common.utils.MoshiUtil
 import kotlin.text.ifEmpty
 
 object LoginUtil {
