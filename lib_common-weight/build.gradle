@@ -42,4 +42,10 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    // webview 工具集（持久化/JSON/日志/Application 上下文）
+    implementation project(":lib_common-utils")
+    implementation project(":lib_common-theme")
+    // BaseWebView JS Bridge 参数序列化
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
