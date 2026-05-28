@@ -6,8 +6,7 @@ enum class SkinNightMode(val key: String) {
     NIGHT("night");
 
     companion object {
-        fun fromName(name: String?): SkinNightMode {
-            return values().firstOrNull { it.key == name } ?: FOLLOW_SYSTEM
-        }
+        fun fromName(name: String?): SkinNightMode =
+            entries.firstOrNull { it.key == name } ?: FOLLOW_SYSTEM
     }
 }

@@ -8,8 +8,7 @@ enum class Language(val key: String, val locale: Locale?) {
     ENGLISH("en", Locale.ENGLISH);
 
     companion object {
-        fun fromName(name: String?): Language {
-            return values().firstOrNull { it.key == name } ?: SYSTEM
-        }
+        fun fromName(name: String?): Language =
+            entries.firstOrNull { it.key == name } ?: SYSTEM
     }
 }

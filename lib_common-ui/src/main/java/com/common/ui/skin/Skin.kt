@@ -9,8 +9,7 @@ enum class Skin(val key: String, val label: String, val themeRes: Int) {
     GOLD("gold", "Gold", R.style.Theme_SkinDemo_Gold);
 
     companion object {
-        fun fromName(name: String?): Skin {
-            return values().firstOrNull { it.key == name } ?: BLUE
-        }
+        fun fromName(name: String?): Skin =
+            entries.firstOrNull { it.key == name } ?: BLUE
     }
 }

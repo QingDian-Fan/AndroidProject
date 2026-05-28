@@ -3,46 +3,57 @@ package com.common.ui
 import android.content.Intent
 import android.os.Bundle
 import android.view.Window
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
-import com.common.theme.BaseApplication
-import com.common.utils.ScreenShotListenManager
 import com.common.utils.ToastUtil
-
 
 /**
  * @author: QingDian_Fan
  * @contact: dian.work@foxmail.com
  * @time: 2020/6/20 12:08 PM
- * @description: Activity的基类
+ * @description: Activity 基类
  * @since: 1.0.0
  */
 abstract class BaseActivity : AppCompatActivity(), ViewBehavior {
 
-    protected val TAG = "${this.javaClass.simpleName}----->"
-    private val manager by lazy { ScreenShotListenManager(applicationContext) }
+    protected val TAG: String = this::class.java.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
         super.onCreate(savedInstanceState)
         initContentView()
         supportActionBar?.hide()
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (!handleBackPress()) {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        })
         initialize(savedInstanceState)
-
     }
 
     protected open fun initContentView() {
-        setContentView(getLayoutId())
+        val layoutId = getLayoutId()
+        if (layoutId != 0) setContentView(layoutId)
     }
 
+    /**
+     * 直接基于 layout id 的页面在这里返回布局；使用 ViewBinding 的子类无需重写。
+     */
     @LayoutRes
-    protected abstract fun getLayoutId(): Int
+    protected open fun getLayoutId(): Int = 0
+
+    protected abstract fun initialize(savedInstanceState: Bundle?)
 
     /**
-     *  初始化操作
+     * 子类返回 true 表示已自行消费返回键事件。
      */
-    protected abstract fun initialize(savedInstanceState: Bundle?)
+    protected open fun handleBackPress(): Boolean = false
 
     protected fun showToast(text: String, showLong: Boolean = false) {
         showToast(ToastEvent(content = text, showLong = showLong))
@@ -57,8 +68,8 @@ abstract class BaseActivity : AppCompatActivity(), ViewBehavior {
             ToastUtil.showToast(this, it, event.showLong)
             return
         }
-        event.contentResId?.let {
-            ToastUtil.showToast(this, getString(it), event.showLong)
+        if (event.contentResId != 0) {
+            ToastUtil.showToast(this, getString(event.contentResId), event.showLong)
         }
     }
 
@@ -68,34 +79,10 @@ abstract class BaseActivity : AppCompatActivity(), ViewBehavior {
     }
 
     override fun backPress(arg: Any?) {
-        onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
     }
 
     override fun finishPage(arg: Any?) {
         finish()
     }
-
-
-    override fun onResume() {
-        super.onResume()
-        startListener()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        stopListener()
-    }
-
-    //截屏监听
-    private fun startListener() {
-        manager.setListener { imagePath ->
-
-        }
-        manager.startListen()
-    }
-
-    private fun stopListener() {
-        manager.stopListen()
-    }
-
 }

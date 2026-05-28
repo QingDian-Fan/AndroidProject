@@ -2,7 +2,6 @@ package com.common.ui.skin
 
 import android.content.Context
 import android.content.res.Configuration
-import android.os.Build
 import android.os.LocaleList
 import com.common.ui.skin.SkinConfig.KEY_LANGUAGE
 import com.common.ui.skin.SkinConfig.KEY_NIGHT_MODE
@@ -47,49 +46,25 @@ object SkinManager {
     fun switchSkin(newSkin: Skin): Boolean {
         if (currentSkin == newSkin) return false
         cachedSkin = newSkin
-        ThemePreferenceUtil.putString(KEY_SKIN, newSkin.key)
-        notifySkinChanged(newSkin)
+        ThemePreferenceStore.putString(KEY_SKIN, newSkin.key)
+        dispatch { it.onSkinChanged(newSkin) }
         return true
     }
 
     fun switchLanguage(newLanguage: Language): Boolean {
         if (currentLanguage == newLanguage) return false
         cachedLanguage = newLanguage
-        ThemePreferenceUtil.putString(KEY_LANGUAGE, newLanguage.key)
-        notifyLanguageChanged(newLanguage)
+        ThemePreferenceStore.putString(KEY_LANGUAGE, newLanguage.key)
+        dispatch { it.onLanguageChanged(newLanguage) }
         return true
     }
 
     fun switchNightMode(newMode: SkinNightMode): Boolean {
         if (currentNightMode == newMode) return false
         cachedNightMode = newMode
-        ThemePreferenceUtil.putString(KEY_NIGHT_MODE, newMode.key)
-        notifyNightModeChanged(newMode)
+        ThemePreferenceStore.putString(KEY_NIGHT_MODE, newMode.key)
+        dispatch { it.onNightModeChanged(newMode) }
         return true
-    }
-
-    fun syncFromStorage(notify: Boolean = false) {
-        val oldSkin = cachedSkin
-        val oldLanguage = cachedLanguage
-        val oldNightMode = cachedNightMode
-        val savedSkin = readSkin()
-        val savedLanguage = readLanguage()
-        val savedNightMode = readNightMode()
-
-        cachedSkin = savedSkin
-        cachedLanguage = savedLanguage
-        cachedNightMode = savedNightMode
-
-        if (!notify) return
-        if (oldSkin != null && oldSkin != savedSkin) {
-            notifySkinChanged(savedSkin)
-        }
-        if (oldLanguage != null && oldLanguage != savedLanguage) {
-            notifyLanguageChanged(savedLanguage)
-        }
-        if (oldNightMode != null && oldNightMode != savedNightMode) {
-            notifyNightModeChanged(savedNightMode)
-        }
     }
 
     fun applyConfiguration(context: Context): Context {
@@ -100,7 +75,6 @@ object SkinManager {
         return createConfiguredContext(context, includeLanguage = false, includeNightMode = true)
     }
 
-    @Suppress("DEPRECATION")
     private fun createConfiguredContext(
         context: Context,
         includeLanguage: Boolean,
@@ -110,15 +84,10 @@ object SkinManager {
         var changed = false
 
         if (includeLanguage) {
-            val locale = currentLanguage.locale
-            if (locale != null) {
+            currentLanguage.locale?.let { locale ->
                 Locale.setDefault(locale)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    configuration.setLocale(locale)
-                    configuration.setLocales(LocaleList(locale))
-                } else {
-                    configuration.locale = locale
-                }
+                configuration.setLocale(locale)
+                configuration.setLocales(LocaleList(locale))
                 changed = true
             }
         }
@@ -129,7 +98,6 @@ object SkinManager {
                 SkinNightMode.NIGHT -> Configuration.UI_MODE_NIGHT_YES
                 SkinNightMode.FOLLOW_SYSTEM -> null
             }
-
             if (targetNightMode != null) {
                 configuration.uiMode =
                     (configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or targetNightMode
@@ -140,35 +108,19 @@ object SkinManager {
         return if (changed) context.createConfigurationContext(configuration) else context
     }
 
-    private fun readSkin(): Skin {
-        return Skin.fromName(ThemePreferenceUtil.getString(KEY_SKIN, Skin.BLUE.key))
-    }
+    private fun readSkin(): Skin =
+        Skin.fromName(ThemePreferenceStore.getString(KEY_SKIN, Skin.BLUE.key))
 
-    private fun readLanguage(): Language {
-        return Language.fromName(ThemePreferenceUtil.getString(KEY_LANGUAGE, Language.SYSTEM.key))
-    }
+    private fun readLanguage(): Language =
+        Language.fromName(ThemePreferenceStore.getString(KEY_LANGUAGE, Language.SYSTEM.key))
 
-    private fun readNightMode(): SkinNightMode {
-        return SkinNightMode.fromName(
-            ThemePreferenceUtil.getString(KEY_NIGHT_MODE, SkinNightMode.FOLLOW_SYSTEM.key)
+    private fun readNightMode(): SkinNightMode =
+        SkinNightMode.fromName(
+            ThemePreferenceStore.getString(KEY_NIGHT_MODE, SkinNightMode.FOLLOW_SYSTEM.key)
         )
-    }
 
-    private fun notifySkinChanged(newSkin: Skin) {
-        listenersSnapshot().forEach { it.onSkinChanged(newSkin) }
-    }
-
-    private fun notifyLanguageChanged(newLanguage: Language) {
-        listenersSnapshot().forEach { it.onLanguageChanged(newLanguage) }
-    }
-
-    private fun notifyNightModeChanged(newMode: SkinNightMode) {
-        listenersSnapshot().forEach { it.onNightModeChanged(newMode) }
-    }
-
-    private fun listenersSnapshot(): List<Listener> {
-        return synchronized(listeners) {
-            listeners.toList()
-        }
+    private inline fun dispatch(block: (Listener) -> Unit) {
+        val snapshot = synchronized(listeners) { listeners.toList() }
+        snapshot.forEach(block)
     }
 }

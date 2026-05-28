@@ -2,11 +2,10 @@ package com.common.ui.skin
 
 import android.os.Bundle
 import android.view.View
-import androidx.databinding.ViewDataBinding
-import com.common.ui.BaseAppBindActivity
+import androidx.viewbinding.ViewBinding
 import com.common.ui.BaseAppBindFragment
 
-abstract class BaseSkinBindFragment<B : ViewDataBinding> :
+abstract class BaseSkinBindFragment<B : ViewBinding> :
     BaseAppBindFragment<B>(),
     SkinManager.Listener {
 
@@ -30,17 +29,13 @@ abstract class BaseSkinBindFragment<B : ViewDataBinding> :
         refreshSkinViews()
     }
 
-    override fun onResume() {
-        super.onResume()
-        SkinManager.syncFromStorage(notify = true)
-    }
-
     override fun onDestroyView() {
         SkinManager.unregister(this)
         super.onDestroyView()
     }
 
     override fun onSkinChanged(newSkin: Skin) {
+        if (skin == newSkin) return
         skin = newSkin
         refreshSkinViews()
     }
@@ -72,7 +67,7 @@ abstract class BaseSkinBindFragment<B : ViewDataBinding> :
     }
 
     protected fun refreshSkinViews() {
-        val root = view ?: getRootView() ?: return
+        val root = view ?: return
         val safeContext = context ?: root.context
         refreshCount++
         SkinApplier.applyToView(root, safeContext, skin, language, nightMode, refreshCount)
@@ -81,6 +76,6 @@ abstract class BaseSkinBindFragment<B : ViewDataBinding> :
     fun applySkinToView(view: View) {
         val safeContext = context ?: view.context
         refreshCount++
-        SkinApplier.applyToView(view, safeContext, skin, language, nightMode, refreshCount)
+        SkinApplier.applyToView(view, this.context ?: safeContext, skin, language, nightMode, refreshCount)
     }
 }

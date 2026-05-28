@@ -4,93 +4,75 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
-import androidx.databinding.ViewDataBinding
+import androidx.viewbinding.ViewBinding
 import com.common.ui.databinding.FragmentRootLayoutBinding
 import com.common.weight.titlebar.CommonTitleBar
-import com.demo.project.utils.ext.gone
-import com.demo.project.utils.ext.visible
-
 
 /**
  * @author: QingDian_Fan
  * @contact: dian.work@foxmail.com
  * @time: 2021/9/3 6:19 下午
- * @description: -
+ * @description: 集成 ViewBinding 的 Fragment 基类
  * @since: 1.0.0
  */
-abstract class BaseAppBindFragment<B : ViewDataBinding> : BaseFragment() {
-    protected lateinit var binding: B
-    private lateinit var rootBinding: FragmentRootLayoutBinding
+abstract class BaseAppBindFragment<B : ViewBinding> : BaseFragment() {
+
+    protected enum class PageState { CONTENT, LOADING, EMPTY, ERROR }
+
+    private var _rootBinding: FragmentRootLayoutBinding? = null
+    private var _binding: B? = null
+    protected val binding: B
+        get() = _binding ?: error("binding accessed before onCreateView() or after onDestroyView()")
+
+    /**
+     * 子类返回页面对应的 ViewBinding。
+     * 实现示例：`FragmentXxxBinding.inflate(inflater, container, false)`
+     */
+    protected abstract fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): B
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        setCurrentState(ILazyLoad.ON_CREATE_VIEW)
-        if (getRootView() != null) return getRootView()
-        injectDataBinding(inflater, container)
-        initialize(savedInstanceState)
-        excuteLazyInit(false)
-        return getRootView()
-    }
-
-    protected open fun injectDataBinding(inflater: LayoutInflater, container: ViewGroup?) {
-        rootBinding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_root_layout, container, false)
-        binding = DataBindingUtil.inflate(inflater, getLayoutId(), rootBinding.flRoot, false)
-        rootBinding.flRoot.addView(binding.root)
-        rootBinding.lifecycleOwner = this
-        setRootView(rootBinding.root)
+    ): View {
+        val root = FragmentRootLayoutBinding.inflate(inflater, container, false)
+        val inner = getViewBinding(inflater, root.flRoot)
+        root.flRoot.addView(inner.root)
+        _rootBinding = root
+        _binding = inner
+        return root.root
     }
 
     override fun onDestroyView() {
-        if (::binding.isInitialized) {
-            binding.unbind()
-        }
+        _binding = null
+        _rootBinding = null
         super.onDestroyView()
     }
-    fun setPageTitle(titleString:String){
+
+    fun setPageTitle(titleString: String) {
         (activity as? BaseAppBindActivity<*>)?.setPageTitle(titleString)
     }
-    fun getTitleBarView(): CommonTitleBar? = (activity as? BaseAppBindActivity<*>)?.getTitleBarView()
+
+    fun getTitleBarView(): CommonTitleBar? =
+        (activity as? BaseAppBindActivity<*>)?.getTitleBarView()
+
+    protected fun setPageState(state: PageState) {
+        val root = _rootBinding ?: return
+        root.flRoot.visibility = if (state == PageState.CONTENT) View.VISIBLE else View.GONE
+        root.flLoading.visibility = if (state == PageState.LOADING) View.VISIBLE else View.GONE
+        root.flEmpty.visibility = if (state == PageState.EMPTY) View.VISIBLE else View.GONE
+        root.flError.visibility = if (state == PageState.ERROR) View.VISIBLE else View.GONE
+    }
+
     override fun showLoadingView(isShow: Boolean) {
-        if (isShow) {
-            rootBinding.flRoot.visibility = gone
-            rootBinding.flEmpty.visibility = gone
-            rootBinding.flLoading.visibility = visible
-        } else {
-            rootBinding.flRoot.visibility = visible
-            rootBinding.flEmpty.visibility = gone
-            rootBinding.flLoading.visibility = gone
-        }
+        setPageState(if (isShow) PageState.LOADING else PageState.CONTENT)
     }
 
     override fun showEmptyView(isShow: Boolean) {
-        if (isShow) {
-            rootBinding.flRoot.visibility = gone
-            rootBinding.flLoading.visibility = gone
-            rootBinding.flEmpty.visibility = visible
-        } else {
-            rootBinding.flRoot.visibility = visible
-            rootBinding.flLoading.visibility = gone
-            rootBinding.flEmpty.visibility = gone
-        }
+        setPageState(if (isShow) PageState.EMPTY else PageState.CONTENT)
     }
 
     override fun showErrorView(isShow: Boolean) {
-        if (isShow) {
-            rootBinding.flRoot.visibility = gone
-            rootBinding.flLoading.visibility = gone
-            rootBinding.flEmpty.visibility = gone
-            rootBinding.flError.visibility = visible
-        } else {
-            rootBinding.flRoot.visibility = visible
-            rootBinding.flLoading.visibility = gone
-            rootBinding.flEmpty.visibility = gone
-            rootBinding.flError.visibility = gone
-        }
+        setPageState(if (isShow) PageState.ERROR else PageState.CONTENT)
     }
-
 }

@@ -5,7 +5,6 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
-import android.os.Build
 import android.view.ContextThemeWrapper
 import android.view.View
 import android.view.ViewGroup
@@ -22,16 +21,16 @@ import androidx.core.content.ContextCompat
 import com.common.ui.R
 import com.common.ui.skin.SkinConfig.TAG_SKIN_PREFIX
 import com.google.android.material.tabs.TabLayout
+import java.util.WeakHashMap
 
 internal object SkinApplier {
 
-    @Suppress("DEPRECATION")
+    private val parsedRuleCache = WeakHashMap<View, ParsedRules>()
+
     fun applyWindow(window: Window, context: Context, skin: Skin) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val main = themeColor(context, skin, R.attr.skinColorMain)
-            window.statusBarColor = darker(main)
-            window.navigationBarColor = darker(main)
-        }
+        val main = themeColor(context, skin, R.attr.skinColorMain)
+        window.statusBarColor = darker(main)
+        window.navigationBarColor = darker(main)
     }
 
     fun applyToView(
@@ -54,9 +53,11 @@ internal object SkinApplier {
     fun themeColor(context: Context, skin: Skin, @AttrRes attr: Int): Int {
         val wrapper = ContextThemeWrapper(SkinManager.applyNightMode(context), skin.themeRes)
         val typedArray = wrapper.obtainStyledAttributes(intArrayOf(attr))
-        val color = typedArray.getColor(0, Color.TRANSPARENT)
-        typedArray.recycle()
-        return color
+        try {
+            return typedArray.getColor(0, Color.TRANSPARENT)
+        } finally {
+            typedArray.recycle()
+        }
     }
 
     fun roundRect(
@@ -89,11 +90,14 @@ internal object SkinApplier {
         state: SkinState,
         listViews: MutableList<ListView>
     ) {
-        val rules = parseSkinRules(view)
-        applyRules(view, rules, palette, state)
+        val parsed = parsedRulesFor(view)
+        if (parsed.rules.isNotEmpty()) {
+            applyRules(view, parsed.rules, palette, state)
+            view.invalidate()
+        }
 
         if (view is ListView) {
-            rules["divider"]?.let {
+            parsed.rules["divider"]?.let {
                 view.divider = roundRect(palette.colorFor(it), 0F)
                 view.dividerHeight = view.dp(1F).toInt()
             }
@@ -105,6 +109,15 @@ internal object SkinApplier {
                 applyRecursive(view.getChildAt(index), palette, state, listViews)
             }
         }
+    }
+
+    private fun parsedRulesFor(view: View): ParsedRules {
+        val tag = view.tag as? String
+        val cached = parsedRuleCache[view]
+        if (cached != null && cached.sourceTag === tag) return cached
+        val parsed = ParsedRules(tag, parseSkinRules(tag))
+        parsedRuleCache[view] = parsed
+        return parsed
     }
 
     private fun applyRules(
@@ -156,8 +169,6 @@ internal object SkinApplier {
         if (view is TabLayout && rules.containsKey("tab")) {
             applyTabLayout(view, palette)
         }
-
-        view.invalidate()
     }
 
     private fun applyBackground(
@@ -227,9 +238,7 @@ internal object SkinApplier {
         when (view) {
             is ImageView -> view.imageTintList = ColorStateList.valueOf(color)
             is CompoundButton -> view.buttonTintList = ColorStateList.valueOf(color)
-            else -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                view.backgroundTintList = ColorStateList.valueOf(color)
-            }
+            else -> view.backgroundTintList = ColorStateList.valueOf(color)
         }
     }
 
@@ -295,9 +304,8 @@ internal object SkinApplier {
         tabLayout.setTabTextColors(palette.textSecond, palette.onMain)
     }
 
-    private fun parseSkinRules(view: View): Map<String, String> {
-        val tag = view.tag as? String ?: return emptyMap()
-        if (!tag.startsWith(TAG_SKIN_PREFIX)) return emptyMap()
+    private fun parseSkinRules(tag: String?): Map<String, String> {
+        if (tag == null || !tag.startsWith(TAG_SKIN_PREFIX)) return emptyMap()
         return tag.removePrefix(TAG_SKIN_PREFIX)
             .split(";")
             .mapNotNull {
@@ -326,6 +334,11 @@ private data class SkinState(
     val language: Language,
     val nightMode: SkinNightMode,
     val refreshCount: Int
+)
+
+private data class ParsedRules(
+    val sourceTag: String?,
+    val rules: Map<String, String>
 )
 
 private data class SkinPalette(

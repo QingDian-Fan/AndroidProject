@@ -3,11 +3,10 @@ package com.common.ui.skin
 import android.content.Context
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
-import androidx.databinding.ViewDataBinding
+import androidx.viewbinding.ViewBinding
 import com.common.ui.BaseAppBindActivity
 
-abstract class BaseSkinBindActivity<B : ViewDataBinding> :
+abstract class BaseSkinBindActivity<B : ViewBinding> :
     BaseAppBindActivity<B>(),
     SkinManager.Listener {
 
@@ -36,32 +35,13 @@ abstract class BaseSkinBindActivity<B : ViewDataBinding> :
         refreshSkinViews()
     }
 
-    override fun onResume() {
-        super.onResume()
-        SkinManager.syncFromStorage(notify = true)
-    }
-
     override fun onDestroy() {
         SkinManager.unregister(this)
         super.onDestroy()
     }
 
-    override fun setContentView(layoutResID: Int) {
-        super.setContentView(layoutResID)
-        refreshSkinViews()
-    }
-
-    override fun setContentView(view: View?) {
-        super.setContentView(view)
-        refreshSkinViews()
-    }
-
-    override fun setContentView(view: View?, params: ViewGroup.LayoutParams?) {
-        super.setContentView(view, params)
-        refreshSkinViews()
-    }
-
     override fun onSkinChanged(newSkin: Skin) {
+        if (skin == newSkin) return
         skin = newSkin
         setTheme(newSkin.themeRes)
         refreshSkinViews()
