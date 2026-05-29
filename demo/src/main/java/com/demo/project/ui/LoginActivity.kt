@@ -8,7 +8,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
-import com.common.ui.BaseAppBindActivity
+import com.common.ui.skin.BaseSkinBindActivity
 import com.common.utils.ext.gone
 import com.common.utils.ext.visible
 import com.common.weight.titlebar.CommonTitleBar
@@ -16,7 +16,7 @@ import com.common.weight.titlebar.ScreenUtils
 import com.demo.project.R
 import com.demo.project.databinding.ActivityLoginBinding
 
-class LoginActivity : BaseAppBindActivity<ActivityLoginBinding>() {
+class LoginActivity : BaseSkinBindActivity<ActivityLoginBinding>() {
 
     companion object {
         fun start(context: Context) {
@@ -53,10 +53,10 @@ class LoginActivity : BaseAppBindActivity<ActivityLoginBinding>() {
         if (isLoginPage) {
             setPageTitle("登录")
             getTitleBarView()?.setRightText("注册", Color.parseColor("#FF40A9FF"), ScreenUtils.dp2PxInt(this, 16f))
-            getTitleBarView()?.rightTextView?.visible()
+            getTitleBarView()?.getRightTextView()?.visible()
         } else {
             setPageTitle("注册")
-            getTitleBarView()?.rightTextView?.gone()
+            getTitleBarView()?.getRightTextView()?.gone()
         }
     }
 }

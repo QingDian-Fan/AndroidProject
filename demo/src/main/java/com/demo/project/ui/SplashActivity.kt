@@ -15,7 +15,7 @@ class SplashActivity : BaseAppBindActivity<ActivitySplashBinding>() {
     override fun initialize(savedInstanceState: Bundle?) {
         getTitleBarView()?.gone()
         binding.root.postDelayed({
-            HomeActivity.start(this@SplashActivity)
+            VideoPlayerActivity.start(this@SplashActivity)
             finish()
         }, 2500)
     }

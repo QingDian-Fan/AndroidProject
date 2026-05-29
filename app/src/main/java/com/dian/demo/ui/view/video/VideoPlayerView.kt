@@ -6,7 +6,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.media.AudioManager
-import android.os.Build
 import android.provider.Settings
 import android.util.AttributeSet
 import android.view.*
@@ -21,9 +20,14 @@ import androidx.appcompat.widget.AppCompatSeekBar
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
+import androidx.media3.exoplayer.ExoPlayer
 import com.dian.demo.R
-import tv.danmaku.ijk.media.player.IMediaPlayer
-import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
@@ -39,10 +43,9 @@ class VideoPlayerView @JvmOverloads constructor(
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0,
 ) : FrameLayout(context, attrs, defStyleAttr, defStyleRes), OnClickListener,
-    IMediaPlayer.OnPreparedListener, SeekBar.OnSeekBarChangeListener,
-    IMediaPlayer.OnVideoSizeChangedListener {
+    SeekBar.OnSeekBarChangeListener {
 
-    private val player by lazy { IjkMediaPlayer() }
+    private val player by lazy { ExoPlayer.Builder(context).build() }
 
 
     private val surfaceView: SurfaceView by lazy { findViewById(R.id.surface_view) }
@@ -130,9 +133,10 @@ class VideoPlayerView @JvmOverloads constructor(
         audioManager = ContextCompat.getSystemService(context, AudioManager::class.java)!!
     }
 
-    //IJKplayer 部分
+    //ExoPlayer 部分
     fun initData() {
-        surfaceView.holder.addCallback(callback)
+        player.setVideoSurfaceView(surfaceView)
+        player.addListener(playerListener)
     }
 
     fun setTitle(title: String) {
@@ -159,51 +163,19 @@ class VideoPlayerView @JvmOverloads constructor(
     }
 
     fun setSpeed(speed: Float) {
-        player.setSpeed(speed)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "soundtouch", 0)
-        } else {
-            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "soundtouch", 1)
-        }
+        player.playbackParameters = PlaybackParameters(speed)
     }
 
     fun setVideoPath(urlString: String) {
-        player.dataSource = urlString
+        player.setMediaItem(MediaItem.fromUri(urlString))
     }
 
     fun start(isStart: Boolean = true) {
         if (isStart) {
             setState(STATUS_LOADING)
-            player.setOnPreparedListener(this)
-            player.setOnVideoSizeChangedListener(this)
-            player.setOnInfoListener { iMediaPlayer, what, arg2 ->
-                when (what) {
-                    IMediaPlayer.MEDIA_INFO_BUFFERING_START -> {
-                        setState(STATUS_LOADING)
-                    }
-                    IMediaPlayer.MEDIA_INFO_BUFFERING_END,
-                    IMediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START,
-                        -> {
-                        setState(STATUS_PLAYING)
-                    }
-                }
-                false
-            }
-            player.setOnErrorListener { iMediaPlayer, i, i2 ->
-                onError?.invoke(iMediaPlayer, i, i2)
-                false
-            }
-            player.setOnCompletionListener {
-                viewControl.pause()
-                onCompletion?.invoke(it)
-            }
-
-            player.setOnBufferingUpdateListener { _, progress ->
-                sbPlayerViewProgress.secondaryProgress = (progress * player.duration / 100).toInt()
-            }
-            player.prepareAsync()
+            player.prepare()
         }
-        player.start()
+        player.play()
         viewControl.play()
     }
 
@@ -241,7 +213,7 @@ class VideoPlayerView @JvmOverloads constructor(
     fun isPrepare() = isPrepare
 
     fun destroy() {
-        player.reset()
+        player.removeListener(playerListener)
         player.release()
         removeCallbacks(mRefreshRunnable)
         removeCallbacks(mHideControllerRunnable)
@@ -251,26 +223,43 @@ class VideoPlayerView @JvmOverloads constructor(
     }
 
 
-    private val callback = object : SurfaceHolder.Callback {
-        override fun surfaceCreated(holder: SurfaceHolder) {
-            player.setDisplay(holder)
-        }
+    /** ExoPlayer 时长可能返回 [C.TIME_UNSET]，此处统一兜底为 0 */
+    private fun safeDuration(): Long =
+        if (player.duration == C.TIME_UNSET) 0L else player.duration
 
-        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-
-        }
-
-        override fun surfaceDestroyed(holder: SurfaceHolder) {
-
-        }
-
-    }
     private var isPrepare: Boolean = false
-    override fun onPrepared(mPlayer: IMediaPlayer?) {
+
+    private val playerListener = object : Player.Listener {
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            when (playbackState) {
+                Player.STATE_BUFFERING -> setState(STATUS_LOADING)
+                Player.STATE_READY -> {
+                    if (!isPrepare) {
+                        onPrepared()
+                    }
+                    setState(STATUS_PLAYING)
+                }
+                Player.STATE_ENDED -> {
+                    viewControl.pause()
+                    onCompletion?.invoke()
+                }
+            }
+        }
+
+        override fun onPlayerError(error: PlaybackException) {
+            onError?.invoke(error)
+        }
+
+        override fun onVideoSizeChanged(videoSize: VideoSize) {
+            applyScaleType(videoSize.width, videoSize.height)
+        }
+    }
+
+    private fun onPrepared() {
         isPrepare = true
         tvPlayerViewPlayTime.text = conversionTime(0)
-        tvPlayerViewTotalTime.text = conversionTime(player.duration)
-        sbPlayerViewProgress.max = player.duration.toInt()
+        tvPlayerViewTotalTime.text = conversionTime(safeDuration())
+        sbPlayerViewProgress.max = safeDuration().toInt()
     }
 
     //  UI部分
@@ -622,7 +611,7 @@ class VideoPlayerView @JvmOverloads constructor(
         return true
     }
 
-    private fun getDuration(): Int = player.duration.toInt()
+    private fun getDuration(): Int = safeDuration().toInt()
 
     private fun getProgress(): Int = player.currentPosition.toInt()
 
@@ -631,9 +620,9 @@ class VideoPlayerView @JvmOverloads constructor(
     var onActionBack: (() -> Unit)? = null
 
     /** 播放完成回调 */
-    var onCompletion: ((IMediaPlayer) -> Unit)? = null
+    var onCompletion: (() -> Unit)? = null
 
-    var onError: ((IMediaPlayer, Int, Int) -> Unit)? = null
+    var onError: ((PlaybackException) -> Unit)? = null
 
     /**
      * 时间转换
@@ -694,6 +683,7 @@ class VideoPlayerView @JvmOverloads constructor(
             val progress = player.currentPosition
             tvPlayerViewPlayTime.text = conversionTime(progress)
             sbPlayerViewProgress.progress = progress.toInt()
+            sbPlayerViewProgress.secondaryProgress = player.bufferedPosition.toInt()
             postDelayed(this, REFRESH_TIME.toLong())
 
         }
@@ -704,21 +694,18 @@ class VideoPlayerView @JvmOverloads constructor(
      */
     private fun setProgress(progress: Int) {
         var finalProgress: Int = progress
-        if (finalProgress > player.duration) {
-            finalProgress = player.duration.toInt()
+        if (finalProgress > safeDuration()) {
+            finalProgress = safeDuration().toInt()
         }
         player.seekTo(finalProgress.toLong())
         sbPlayerViewProgress.progress = finalProgress
         if (!player.isPlaying) start(false)
     }
 
-    override fun onVideoSizeChanged(
-        p0: IMediaPlayer?,
-        videoWidth: Int,
-        videoHeight: Int,
-        p3: Int,
-        p4: Int,
-    ) {
+    private fun applyScaleType(videoWidth: Int, videoHeight: Int) {
+        if (videoWidth <= 0 || videoHeight <= 0) {
+            return
+        }
         when (scaleType) {
             VideoScaleType.ORIGINAL_SIZE -> {
                 val originWidth = if (videoWidth > width) {

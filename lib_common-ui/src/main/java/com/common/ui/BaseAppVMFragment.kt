@@ -21,11 +21,15 @@ abstract class BaseAppVMFragment<B : ViewBinding, VM : BaseViewModel> :
     protected open fun isUseActivityViewModel(): Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        // viewModel 必须在 super.onViewCreated() 之前初始化：
+        // super 会回调到 BaseFragment.onViewCreated() 里的 initialize()，
+        // 子类通常在 initialize() 中就会使用 viewModel，否则会抛
+        // UninitializedPropertyAccessException。
         val owner = if (isUseActivityViewModel()) requireActivity() else this
         viewModel = ViewModelProvider(owner).get(getViewModelClass())
         lifecycle.addObserver(viewModel)
         observeViewModel()
+        super.onViewCreated(view, savedInstanceState)
     }
 
     private fun observeViewModel() {

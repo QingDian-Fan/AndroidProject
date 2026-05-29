@@ -86,7 +86,7 @@ android {
     kotlinOptions {
         jvmTarget = '11'
     }
-    dataBinding.enabled = true
+    viewBinding.enabled = true
 
 }
 
@@ -109,6 +109,7 @@ dependencies {
     implementation project(':lib_common-http')
     implementation project(':lib_common-aop')
     implementation project(':lib_common-share')
+    implementation project(':lib-common-media-picker')
 
     implementation project(':lib_annotation')
     kapt project(':lib_processor')

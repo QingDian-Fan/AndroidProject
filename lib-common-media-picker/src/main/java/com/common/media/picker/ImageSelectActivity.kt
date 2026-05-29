@@ -19,7 +19,7 @@ import com.common.utils.ResourcesUtil
 import com.common.utils.ext.dpToPx
 import com.common.utils.ext.showAllowStateLoss
 import com.common.utils.ext.singleClick
-import com.common.weight.titlebar.CommonTitleBar.ACTION_RIGHT_TEXT
+import com.common.weight.titlebar.CommonTitleBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -103,11 +103,11 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
             14.dpToPx
         )
         getTitleBarView()?.setListener { _, action, _ ->
-            if (action == ACTION_RIGHT_TEXT) {
+            if (action == CommonTitleBar.ACTION_RIGHT_TEXT) {
                 initAlbum()
             }
         }
-        getTitleBarView()?.leftImageButton?.setOnClickListener {
+        getTitleBarView()?.getLeftImageButton()?.setOnClickListener {
             onBackPressed()
         }
         val maxSelect = intent.getIntExtra(SELECT_IMAGE_MAX_SELECT, 9)

@@ -1,12 +1,12 @@
 # 视频播放器组件（video）
 
-基于 [IjkPlayer](https://github.com/bilibili/ijkplayer) 封装的一套自定义视频播放控件，提供完整的播放控制面板、手势交互（亮度 / 音量 / 进度）以及一个手绘的播放 / 暂停按钮动画。
+基于 [ExoPlayer（AndroidX Media3）](https://developer.android.com/media/media3/exoplayer) 封装的一套自定义视频播放控件，提供完整的播放控制面板、手势交互（亮度 / 音量 / 进度）以及一个手绘的播放 / 暂停按钮动画。
 
 ## 目录结构
 
 | 文件 | 说明 |
 | --- | --- |
-| `VideoPlayerView.kt` | 播放器主控件，封装 IjkPlayer，承载 UI、手势、控制面板等全部逻辑 |
+| `VideoPlayerView.kt` | 播放器主控件，封装 ExoPlayer，承载 UI、手势、控制面板等全部逻辑 |
 | `VideoPlayButton.kt` | 自定义播放 / 暂停按钮，使用 `Path` + `PathMeasure` 绘制可变形的过渡动画 |
 | `VideoScaleType.kt` | 视频画面缩放模式枚举 |
 
@@ -14,11 +14,11 @@
 
 ## VideoPlayerView
 
-继承自 `FrameLayout`，内部通过 `view_video_player` 布局填充 `SurfaceView` 及各控制控件。
+继承自 `FrameLayout`，内部通过 `view_video_player` 布局填充 `SurfaceView` 及各控制控件，ExoPlayer 直接渲染到该 `SurfaceView`。
 
 ### 主要特性
 
-- 基于 `IjkMediaPlayer` 的播放、暂停、续播、进度跳转
+- 基于 `ExoPlayer` 的播放、暂停、续播、进度跳转
 - 顶部 / 底部控制面板的显示与隐藏动画（平移 + 透明度）
 - 锁屏功能（锁定后隐藏控制面板、屏蔽手势）
 - 手势交互：
@@ -32,13 +32,13 @@
 
 | 方法 | 说明 |
 | --- | --- |
-| `initData()` | 初始化 `SurfaceView` 回调，**使用前必须调用** |
+| `initData()` | 绑定 `SurfaceView` 并注册播放器监听，**使用前必须调用** |
 | `setVideoPath(urlString: String)` | 设置视频地址（本地路径或网络 URL） |
 | `setTitle(title: String)` | 设置标题栏文字 |
 | `setScaleType(scaleType: VideoScaleType)` | 设置画面缩放模式 |
 | `setSpeed(speed: Float)` | 设置播放倍速 |
 | `setWindow(window: Window)` | 设置宿主窗口，用于亮度调节（默认自动从宿主 Activity 解析，通常无需手动调用） |
-| `start(isStart: Boolean = true)` | 开始播放。`true` 表示首次加载并注册监听，`false` 表示从暂停状态续播 |
+| `start(isStart: Boolean = true)` | 开始播放。`true` 表示首次加载并 `prepare()`，`false` 表示从暂停状态续播 |
 | `pause()` | 暂停播放 |
 | `resume()` | 续播（等价于 `start(false)`） |
 | `isPlaying(): Boolean` | 是否正在播放 |
@@ -50,8 +50,8 @@
 | 回调 | 说明 |
 | --- | --- |
 | `onActionBack: (() -> Unit)?` | 点击返回按钮 |
-| `onCompletion: ((IMediaPlayer) -> Unit)?` | 播放完成 |
-| `onError: ((IMediaPlayer, Int, Int) -> Unit)?` | 播放出错 |
+| `onCompletion: (() -> Unit)?` | 播放完成 |
+| `onError: ((PlaybackException) -> Unit)?` | 播放出错，回调 ExoPlayer 的 `PlaybackException` |
 
 ### 生命周期约定
 
@@ -151,6 +151,6 @@ videoView.onActionBack = { finish() }
 
 ## 依赖说明
 
-- 依赖 IjkPlayer（`tv.danmaku.ijk.media.player`）
+- 依赖 ExoPlayer（`androidx.media3:media3-exoplayer`）
 - 亮度调节会读取 `Settings.System.SCREEN_BRIGHTNESS` 并修改宿主窗口的 `screenBrightness`，需确保宿主为 Activity（默认自动解析）
 - 音量调节通过 `AudioManager` 控制 `STREAM_MUSIC`

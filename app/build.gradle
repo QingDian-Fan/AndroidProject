@@ -230,11 +230,9 @@ dependencies {
     implementation 'com.google.zxing:core:3.5.1'
     /*===============================二维码相关===============================================*/
 
-    /*===============================ijkPlayer===============================================*/
-    implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
-    implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
-    implementation 'tv.danmaku.ijk.media:ijkplayer-arm64:0.8.8'
-    /*===============================ijkPlayer===============================================*/
+    /*===============================ExoPlayer(Media3)===============================================*/
+    implementation 'androidx.media3:media3-exoplayer:1.4.1'
+    /*===============================ExoPlayer(Media3)===============================================*/
 
     /*===============================datastore===============================================*/
     implementation "androidx.datastore:datastore:1.0.0"

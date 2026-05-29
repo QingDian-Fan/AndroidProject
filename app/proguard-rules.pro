@@ -1,7 +1,7 @@
 ############################################################
 # proguard-rules (for project)
 # Auto-updated for dependencies found in app/build.gradle
-# Keep conservative rules for Room / Moshi / Gson / protobuf-lite / walle / skin / ijkplayer / cameraX / AspectJ etc.
+# Keep conservative rules for Room / Moshi / Gson / protobuf-lite / walle / skin / cameraX / AspectJ etc.
 ############################################################
 
 # ---------- 基础配置 ----------
@@ -126,11 +126,6 @@
 -dontwarn com.github.xiaohaibin.**
 -dontwarn net.lucode.hackware.magicindicator.**
 -dontwarn com.scwang.smart.refresh.**
-
-# ---------- ijkplayer (native libs) ----------
--keep class tv.danmaku.ijk.media.player.** { *; }
--keep class tv.danmaku.ijk.media.** { *; }
--dontwarn tv.danmaku.ijk.media.**
 
 # ---------- CameraX ----------
 -dontwarn androidx.camera.**

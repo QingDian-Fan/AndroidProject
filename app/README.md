@@ -24,7 +24,7 @@
 - Retrofit、OkHttp、Moshi、Gson。
 - Glide、XBanner、MagicIndicator、SmartRefreshLayout。
 - QQ、微信、微博 SDK。
-- AspectJ、Bugly、Walle、DataStore、ZXing、ijkplayer。
+- AspectJ、Bugly、Walle、DataStore、ZXing、ExoPlayer（Media3）。
 - `lib_annotation` + `lib_processor` 用于登录注解处理。
 
 ## 注意事项
