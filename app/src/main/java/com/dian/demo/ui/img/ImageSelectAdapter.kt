@@ -19,6 +19,7 @@ class ImageSelectAdapter(
     private val mContext: Context,
     private var dataList: ArrayList<String>,
     private val selectList: ArrayList<String>,
+    private val videoPaths: Set<String> = emptySet(),
     private val isMulti: Boolean = false,
     private val maxSelect: Int = 9
 ) : RecyclerView.Adapter<ItemViewHolder>() {
@@ -63,6 +64,10 @@ class ImageSelectAdapter(
             }
 
 
+            // 视频项展示播放角标
+            binding.ivVideoFlag.visibility =
+                if (videoPaths.contains(dataList[position])) visible else gone
+
             Glide.with(mContext)
                 .asBitmap()
                 .load(dataList[position])
@@ -88,9 +93,15 @@ class ImageSelectAdapter(
                         binding.cbMultiImageSelectCheck.background =
                             ResourcesUtil.getDrawable(R.drawable.icon_multi_checkbox_checked)
                     }else{
+                        // 单选：仅刷新上一个选中项和当前项，避免整列表重绘
+                        val previousPosition = selectList.firstOrNull()
+                            ?.let { dataList.indexOf(it) } ?: -1
                         selectList.clear()
                         onSelectListener.invoke(position, dataList[position])
-                        notifyDataSetChanged()
+                        if (previousPosition != -1 && previousPosition != position) {
+                            notifyItemChanged(previousPosition)
+                        }
+                        notifyItemChanged(position)
                     }
 
                 }
@@ -104,8 +115,6 @@ class ImageSelectAdapter(
     fun getDataList(): ArrayList<String> {
         return dataList
     }
-
-    fun getData(): Any = dataList
 
     fun setData(dataList: ArrayList<String>) {
         this.dataList = dataList

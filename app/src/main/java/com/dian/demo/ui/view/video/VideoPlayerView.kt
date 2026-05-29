@@ -2,14 +2,13 @@ package com.dian.demo.ui.view.video
 
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.ofInt
+import android.app.Activity
 import android.content.Context
-import android.content.res.Resources
+import android.content.ContextWrapper
 import android.media.AudioManager
 import android.os.Build
 import android.provider.Settings
 import android.util.AttributeSet
-import android.util.DisplayMetrics
-import android.util.Log
 import android.view.*
 import android.view.View.OnClickListener
 import android.widget.FrameLayout
@@ -22,24 +21,23 @@ import androidx.appcompat.widget.AppCompatSeekBar
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import com.demo.project.utils.ext.centerInParent
-import com.demo.project.utils.ext.center_horizontal
-import com.demo.project.utils.ext.layout_gravity
 import com.dian.demo.R
-import com.dian.demo.utils.aop.SingleClick
 import tv.danmaku.ijk.media.player.IMediaPlayer
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
+import androidx.core.view.isGone
 
 
 class VideoPlayerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-    defStyleRes: Int = 0
+    defStyleRes: Int = 0,
 ) : FrameLayout(context, attrs, defStyleAttr, defStyleRes), OnClickListener,
     IMediaPlayer.OnPreparedListener, SeekBar.OnSeekBarChangeListener,
     IMediaPlayer.OnVideoSizeChangedListener {
@@ -47,22 +45,20 @@ class VideoPlayerView @JvmOverloads constructor(
     private val player by lazy { IjkMediaPlayer() }
 
 
-    private val surfaceView: SurfaceView by lazy { findViewById<SurfaceView>(R.id.surface_view) }
-    private val topLayout: FrameLayout by lazy { findViewById<FrameLayout>(R.id.fl_top_layout) }
-    private val btnActionBack: AppCompatImageView by lazy { findViewById<AppCompatImageView>(R.id.btn_action_back) }
-    private val tvTitle: AppCompatTextView by lazy { findViewById<AppCompatTextView>(R.id.tv_title) }
-    private val ivLock: AppCompatImageView by lazy { findViewById<AppCompatImageView>(R.id.iv_lock) }
-    private val bottomLayout: LinearLayout by lazy { findViewById<LinearLayout>(R.id.ll_bottom_layout) }
-    private val viewControl: VideoPlayButton by lazy { findViewById<VideoPlayButton>(R.id.view_control) }
-    private val tvPlayerViewPlayTime: AppCompatTextView by lazy { findViewById<AppCompatTextView>(R.id.tv_player_view_play_time) }
-    private val sbPlayerViewProgress: AppCompatSeekBar by lazy { findViewById<AppCompatSeekBar>(R.id.sb_player_view_progress) }
-    private val tvPlayerViewTotalTime: AppCompatTextView by lazy { findViewById<AppCompatTextView>(R.id.tv_player_view_total_time) }
-
-
-    private val messageLayout: CardView by lazy { findViewById<CardView>(R.id.cv_player_view_message) }
-    private val ivMessage: AppCompatImageView by lazy { findViewById<AppCompatImageView>(R.id.iv_message) }
-    private val tvMessage: AppCompatTextView by lazy { findViewById<AppCompatTextView>(R.id.tv_message) }
-    private val pbLoading: ProgressBar by lazy { findViewById<ProgressBar>(R.id.pb_loading) }
+    private val surfaceView: SurfaceView by lazy { findViewById(R.id.surface_view) }
+    private val topLayout: FrameLayout by lazy { findViewById(R.id.fl_top_layout) }
+    private val btnActionBack: AppCompatImageView by lazy { findViewById(R.id.btn_action_back) }
+    private val tvTitle: AppCompatTextView by lazy { findViewById(R.id.tv_title) }
+    private val ivLock: AppCompatImageView by lazy { findViewById(R.id.iv_lock) }
+    private val bottomLayout: LinearLayout by lazy { findViewById(R.id.ll_bottom_layout) }
+    private val viewControl: VideoPlayButton by lazy { findViewById(R.id.view_control) }
+    private val tvPlayerViewPlayTime: AppCompatTextView by lazy { findViewById(R.id.tv_player_view_play_time) }
+    private val sbPlayerViewProgress: AppCompatSeekBar by lazy { findViewById(R.id.sb_player_view_progress) }
+    private val tvPlayerViewTotalTime: AppCompatTextView by lazy { findViewById(R.id.tv_player_view_total_time) }
+    private val messageLayout: CardView by lazy { findViewById(R.id.cv_player_view_message) }
+    private val ivMessage: AppCompatImageView by lazy { findViewById(R.id.iv_message) }
+    private val tvMessage: AppCompatTextView by lazy { findViewById(R.id.tv_message) }
+    private val pbLoading: ProgressBar by lazy { findViewById(R.id.pb_loading) }
 
 
     /** 是否锁定 */
@@ -97,8 +93,8 @@ class VideoPlayerView @JvmOverloads constructor(
     /** 当前亮度值 */
     private var currentBrightness: Float = 0f
 
-    /** 当前窗口对象 */
-    private var window: Window? = null
+    /** 当前窗口对象（用于调节屏幕亮度），默认从宿主 Activity 解析 */
+    private var window: Window? = findHostActivity()?.window
 
     /** 调整秒数 */
     private var adjustSecond: Int = 0
@@ -147,6 +143,21 @@ class VideoPlayerView @JvmOverloads constructor(
         this.scaleType = scaleType
     }
 
+    /** 设置宿主窗口，用于亮度手势调节（默认会自动从 Activity 解析） */
+    fun setWindow(window: Window) {
+        this.window = window
+    }
+
+    /** 从 context 链中解析宿主 Activity */
+    private fun findHostActivity(): Activity? {
+        var ctx: Context? = context
+        while (ctx is ContextWrapper) {
+            if (ctx is Activity) return ctx
+            ctx = ctx.baseContext
+        }
+        return null
+    }
+
     fun setSpeed(speed: Float) {
         player.setSpeed(speed)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -163,7 +174,6 @@ class VideoPlayerView @JvmOverloads constructor(
     fun start(isStart: Boolean = true) {
         if (isStart) {
             setState(STATUS_LOADING)
-            player.prepareAsync()
             player.setOnPreparedListener(this)
             player.setOnVideoSizeChangedListener(this)
             player.setOnInfoListener { iMediaPlayer, what, arg2 ->
@@ -172,7 +182,8 @@ class VideoPlayerView @JvmOverloads constructor(
                         setState(STATUS_LOADING)
                     }
                     IMediaPlayer.MEDIA_INFO_BUFFERING_END,
-                    IMediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START -> {
+                    IMediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START,
+                        -> {
                         setState(STATUS_PLAYING)
                     }
                 }
@@ -190,29 +201,26 @@ class VideoPlayerView @JvmOverloads constructor(
             player.setOnBufferingUpdateListener { _, progress ->
                 sbPlayerViewProgress.secondaryProgress = (progress * player.duration / 100).toInt()
             }
+            player.prepareAsync()
         }
         player.start()
         viewControl.play()
-
-
     }
 
     private fun setState(state: Int) {
         VIDEO_STATUS = state
         when (state) {
             STATUS_LOADING -> {
-                pbLoading.visibility = View.VISIBLE
-                topLayout.visibility = View.GONE
-                bottomLayout.visibility = View.GONE
-                ivLock.visibility = View.GONE
-                viewControl.visibility = View.GONE
-                Log.e("video-status", "loading")
+                pbLoading.visibility = VISIBLE
+                topLayout.visibility = GONE
+                bottomLayout.visibility = GONE
+                ivLock.visibility = GONE
+                viewControl.visibility = GONE
                 removeCallbacks(mRefreshRunnable)
             }
             STATUS_PLAYING -> {
-                pbLoading.visibility = View.GONE
+                pbLoading.visibility = GONE
                 postDelayed(mRefreshRunnable, (REFRESH_TIME / 2).toLong())
-                Log.e("video-status", "playing")
             }
         }
     }
@@ -235,6 +243,7 @@ class VideoPlayerView @JvmOverloads constructor(
     fun destroy() {
         player.reset()
         player.release()
+        removeCallbacks(mRefreshRunnable)
         removeCallbacks(mHideControllerRunnable)
         removeCallbacks(mShowControllerRunnable)
         removeCallbacks(mHideMessageRunnable)
@@ -285,9 +294,9 @@ class VideoPlayerView @JvmOverloads constructor(
             ivLock -> {
                 isLock = !isLock
                 ivLock.setImageResource(if (isLock) R.drawable.icon_video_lock_close else R.drawable.icon_video_lock_open)
-                topLayout.visibility = if (isLock) View.GONE else View.VISIBLE
-                bottomLayout.visibility = if (isLock) View.GONE else View.VISIBLE
-                viewControl.visibility = if (isLock) View.GONE else View.VISIBLE
+                topLayout.visibility = if (isLock) GONE else VISIBLE
+                bottomLayout.visibility = if (isLock) GONE else VISIBLE
+                viewControl.visibility = if (isLock) GONE else VISIBLE
             }
             viewControl -> {
                 if (viewControl.visibility != VISIBLE) {
@@ -345,7 +354,7 @@ class VideoPlayerView @JvmOverloads constructor(
             if (translationY != -topLayout.height) {
                 return@addUpdateListener
             }
-            if (topLayout.visibility == INVISIBLE) {
+            if (topLayout.isInvisible) {
                 topLayout.visibility = VISIBLE
             }
         }
@@ -358,7 +367,7 @@ class VideoPlayerView @JvmOverloads constructor(
             if (translationY != bottomLayout.height) {
                 return@addUpdateListener
             }
-            if (bottomLayout.visibility == INVISIBLE) {
+            if (bottomLayout.isInvisible) {
                 bottomLayout.visibility = VISIBLE
             }
         }
@@ -372,10 +381,10 @@ class VideoPlayerView @JvmOverloads constructor(
             if (alpha != 0f) {
                 return@addUpdateListener
             }
-            if (ivLock.visibility == INVISIBLE) {
-                ivLock.visibility = VISIBLE
+            if (ivLock.isVisible) {
+                ivLock.visibility = INVISIBLE
             }
-            if (viewControl.visibility == VISIBLE) {
+            if (viewControl.isVisible) {
                 viewControl.visibility = INVISIBLE
             }
         }
@@ -388,11 +397,11 @@ class VideoPlayerView @JvmOverloads constructor(
         }
         isControlPanelShow = true
 
-        if (topLayout.visibility == View.GONE && !isLock) {
-            topLayout.visibility = View.VISIBLE
-            bottomLayout.visibility = View.VISIBLE
-            ivLock.visibility = View.VISIBLE
-            viewControl.visibility = View.VISIBLE
+        if (topLayout.isGone && !isLock) {
+            topLayout.visibility = VISIBLE
+            bottomLayout.visibility = VISIBLE
+            ivLock.visibility = VISIBLE
+            viewControl.visibility = VISIBLE
         }
 
 
@@ -404,7 +413,7 @@ class VideoPlayerView @JvmOverloads constructor(
             if (translationY != -topLayout.height) {
                 return@addUpdateListener
             }
-            if (topLayout.visibility == INVISIBLE) {
+            if (topLayout.isInvisible) {
                 topLayout.visibility = VISIBLE
             }
         }
@@ -417,7 +426,7 @@ class VideoPlayerView @JvmOverloads constructor(
             if (translationY != bottomLayout.height) {
                 return@addUpdateListener
             }
-            if (bottomLayout.visibility == INVISIBLE) {
+            if (bottomLayout.isInvisible) {
                 bottomLayout.visibility = VISIBLE
             }
         }
@@ -431,10 +440,10 @@ class VideoPlayerView @JvmOverloads constructor(
             if (alpha != 0f) {
                 return@addUpdateListener
             }
-            if (ivLock.visibility == INVISIBLE) {
+            if (ivLock.isInvisible) {
                 ivLock.visibility = VISIBLE
             }
-            if (viewControl.visibility == INVISIBLE) {
+            if (viewControl.isInvisible) {
                 viewControl.visibility = VISIBLE
             }
 
@@ -708,7 +717,7 @@ class VideoPlayerView @JvmOverloads constructor(
         videoWidth: Int,
         videoHeight: Int,
         p3: Int,
-        p4: Int
+        p4: Int,
     ) {
         when (scaleType) {
             VideoScaleType.ORIGINAL_SIZE -> {

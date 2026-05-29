@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.dian.demo.databinding.ItemAlbumBinding
 import com.dian.demo.databinding.ItemImagePreviewBinding
 import java.util.ArrayList
 import com.dian.demo.ui.img.ImagePreviewAdapter.*

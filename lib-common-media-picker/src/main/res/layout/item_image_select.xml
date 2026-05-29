@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.common.media.picker.RatioFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/dp_1"
+    app:sizeRatio="1:1">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/img_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_video_flag"
+        android:layout_width="@dimen/dp_30"
+        android:layout_height="@dimen/dp_30"
+        android:layout_gravity="center"
+        android:src="@drawable/icon_video_play"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <FrameLayout
+        android:id="@+id/fl_image_select_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="@dimen/dp_3"
+        android:layout_marginEnd="@dimen/dp_5"
+        android:padding="7dp">
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/cb_single_image_select_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:clickable="false"
+            android:focusableInTouchMode="false"
+            android:visibility="gone"
+            app:buttonCompat="@drawable/checkbox_selector" />
+
+        <TextView
+            android:id="@+id/cb_multi_image_select_check"
+            android:layout_width="@dimen/dp_24"
+            android:layout_height="@dimen/dp_24"
+            android:background="@drawable/icon_multi_checkbox_checked"
+            android:gravity="center"
+            android:textColor="@color/colorWhite"
+            android:textSize="@dimen/dp_16"
+            tools:text="1" />
+
+    </FrameLayout>
+
+
+</com.common.media.picker.RatioFrameLayout>

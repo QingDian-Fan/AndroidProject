@@ -1,8 +1,7 @@
 package com.dian.demo.ui.img
 
-import android.os.Parcel
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 class AlbumInfo(

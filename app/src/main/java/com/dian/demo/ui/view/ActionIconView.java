@@ -22,6 +22,8 @@ public final class ActionIconView extends AppCompatImageView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-        setMeasuredDimension(heightSize, heightSize);
+        int WidthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int size = Math.min(heightSize, WidthSize);
+        setMeasuredDimension(size, size);
     }
 }
