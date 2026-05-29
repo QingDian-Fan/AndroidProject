@@ -38,10 +38,15 @@ class AlbumAdapter(private val mContext: Context, private val dataList: ArrayLis
             cbAlbumCheck.isChecked = dataList[position].isSelect()
         }
         holder.itemView.singleClick {
-            dataList.forEach {
-                it.setSelect(it == dataList[position])
+            // 仅刷新上一个选中项和当前项，避免整列表重绘
+            val previousPosition = dataList.indexOfFirst { it.isSelect() }
+            dataList.forEachIndexed { index, info ->
+                info.setSelect(index == position)
             }
-            notifyDataSetChanged()
+            if (previousPosition != -1 && previousPosition != position) {
+                notifyItemChanged(previousPosition)
+            }
+            notifyItemChanged(position)
             onItemClickListener.invoke(position, dataList[position])
         }
     }

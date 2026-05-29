@@ -20,6 +20,15 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop" />
 
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_video_flag"
+            android:layout_width="@dimen/dp_30"
+            android:layout_height="@dimen/dp_30"
+            android:layout_gravity="center"
+            android:src="@drawable/icon_video_play"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
         <FrameLayout
             android:id="@+id/fl_image_select_check"
             android:layout_width="wrap_content"

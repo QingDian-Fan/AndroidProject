@@ -43,6 +43,15 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
+    /*===============================ijkPlayer===============================================*/
+    implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
+    implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
+    implementation 'tv.danmaku.ijk.media:ijkplayer-arm64:0.8.8'
+    /*===============================ijkPlayer===============================================*/
+
+    // 视频播放控件依赖统一的尺寸/颜色资源
+    implementation project(":lib_common-theme")
+
     // webview 工具集（持久化/JSON/日志/Application 上下文）
     implementation project(":lib_common-utils")
     implementation project(":lib_common-theme")

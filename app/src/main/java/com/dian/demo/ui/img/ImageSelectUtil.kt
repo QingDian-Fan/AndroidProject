@@ -1,9 +1,6 @@
 package com.dian.demo.ui.img
 
 import android.app.Activity
-import android.content.Context
-import androidx.room.Room
-import com.dian.demo.di.repository.local.DatabaseFactory
 
 class ImageSelectUtil {
 
@@ -12,12 +9,22 @@ class ImageSelectUtil {
     private var maxSelect: Int = 9
     private var selectList: ArrayList<String>? = null
     private var column: Int = 3
+    private var mediaType: MediaType = MediaType.IMAGE
     private var listener: ImageSelectListener? = null
     private var cancelListener: ImageCancelListener? = null
 
 
     fun setActivity(mActivity: Activity): ImageSelectUtil {
         this.mActivity = mActivity
+        return this
+    }
+
+    /**
+     * 设置选取的媒体类型：图片、视频，或两者都包含
+     * 默认为 [MediaType.IMAGE]
+     */
+    fun setMediaType(mediaType: MediaType): ImageSelectUtil {
+        this.mediaType = mediaType
         return this
     }
 
@@ -58,6 +65,7 @@ class ImageSelectUtil {
             mActivity!!,
             maxSelect,
             column,
+            mediaType,
             selectList,
             listener,
             cancelListener

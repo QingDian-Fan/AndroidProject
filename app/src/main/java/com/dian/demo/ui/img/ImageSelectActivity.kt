@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.TextUtils
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.dian.demo.R
 import com.dian.demo.base.BaseAppBindActivity
@@ -18,6 +19,9 @@ import com.dian.demo.utils.aop.CheckPermissions
 import com.dian.demo.utils.ext.dpToPx
 import com.dian.demo.utils.ext.showAllowStateLoss
 import com.dian.demo.utils.ext.singleClick
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
@@ -26,6 +30,7 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         private const val SELECT_IMAGE_MAX_SELECT: String = "maxSelect"
         private const val SELECT_IMAGE_IMAGE_LIST: String = "selectImage"
         private const val SELECT_IMAGE_COLUM: String = "column"
+        private const val SELECT_MEDIA_TYPE: String = "mediaType"
         private var listener: ImageSelectListener? = null
         private var cancelListener:ImageCancelListener?=null
 
@@ -35,12 +40,13 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         private fun setCancelLister(cancelListener: ImageCancelListener) {
             this.cancelListener = cancelListener
         }
-        @CheckPermissions(Manifest.permission.READ_MEDIA_IMAGES,Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, isMust = true)
-        fun start(mContext: Context, maxSelect: Int, column:Int, selectList: ArrayList<String>? = null, listener: ImageSelectListener? = null, cancelListener:ImageCancelListener?=null) {
+        @CheckPermissions(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, isMust = true)
+        fun start(mContext: Context, maxSelect: Int, column:Int, mediaType: MediaType = MediaType.IMAGE, selectList: ArrayList<String>? = null, listener: ImageSelectListener? = null, cancelListener:ImageCancelListener?=null) {
             val intent = Intent()
             intent.setClass(mContext, ImageSelectActivity::class.java)
             intent.putExtra(SELECT_IMAGE_MAX_SELECT, maxSelect)
             intent.putExtra(SELECT_IMAGE_COLUM,column)
+            intent.putExtra(SELECT_MEDIA_TYPE, mediaType)
             intent.putExtra(SELECT_IMAGE_IMAGE_LIST, selectList)
             if (listener != null) {
                 setSelectLister(listener)
@@ -59,15 +65,38 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
 
     private val selectImage = ArrayList<String>()
 
+    /** 视频文件路径集合，用于在列表中区分图片与视频 */
+    private val videoPaths = HashSet<String>()
+
+    /** 当前选取的媒体类型 */
+    private var mediaType: MediaType = MediaType.IMAGE
+
     private lateinit var mAdapter: ImageSelectAdapter
+
+    /** 标题栏中心文案 */
+    private val titleLabel: String
+        get() = when (mediaType) {
+            MediaType.IMAGE -> getString(R.string.text_image_select)
+            MediaType.VIDEO -> getString(R.string.text_video_select)
+            MediaType.ALL -> getString(R.string.text_media_select)
+        }
+
+    /** “全部”相册文案 */
+    private val allLabel: String
+        get() = when (mediaType) {
+            MediaType.IMAGE -> getString(R.string.text_all_image)
+            MediaType.VIDEO -> getString(R.string.text_all_video)
+            MediaType.ALL -> getString(R.string.text_all_media)
+        }
 
 
     override fun getLayoutId(): Int = R.layout.activity_image_select
 
     override fun initialize(savedInstanceState: Bundle?) {
-        getTitleBarView()?.setCenterText(getString(R.string.text_image_select))
+        mediaType = (intent.getSerializableExtra(SELECT_MEDIA_TYPE) as? MediaType) ?: MediaType.IMAGE
+        getTitleBarView()?.setCenterText(titleLabel)
         getTitleBarView()?.setRightText(
-            getString(R.string.text_all_image),
+            allLabel,
             ResourcesUtil.getColor(R.color.text_light_color),
             14.dpToPx
         )
@@ -91,12 +120,11 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
             finish()
         }
 
-        getAllImage()
-
         mAdapter = ImageSelectAdapter(
             this@ImageSelectActivity,
             allImage,
             selectImage,
+            videoPaths,
             maxSelect != 1,
             maxSelect
         )
@@ -119,19 +147,28 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
             }
         }
 
+        // 图库扫描包含 MediaStore 查询与逐条 File.exists() 磁盘 IO，放到后台线程避免阻塞主线程导致 ANR
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) { getAllMedia() }
+            mAdapter.notifyDataSetChanged()
+        }
+
     }
 
     private var dialog: AlbumDialogFragment? = null
 
 
     private fun initAlbum() {
+        if (allImage.isEmpty()) {
+            return
+        }
         val albumList = arrayListOf<AlbumInfo>()
         albumList.add(
             AlbumInfo(
                 allImage[0],
-                ResourcesUtil.getString(R.string.text_all_image),
+                allLabel,
                 ResourcesUtil.getString(R.string.image_select_total, allImage.size),
-                mAdapter.getData() === allImage
+                mAdapter.getDataList() === allImage
             )
         )
         val keys: MutableSet<String> = allAlbum.keys
@@ -144,8 +181,8 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
                 AlbumInfo(
                     list[0],
                     key,
-                    String.format(getString(R.string.image_select_total), list.size),
-                    mAdapter.getData() === list
+                    ResourcesUtil.getString(R.string.image_select_total, list.size),
+                    mAdapter.getDataList() === list
                 )
             )
         }
@@ -156,17 +193,17 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         dialog?.showAllowStateLoss(supportFragmentManager, "")
 
         dialog?.onChooseAlbumListener = {
-            if (it.getName() == ResourcesUtil.getString(R.string.text_all_image) && (mAdapter.getData() != allImage)) {
+            if (it.getName() == allLabel && (mAdapter.getDataList() !== allImage)) {
                 mAdapter.setData(allImage)
                 getTitleBarView()?.setRightText(
-                    getString(R.string.text_all_image),
+                    allLabel,
                     ResourcesUtil.getColor(R.color.text_light_color),
                     14.dpToPx
                 )
             } else {
                 for (key: String in keys) {
                     val dataList = allAlbum[key]
-                    if (it.getName() == key && dataList != null && dataList.isNotEmpty() && (mAdapter.getData() != dataList)) {
+                    if (it.getName() == key && dataList != null && dataList.isNotEmpty() && (mAdapter.getDataList() !== dataList)) {
                         mAdapter.setData(dataList)
                         getTitleBarView()?.setRightText(
                             key,
@@ -179,13 +216,33 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         }
     }
 
-    private fun getAllImage() {
+    private fun getAllMedia() {
         allAlbum.clear()
         allImage.clear()
+        videoPaths.clear()
         val contentUri: Uri = MediaStore.Files.getContentUri("external")
         val sortOrder: String = MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC"
-        val selection: String =
-            "(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?)" + " AND " + MediaStore.MediaColumns.SIZE + ">0"
+        val mediaTypeColumn: String = MediaStore.Files.FileColumns.MEDIA_TYPE
+        val sizeColumn: String = MediaStore.MediaColumns.SIZE
+        val imageType: String = MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString()
+        val videoType: String = MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO.toString()
+        // 根据选取类型构造查询条件
+        val selection: String
+        val selectionArgs: Array<String>
+        when (mediaType) {
+            MediaType.IMAGE -> {
+                selection = "($mediaTypeColumn=?) AND $sizeColumn>0"
+                selectionArgs = arrayOf(imageType)
+            }
+            MediaType.VIDEO -> {
+                selection = "($mediaTypeColumn=?) AND $sizeColumn>0"
+                selectionArgs = arrayOf(videoType)
+            }
+            MediaType.ALL -> {
+                selection = "($mediaTypeColumn=? OR $mediaTypeColumn=?) AND $sizeColumn>0"
+                selectionArgs = arrayOf(imageType, videoType)
+            }
+        }
         val contentResolver: ContentResolver = contentResolver
         val projections: Array<String?> = arrayOf(
             MediaStore.Files.FileColumns._ID,
@@ -195,19 +252,22 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
             MediaStore.MediaColumns.MIME_TYPE,
             MediaStore.MediaColumns.WIDTH,
             MediaStore.MediaColumns.HEIGHT,
-            MediaStore.MediaColumns.SIZE
+            MediaStore.MediaColumns.SIZE,
+            mediaTypeColumn
         )
-        val cursor = contentResolver.query(
-            contentUri, projections, selection,
-            arrayOf<String?>(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString()), sortOrder
-        )
-        if (cursor != null && cursor.moveToFirst()) {
+        contentResolver.query(
+            contentUri, projections, selection, selectionArgs, sortOrder
+        )?.use { cursor ->
+            if (!cursor.moveToFirst()) {
+                return@use
+            }
             val pathIndex: Int = cursor.getColumnIndex(MediaStore.MediaColumns.DATA)
             val mimeTypeIndex: Int = cursor.getColumnIndex(MediaStore.MediaColumns.MIME_TYPE)
             val sizeIndex: Int = cursor.getColumnIndex(MediaStore.MediaColumns.SIZE)
+            val typeIndex: Int = cursor.getColumnIndex(mediaTypeColumn)
             do {
                 val size: Long = cursor.getLong(sizeIndex)
-                // 图片大小不得小于 1 KB
+                // 文件大小不得小于 1 KB
                 if (size < 1024) {
                     continue
                 }
@@ -231,20 +291,30 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
                 }
                 data.add(path)
                 allImage.add(path)
+                // 记录视频路径，用于列表区分展示
+                if (cursor.getInt(typeIndex) == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
+                    videoPaths.add(path)
+                }
             } while (cursor.moveToNext())
-            cursor.close()
         }
-
     }
 
     override fun onBackPressed() {
-        if (dialog?.dialog?.isShowing != null && dialog?.dialog?.isShowing!!) {
+        if (dialog?.dialog?.isShowing == true) {
             dialog?.dismissAllowingStateLoss()
         } else {
-            if (cancelListener != null) {
-                cancelListener?.cancel()
-            }
+            cancelListener?.cancel()
             super.onBackPressed()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // 静态监听持有调用方（通常是 Activity）的引用，结束时清除避免内存泄漏；
+        // 配置变更（isChangingConfigurations）时保留，以便重建后仍能回调
+        if (isFinishing) {
+            listener = null
+            cancelListener = null
         }
     }
 
