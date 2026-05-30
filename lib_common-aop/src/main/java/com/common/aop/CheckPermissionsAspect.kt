@@ -33,7 +33,8 @@ class CheckPermissionsAspect {
     @Around("methodPermissions()")
     @Throws(Throwable::class)
     fun aroundJoinPermissions(joinPoint: ProceedingJoinPoint) {
-        LogUtil.e("AOP-CheckPermissions")
+        LogUtil.e("TAG--->AOP", "-----CheckPermissionsAspect-Before-----")
+
         var mActivity: AppCompatActivity? = null
         for (arg in joinPoint.args) {
             if (arg is AppCompatActivity) {
@@ -42,7 +43,8 @@ class CheckPermissionsAspect {
             }
         }
         if ((mActivity == null) || mActivity.isFinishing || mActivity.isDestroyed) {
-            LogUtil.e("TAGTAG", "AOP-CheckPermissions-mActivity is null")
+            LogUtil.e("TAG--->AOP", "CheckPermissionsAspect::AOP-CheckPermissions-mActivity is null")
+
             mActivity = ActivityManager.getInstance().getTopActivity() as? AppCompatActivity
         }
         if (mActivity == null || mActivity.isFinishing || mActivity.isDestroyed) {
@@ -56,7 +58,7 @@ class CheckPermissionsAspect {
         val checkPermissions = method.getAnnotation(CheckPermissions::class.java)
         val permissionList: Array<out String> = checkPermissions?.value ?: arrayOf()
         val isMustPermission = checkPermissions?.isMust
-        LogUtil.e("AOP-CheckPermissions-do it")
+        LogUtil.e("TAG--->AOP", "-----CheckPermissionsAspect-do request-----")
         if (PermissionsUtil.hasAopPermission(mActivity, permissionList)) {
             joinPoint.proceed()
         } else {

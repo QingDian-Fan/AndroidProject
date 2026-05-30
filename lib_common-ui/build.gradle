@@ -49,6 +49,8 @@ dependencies {
     implementation project(":lib_common-utils")
     implementation project(":lib_common-theme")
     api project(":lib_common-weight")
+    implementation project(":lib_common-aop")
+    implementation 'org.aspectj:aspectjrt:1.9.6'
 
     /*===============================lifecycle============================================*/
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
@@ -56,4 +58,68 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-common-java8:2.7.0'
     /*===============================lifecycle============================================*/
 
+}
+
+//==================================== AspectJ 织入 ====================================
+// Activity 生命周期定义在 UI 基类中，本模块也需要织入，子类继承基类生命周期时才能打印。
+import org.aspectj.bridge.IMessage
+import org.aspectj.bridge.MessageHandler
+import org.aspectj.tools.ajc.Main
+
+def weaveAspectJ = { String sourceDir, String outputDir, String classpath, String bootClasspath ->
+    File inPath = new File(sourceDir)
+    if (!inPath.exists()) {
+        return
+    }
+
+    MessageHandler handler = new MessageHandler(true)
+    String[] args = [
+            "-showWeaveInfo",
+            "-11",
+            "-inpath", sourceDir,
+            "-aspectpath", classpath,
+            "-d", outputDir,
+            "-classpath", classpath,
+            "-bootclasspath", bootClasspath
+    ]
+    new Main().run(args, handler)
+
+    for (IMessage message : handler.getMessages(null, true)) {
+        switch (message.getKind()) {
+            case IMessage.ABORT:
+            case IMessage.ERROR:
+            case IMessage.FAIL:
+                project.logger.error "AspectJ Error: " + message.message, message.thrown
+                break
+            case IMessage.WARNING:
+                project.logger.warn "AspectJ Warning: " + message.message, message.thrown
+                break
+            case IMessage.INFO:
+                project.logger.info "AspectJ Info: " + message.message, message.thrown
+                break
+        }
+    }
+}
+
+android.libraryVariants.all { variant ->
+    JavaCompile javaCompile = variant.javaCompileProvider.get()
+    String kotlinClassesDir = project.buildDir.path + "/tmp/kotlin-classes/" + variant.name
+    String bootClasspath = project.android.bootClasspath.join(File.pathSeparator)
+
+    javaCompile.doLast {
+        // 本模块的基类依赖 ViewBinding 生成类，需等 JavaCompile 生成 Binding class 后再织入 Kotlin class。
+        weaveAspectJ(
+                kotlinClassesDir,
+                kotlinClassesDir,
+                javaCompile.classpath.asPath + File.pathSeparator + javaCompile.destinationDir.toString(),
+                bootClasspath
+        )
+
+        weaveAspectJ(
+                javaCompile.destinationDir.toString(),
+                javaCompile.destinationDir.toString(),
+                javaCompile.classpath.asPath,
+                bootClasspath
+        )
+    }
 }

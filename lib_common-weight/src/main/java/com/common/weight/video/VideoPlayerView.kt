@@ -49,6 +49,7 @@ class VideoPlayerView @JvmOverloads constructor(
 
 
     private val surfaceView: SurfaceView by lazy { findViewById(R.id.surface_view) }
+
     private val topLayout: FrameLayout by lazy { findViewById(R.id.fl_top_layout) }
     private val btnActionBack: AppCompatImageView by lazy { findViewById(R.id.btn_action_back) }
     private val tvTitle: AppCompatTextView by lazy { findViewById(R.id.tv_title) }

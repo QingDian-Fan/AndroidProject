@@ -1,37 +1,38 @@
-java.lang.IllegalStateException: Could not execute method for android:onClick
-at androidx.appcompat.app.AppCompatViewInflater$DeclaredOnClickListener.onClick(AppCompatViewInflater.java:473)
-at android.view.View.performClick(View.java:7729)
-at com.google.android.material.button.MaterialButton.performClick(MaterialButton.java:1218)
-at android.view.View.performClickInternal(View.java:7698)
-at android.view.View.access$3700(View.java:886)
-at android.view.View$PerformClick.run(View.java:30220)
-at android.os.Handler.handleCallback(Handler.java:966)
-at android.os.Handler.dispatchMessage(Handler.java:110)
-at android.os.Looper.loopOnce(Looper.java:205)
-at android.os.Looper.loop(Looper.java:293)
-at android.app.ActivityThread.loopProcess(ActivityThread.java:9998)
-at android.app.ActivityThread.main(ActivityThread.java:9987)
-at java.lang.reflect.Method.invoke(Native Method)
-at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:586)
-at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1240)
-Caused by: java.lang.reflect.InvocationTargetException
-at java.lang.reflect.Method.invoke(Native Method)
-at androidx.appcompat.app.AppCompatViewInflater$DeclaredOnClickListener.onClick(AppCompatViewInflater.java:468)
-at android.view.View.performClick(View.java:7729) 
-at com.google.android.material.button.MaterialButton.performClick(MaterialButton.java:1218) 
-at android.view.View.performClickInternal(View.java:7698) 
-at android.view.View.access$3700(View.java:886) 
-                                                                                                    	at android.view.View$PerformClick.run(View.java:30220) 
-at android.os.Handler.handleCallback(Handler.java:966) 
-at android.os.Handler.dispatchMessage(Handler.java:110) 
-at android.os.Looper.loopOnce(Looper.java:205) 
-at android.os.Looper.loop(Looper.java:293) 
-at android.app.ActivityThread.loopProcess(ActivityThread.java:9998) 
-at android.app.ActivityThread.main(ActivityThread.java:9987) 
-at java.lang.reflect.Method.invoke(Native Method) 
-at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:586) 
-                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1240) 
-                                                                                                    Caused by: java.lang.NoSuchMethodError: No static method aspectOf()Lcom/common/aop/CheckPermissionsAspect; in class Lcom/common/aop/CheckPermissionsAspect; or its super classes (declaration of 'com.common.aop.CheckPermissionsAspect' appears in /data/app/~~B-kVl1A444vUehLtne56TQ==/com.demo.project.debug-WRZUVwRmtazthLPh22vYHA==/base.apk!classes5.dex)
-at com.common.media.picker.ImageSelectActivity$Companion.start(ImageSelectActivity.kt:1)
-at com.common.media.picker.ImageSelectUtil.create(ImageSelectUtil.kt:64)
-at com.demo.project.ui.HomeActivity.clickView(HomeActivity.kt:97)
+         Process: com.demo.project.debug, PID: 6121
+                                                                                                    java.lang.IllegalStateException: FragmentManager is already executing transactions
+                                                                                                    	at androidx.fragment.app.FragmentManager.ensureExecReady(FragmentManager.java:1947)
+                                                                                                    	at androidx.fragment.app.FragmentManager.execSingleAction(FragmentManager.java:1977)
+                                                                                                    	at androidx.fragment.app.BackStackRecord.commitNow(BackStackRecord.java:317)
+                                                                                                    	at com.common.utils.permissions.LivePermissions.getInstance(LivePermissions.kt:41)
+                                                                                                    	at com.common.utils.permissions.LivePermissions.<init>(LivePermissions.kt:25)
+                                                                                                    	at com.common.utils.permissions.LivePermissions$Companion.getInstance(LivePermissions.kt:16)
+                                                                                                    	at com.demo.project.ui.CameraFragment.requestPermissionThenStart(CameraFragment.kt:74)
+                                                                                                    	at com.demo.project.ui.CameraFragment.initialize(CameraFragment.kt:63)
+                                                                                                    	at com.common.ui.BaseFragment.onViewCreated(BaseFragment.kt:37)
+                                                                                                    	at androidx.fragment.app.Fragment.performViewCreated(Fragment.java:3152)
+                                                                                                    	at androidx.fragment.app.FragmentStateManager.createView(FragmentStateManager.java:608)
+                                                                                                    	at androidx.fragment.app.FragmentStateManager.moveToExpectedState(FragmentStateManager.java:286)
+                                                                                                    	at androidx.fragment.app.FragmentManager.executeOpsTogether(FragmentManager.java:2214)
+                                                                                                    	at androidx.fragment.app.FragmentManager.removeRedundantOperationsAndExecute(FragmentManager.java:2109)
+                                                                                                    	at androidx.fragment.app.FragmentManager.execPendingActions(FragmentManager.java:2052)
+                                                                                                    	at androidx.fragment.app.FragmentManager.dispatchStateChange(FragmentManager.java:3327)
+                                                                                                    	at androidx.fragment.app.FragmentManager.dispatchActivityCreated(FragmentManager.java:3237)
+                                                                                                    	at androidx.fragment.app.FragmentController.dispatchActivityCreated(FragmentController.java:263)
+                                                                                                    	at androidx.fragment.app.FragmentActivity.onStart(FragmentActivity.java:350)
+                                                                                                    	at androidx.appcompat.app.AppCompatActivity.onStart(AppCompatActivity.java:251)
+                                                                                                    	at android.app.Instrumentation.callActivityOnStart(Instrumentation.java:1471)
+                                                                                                    	at android.app.Activity.performStart(Activity.java:8617)
+                                                                                                    	at android.app.ActivityThread.handleStartActivity(ActivityThread.java:4833)
+                                                                                                    	at android.app.servertransaction.TransactionExecutor.performLifecycleSequence(TransactionExecutor.java:235)
+                                                                                                    	at android.app.servertransaction.TransactionExecutor.cycleToPath(TransactionExecutor.java:215)
+                                                                                                    	at android.app.servertransaction.TransactionExecutor.executeLifecycleState(TransactionExecutor.java:187)
+                                                                                                    	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:105)
+                                                                                                    	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:3094)
+                                                                                                    	at android.os.Handler.dispatchMessage(Handler.java:117)
+                                                                                                    	at android.os.Looper.loopOnce(Looper.java:205)
+                                                                                                    	at android.os.Looper.loop(Looper.java:293)
+                                                                                                    	at android.app.ActivityThread.loopProcess(ActivityThread.java:9998)
+                                                                                                    	at android.app.ActivityThread.main(ActivityThread.java:9987)
+                                                                                                    	at java.lang.reflect.Method.invoke(Native Method)
+                                                                                                    	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:586)
+                                                                                                    	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1240)

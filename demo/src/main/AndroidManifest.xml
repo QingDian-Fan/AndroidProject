@@ -30,8 +30,18 @@
         <activity
             android:name=".ui.VideoPlayerActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:screenOrientation="landscape"
-            android:exported="false" />
+            android:exported="true" >
+            <!-- 支持外部 App 通过 ACTION_VIEW 调起播放音频/视频 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ui.SplashActivity"
             android:exported="true" >
@@ -47,6 +57,9 @@
         </activity>
         <activity
             android:name=".ui.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.CameraActivity"
             android:exported="false" />
     </application>
 

@@ -2,6 +2,7 @@ package com.common.aop
 
 import android.view.View
 import com.common.utils.FastClickUtil.isFastClick
+import com.common.utils.LogUtil
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
@@ -29,6 +30,7 @@ class SingleClickAspect {
     @Around("methodAnnotated()")
     @Throws(Throwable::class)
     fun aroundJoinPoint(joinPoint: ProceedingJoinPoint) {
+        LogUtil.e("TAG--->AOP", "-----SingleClickAspect-Before-----")
         // 取出方法的参数
         var view: View? = null
         for (arg in joinPoint.args) {
@@ -49,6 +51,7 @@ class SingleClickAspect {
         val singleClick = method.getAnnotation(SingleClick::class.java)
         // 判断是否快速点击
         if (!isFastClick()) {
+            LogUtil.e("TAG--->AOP", "-----SingleClickAspect-Inner-----")
             // 不是快速点击，执行原方法
             joinPoint.proceed()
         }

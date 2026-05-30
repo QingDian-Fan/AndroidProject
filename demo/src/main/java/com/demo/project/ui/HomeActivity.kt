@@ -38,7 +38,41 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
 
     override fun initialize(savedInstanceState: Bundle?) {
         getTitleBarView()?.setCenterText("功能菜单")
-
+        binding.btnScanActivity.setOnClickListener {
+            startActivityForResult(WeChatQRCodeActivity::class.java)
+        }
+        binding.btnCameraActivity.setOnClickListener {
+            CameraActivity.start(this@HomeActivity)
+        }
+        binding.btnSelectActivity.setOnClickListener {
+            ImageSelectUtil()
+                .setActivity(this@HomeActivity)
+                .setMaxSelect(5)
+                .setMediaType(MediaType.ALL)
+                .setSelectList(mSelectList)
+                .setColumn(3)
+                .setSelectListener(object : ImageSelectListener {
+                    override fun selectListener(selectList: ArrayList<String>) {
+                        mSelectList.clear()
+                        ToastUtil.showToast(
+                            this@HomeActivity,
+                            "size::${selectList.size}"
+                        )
+                        if (selectList.isNotEmpty()) {
+                            selectList.forEach {
+                                mSelectList.add(it)
+                            }
+                        }
+                    }
+                })
+                .setCancelListener(object : ImageCancelListener {
+                    override fun cancel() {
+                        mSelectList.clear()
+                        ToastUtil.showToast(this@HomeActivity, "取消了")
+                    }
+                })
+                .create()
+        }
 
     }
     private val startActivityLauncher = registerForActivityResult(
@@ -61,11 +95,14 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
         )
         startActivityLauncher.launch(Intent(this, clazz), options)
     }
-    @SingleClick
+   /* @SingleClick
     fun clickView(view: View) {
         when (view.id) {
             R.id.btn_scan_activity->{
                 startActivityForResult(WeChatQRCodeActivity::class.java)
+            }
+            R.id.btn_camera_activity->{
+                CameraActivity.start(this@HomeActivity)
             }
             R.id.btn_select_activity->{
                 ImageSelectUtil()
@@ -97,7 +134,7 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
                     .create()
             }
         }
-    }
+    }*/
 
     override fun getViewModelClass(): Class<MainViewModel> = MainViewModel::class.java
 }
