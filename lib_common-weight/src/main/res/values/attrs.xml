@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="RevealLayout">
+        <attr format="reference" name="rl_checkedLayout"/>
+        <attr format="reference" name="rl_uncheckedLayout"/>
+        <attr format="boolean|reference" name="rl_checked"/>
+        <attr format="integer|reference" name="rl_animDuration"/>
+        <attr format="boolean|reference" name="rl_checkWithExpand"/>
+        <attr format="boolean|reference" name="rl_uncheckWithExpand"/>
+        <attr format="boolean|reference" name="rl_allowRevert"/>
+        <attr format="boolean|reference" name="rl_hideBackView"/>
+    </declare-styleable>
+
+    <declare-styleable name="HeartView">
+        <attr format="enum" name="heart_sizeBasic">
+            <enum name="none" value="0"/>
+            <enum name="width" value="1"/>
+            <enum name="height" value="2"/>
+        </attr>
+        <attr format="reference|color" name="heart_color"/>
+        <attr format="reference|color" name="heart_edgeColor"/>
+        <attr format="reference|float" name="heart_centerX"/>
+        <attr format="reference|float" name="heart_centerY"/>
+        <attr format="reference|float" name="heart_radius"/>
+        <attr format="reference|color" name="heart_strokeColor"/>
+        <attr format="reference|dimension" name="heart_strokeWidth"/>
+    </declare-styleable>
+    <declare-styleable name="CollectView">
+        <attr name="cv_uncheckedColor" format="color|reference" />
+    </declare-styleable>
+</resources>

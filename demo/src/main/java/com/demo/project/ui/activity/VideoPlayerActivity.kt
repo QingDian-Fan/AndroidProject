@@ -1,7 +1,9 @@
-package com.demo.project.ui
+package com.demo.project.ui.activity
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import com.common.ui.BaseAppBindActivity
@@ -23,7 +25,11 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
         @JvmStatic
         fun start(mContext: Context,urlString: String) {
             val intent = Intent()
-            intent.setClass(mContext, VideoPlayerActivity::class.java)
+            intent.setClass(mContext, VideoPlayerActivity::class.java).apply {
+                if (mContext !is Activity) {
+                    flags=FLAG_ACTIVITY_NEW_TASK
+                }
+            }
             intent.putExtra(KEY_VIDEO_URL_STRING,urlString)
             mContext.startActivity(intent)
         }

@@ -1,7 +1,9 @@
-package com.demo.project.ui
+package com.demo.project.ui.activity
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.Color
 import android.os.Bundle
 import androidx.navigation.Navigation
@@ -17,12 +19,14 @@ import com.demo.project.databinding.ActivityLoginBinding
 class LoginActivity : BaseSkinBindActivity<ActivityLoginBinding>() {
 
     companion object {
-        fun start(context: Context) {
-            val intent = Intent(context, LoginActivity::class.java)
-            if (context !is android.app.Activity) {
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        @JvmStatic
+        fun start(mContext: Context) {
+            val intent = Intent(mContext, LoginActivity::class.java).apply {
+                if (mContext !is Activity) {
+                    flags=FLAG_ACTIVITY_NEW_TASK
+                }
             }
-            context.startActivity(intent)
+            mContext.startActivity(intent)
         }
     }
 

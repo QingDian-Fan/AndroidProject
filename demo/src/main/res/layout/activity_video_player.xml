@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.VideoPlayerActivity">
+    tools:context=".ui.activity.VideoPlayerActivity">
   <com.common.weight.video.VideoPlayerView
       android:id="@+id/video_view"
       android:layout_width="match_parent"

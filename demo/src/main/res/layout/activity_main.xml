@@ -9,7 +9,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:paddingHorizontal="30dp"
-    tools:context=".ui.HomeActivity">
+    tools:context=".ui.activity.HomeActivity">
 
     <Button
         android:id="@+id/btn_select_activity"
@@ -42,6 +42,37 @@
         android:onClick="clickView"
         android:paddingVertical="@dimen/dp_10"
         android:text="相机"
+        android:textColor="@color/colorWhite" />
+    <Button
+        android:id="@+id/btn_web_activity"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_46"
+        android:layout_marginTop="@dimen/dp_30"
+        android:background="@drawable/bg_btn_generate"
+        android:onClick="clickView"
+        android:paddingVertical="@dimen/dp_10"
+        android:text="web页面"
+        android:textColor="@color/colorWhite" />
+    <Button
+        android:id="@+id/btn_browse_activity"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_46"
+        android:layout_marginTop="@dimen/dp_30"
+        android:background="@drawable/bg_btn_generate"
+        android:onClick="clickView"
+        android:paddingVertical="@dimen/dp_10"
+        android:text="浏览器页面"
+        android:textColor="@color/colorWhite" />
+
+    <Button
+        android:id="@+id/btn_debug_activity"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_46"
+        android:layout_marginTop="@dimen/dp_30"
+        android:background="@drawable/bg_btn_generate"
+        android:onClick="clickView"
+        android:paddingVertical="@dimen/dp_10"
+        android:text="调试页面"
         android:textColor="@color/colorWhite" />
 
 

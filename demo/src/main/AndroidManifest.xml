@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" >
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- 网络相关 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- 外部存储:分享时使用 -->
@@ -11,14 +11,20 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" /> <!-- 相机、手电筒：扫描二维码时使用 -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.FLASHLIGHT" />
-    <!-- 扫描二维码震动权限 -->
+    <uses-permission android:name="android.permission.FLASHLIGHT" /> <!-- 扫描二维码震动权限 -->
     <uses-permission android:name="android.permission.VIBRATE" /> <!-- 安装app权限 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
+    <queries>
+        <package android:name="com.tencent.mm" />
+        <package android:name="com.tencent.mobileqq" />
+        <package android:name="com.sina.weibo" />
+    </queries>
+
     <application
         android:name=".ProjectApplication"
         android:allowBackup="true"
@@ -26,11 +32,18 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AndroidProject" >
+        android:theme="@style/Theme.AndroidProject">
         <activity
-            android:name=".ui.VideoPlayerActivity"
+            android:name=".ui.activity.WebExplorerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.WebActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.VideoPlayerActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:exported="true" >
+            android:exported="true">
+
             <!-- 支持外部 App 通过 ACTION_VIEW 调起播放音频/视频 -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -43,8 +56,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.SplashActivity"
-            android:exported="true" >
+            android:name=".ui.activity.SplashActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -52,14 +65,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.HomeActivity"
-            android:exported="false" >
-        </activity>
-        <activity
-            android:name=".ui.LoginActivity"
+            android:name=".ui.activity.HomeActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.CameraActivity"
+            android:name=".ui.activity.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.CameraActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.DebugActivity"
             android:exported="false" />
     </application>
 

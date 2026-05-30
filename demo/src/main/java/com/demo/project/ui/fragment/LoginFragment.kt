@@ -1,4 +1,4 @@
-package com.demo.project.ui
+package com.demo.project.ui.fragment
 
 import android.os.Bundle
 import com.common.ui.BaseAppVMFragment

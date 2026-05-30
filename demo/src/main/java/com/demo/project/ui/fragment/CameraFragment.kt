@@ -1,4 +1,4 @@
-package com.demo.project.ui
+package com.demo.project.ui.fragment
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -43,7 +43,6 @@ import com.demo.project.ui.view.FocusCornerDrawable
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-
 class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
 
     private var imageCapture: ImageCapture? = null
@@ -74,7 +73,7 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
      */
     private fun requestPermissionThenStart() {
         val activity = activity as? AppCompatActivity ?: return
-        LivePermissions.getInstance(activity)
+        LivePermissions.Companion.getInstance(activity)
             .addInterceptor(DefaultPermissionInterceptor())
             .request(
                 Manifest.permission.CAMERA,
@@ -126,7 +125,7 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
 
     private fun startCamera() {
         val context = context ?: return
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+        val cameraProviderFuture = ProcessCameraProvider.Companion.getInstance(context)
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
 

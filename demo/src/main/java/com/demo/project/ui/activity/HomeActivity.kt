@@ -1,14 +1,13 @@
-package com.demo.project.ui
+package com.demo.project.ui.activity
 
-import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityOptionsCompat
-import com.common.aop.SingleClick
 import com.common.media.picker.ImageCancelListener
 import com.common.media.picker.ImageSelectListener
 import com.common.media.picker.ImageSelectUtil
@@ -17,18 +16,21 @@ import com.common.scan.WeChatQRCodeActivity
 import com.common.scan.camera.CameraScan
 import com.common.ui.BaseAppVMActivity
 import com.common.utils.ToastUtil
-import com.common.utils.permissions.DefaultPermissionInterceptor
-import com.common.utils.permissions.LivePermissions
-import com.common.utils.permissions.PermissionResult
+import com.demo.project.constants.ANDROID_ASSET_URI
 import com.demo.project.R
 import com.demo.project.databinding.ActivityMainBinding
 import com.demo.project.vm.MainViewModel
 
 class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
     companion object {
+        @JvmStatic
         fun start(mContext: Context) {
             val intent = Intent()
-            intent.setClass(mContext, HomeActivity::class.java)
+            intent.setClass(mContext, HomeActivity::class.java).apply {
+                if (mContext !is Activity) {
+                    flags=FLAG_ACTIVITY_NEW_TASK
+                }
+            }
             mContext.startActivity(intent)
         }
     }
@@ -43,6 +45,15 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
         }
         binding.btnCameraActivity.setOnClickListener {
             CameraActivity.start(this@HomeActivity)
+        }
+        binding.btnWebActivity.setOnClickListener {
+            WebActivity.start(this@HomeActivity,"${ANDROID_ASSET_URI}demo.html")
+        }
+        binding.btnBrowseActivity.setOnClickListener {
+            WebExplorerActivity.start(this@HomeActivity,"${ANDROID_ASSET_URI}demo.html")
+        }
+        binding.btnDebugActivity.setOnClickListener {
+            DebugActivity.start(this@HomeActivity)
         }
         binding.btnSelectActivity.setOnClickListener {
             ImageSelectUtil()
