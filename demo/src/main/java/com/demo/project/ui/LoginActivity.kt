@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
 import com.common.ui.skin.BaseSkinBindActivity
@@ -28,8 +26,7 @@ class LoginActivity : BaseSkinBindActivity<ActivityLoginBinding>() {
         }
     }
 
-    override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup): ActivityLoginBinding =
-        ActivityLoginBinding.inflate(inflater, container, false)
+    override fun getLayoutId(): Int = R.layout.activity_login
 
     override fun initialize(savedInstanceState: Bundle?) {
         val navHostFragment = supportFragmentManager

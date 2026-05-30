@@ -1,22 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/main"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingHorizontal="30dp"
+    tools:context=".ui.HomeActivity">
+
+    <Button
+        android:id="@+id/btn_select_activity"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".ui.HomeActivity">
+        android:layout_height="@dimen/dp_46"
+        android:layout_marginTop="@dimen/dp_30"
+        android:background="@drawable/bg_btn_generate"
+        android:onClick="clickView"
+        android:paddingVertical="@dimen/dp_10"
+        android:text="视频播放"
+        android:textColor="@color/colorWhite" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello World!"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <Button
+        android:id="@+id/btn_scan_activity"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_46"
+        android:layout_marginTop="@dimen/dp_30"
+        android:background="@drawable/bg_btn_generate"
+        android:onClick="clickView"
+        android:paddingVertical="@dimen/dp_10"
+        android:text="扫描二维码"
+        android:textColor="@color/colorWhite" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

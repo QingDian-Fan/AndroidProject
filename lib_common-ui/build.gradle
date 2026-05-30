@@ -48,7 +48,7 @@ dependencies {
 
     implementation project(":lib_common-utils")
     implementation project(":lib_common-theme")
-    implementation project(":lib_common-weight")
+    api project(":lib_common-weight")
 
     /*===============================lifecycle============================================*/
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'

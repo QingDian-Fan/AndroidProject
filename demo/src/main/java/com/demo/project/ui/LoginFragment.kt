@@ -1,11 +1,10 @@
 package com.demo.project.ui
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import com.common.ui.BaseAppVMFragment
 import com.common.utils.ext.observeNonNull
 import com.common.utils.ext.singleClick
+import com.demo.project.R
 import com.demo.project.databinding.FragmentLoginBinding
 import com.demo.project.vm.LoginViewModel
 
@@ -13,8 +12,7 @@ class LoginFragment : BaseAppVMFragment<FragmentLoginBinding, LoginViewModel>() 
 
     override fun getViewModelClass(): Class<LoginViewModel> = LoginViewModel::class.java
 
-    override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentLoginBinding =
-        FragmentLoginBinding.inflate(inflater, container, false)
+    override fun getLayoutId(): Int = R.layout.fragment_login
 
     override fun initialize(savedInstanceState: Bundle?) {
         with(binding) {

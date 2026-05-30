@@ -1,9 +1,8 @@
 package com.common.ui
 
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.DrawableRes
+import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
 import com.common.ui.databinding.ActivityRootLayoutBinding
 import com.common.weight.titlebar.CommonTitleBar
@@ -25,15 +24,16 @@ abstract class BaseAppBindActivity<B : ViewBinding> : BaseActivity() {
         get() = _binding ?: error("binding accessed before initContentView() or after onDestroy()")
 
     /**
-     * 子类返回页面对应的 ViewBinding，调用方传入的 container 已经是状态容器中的 flRoot。
-     * 实现示例：`ActivityXxxBinding.inflate(inflater, container, false)`
+     * 子类返回页面对应的布局 id，基类会据此 inflate 并反射完成 ViewBinding 绑定。
+     * 实现示例：`override fun getLayoutId() = R.layout.activity_xxx`
      */
-    protected abstract fun getViewBinding(inflater: LayoutInflater, container: ViewGroup): B
+    @LayoutRes
+    abstract override fun getLayoutId(): Int
 
     override fun initContentView() {
         val root = ActivityRootLayoutBinding.inflate(layoutInflater)
         setContentView(root.root)
-        val inner = getViewBinding(layoutInflater, root.flRoot)
+        val inner: B = ViewBindingReflect.bind(this, layoutInflater, root.flRoot, getLayoutId())
         root.flRoot.addView(inner.root)
         root.titleBar.setListener { _, action, _ ->
             if (action == CommonTitleBar.ACTION_LEFT_BUTTON) {

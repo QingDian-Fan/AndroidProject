@@ -19,3 +19,10 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# ---------- ViewBinding（基类通过反射调用 bind(View) 完成绑定，需保留）----------
+-keep class * implements androidx.viewbinding.ViewBinding {
+    public static * bind(android.view.View);
+    public static * inflate(android.view.LayoutInflater);
+    public static * inflate(android.view.LayoutInflater, android.view.ViewGroup, boolean);
+}

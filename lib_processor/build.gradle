@@ -4,9 +4,9 @@ plugins {
 
 dependencies {
     implementation project(path: ':lib_annotation')
-    api "com.google.auto.service:auto-service:1.0-rc6"
+    implementation "com.google.auto.service:auto-service:1.0-rc6"
     annotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
-    api 'com.squareup:javapoet:1.10.0'
+    implementation 'com.squareup:javapoet:1.10.0'
 
 }
 //中文乱码问题（错误：编码GBK不可映射字符）

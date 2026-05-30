@@ -8,8 +8,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.TextUtils
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.common.aop.CheckPermissions
@@ -41,18 +39,28 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         private fun setCancelLister(cancelListener: ImageCancelListener) {
             this.cancelListener = cancelListener
         }
-        @CheckPermissions(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, isMust = true)
+        /**
+         * 入口：通过 @CheckPermissions AOP 先申请媒体读取权限，授权通过后方法体（启动选择页）才会执行。
+         * 切面 [com.common.aop.CheckPermissionsAspect] 会在方法参数中查找 AppCompatActivity 发起申请，
+         * 权限经 PermissionConversionUtil 按系统版本自动适配（高版本 READ_MEDIA_IMAGES/VIDEO，低版本 READ/WRITE_EXTERNAL_STORAGE）。
+         */
+        @CheckPermissions(
+            Manifest.permission.READ_MEDIA_IMAGES,
+            Manifest.permission.READ_MEDIA_VIDEO,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
         fun start(mContext: Context, maxSelect: Int, column:Int, mediaType: MediaType = MediaType.IMAGE, selectList: ArrayList<String>? = null, listener: ImageSelectListener? = null, cancelListener:ImageCancelListener?=null) {
             val intent = Intent()
             intent.setClass(mContext, ImageSelectActivity::class.java)
             intent.putExtra(SELECT_IMAGE_MAX_SELECT, maxSelect)
-            intent.putExtra(SELECT_IMAGE_COLUM,column)
+            intent.putExtra(SELECT_IMAGE_COLUM, column)
             intent.putExtra(SELECT_MEDIA_TYPE, mediaType)
             intent.putExtra(SELECT_IMAGE_IMAGE_LIST, selectList)
             if (listener != null) {
                 setSelectLister(listener)
             }
-            if (cancelListener!=null){
+            if (cancelListener != null) {
                 setCancelLister(cancelListener)
             }
             mContext.startActivity(intent)
@@ -91,8 +99,7 @@ class ImageSelectActivity : BaseAppBindActivity<ActivityImageSelectBinding>() {
         }
 
 
-    override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup): ActivityImageSelectBinding =
-        ActivityImageSelectBinding.inflate(inflater, container, false)
+    override fun getLayoutId(): Int = R.layout.activity_image_select
 
     override fun initialize(savedInstanceState: Bundle?) {
         mediaType = (intent.getSerializableExtra(SELECT_MEDIA_TYPE) as? MediaType) ?: MediaType.IMAGE

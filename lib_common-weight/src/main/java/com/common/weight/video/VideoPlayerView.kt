@@ -240,7 +240,9 @@ class VideoPlayerView @JvmOverloads constructor(
                     setState(STATUS_PLAYING)
                 }
                 Player.STATE_ENDED -> {
+                    // 播放完毕：按钮置为暂停（可播放）状态，并展示控制面板便于点击重播
                     viewControl.pause()
+                    post(mShowControllerRunnable)
                     onCompletion?.invoke()
                 }
             }
@@ -294,6 +296,10 @@ class VideoPlayerView @JvmOverloads constructor(
                 if (player.isPlaying) {
                     pause()
                 } else {
+                    // 播放结束后再次点击，从头开始播放
+                    if (player.playbackState == Player.STATE_ENDED) {
+                        player.seekTo(0)
+                    }
                     start(false)
                 }
                 // 先移除之前发送的

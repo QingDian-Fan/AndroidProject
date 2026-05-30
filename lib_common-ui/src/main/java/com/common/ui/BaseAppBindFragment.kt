@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
 import com.common.ui.databinding.FragmentRootLayoutBinding
 import com.common.weight.titlebar.CommonTitleBar
@@ -25,10 +26,11 @@ abstract class BaseAppBindFragment<B : ViewBinding> : BaseFragment() {
         get() = _binding ?: error("binding accessed before onCreateView() or after onDestroyView()")
 
     /**
-     * 子类返回页面对应的 ViewBinding。
-     * 实现示例：`FragmentXxxBinding.inflate(inflater, container, false)`
+     * 子类返回页面对应的布局 id，基类会据此 inflate 并反射完成 ViewBinding 绑定。
+     * 实现示例：`override fun getLayoutId() = R.layout.fragment_xxx`
      */
-    protected abstract fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): B
+    @LayoutRes
+    abstract override fun getLayoutId(): Int
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,7 +38,7 @@ abstract class BaseAppBindFragment<B : ViewBinding> : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         val root = FragmentRootLayoutBinding.inflate(inflater, container, false)
-        val inner = getViewBinding(inflater, root.flRoot)
+        val inner: B = ViewBindingReflect.bind(this, inflater, root.flRoot, getLayoutId())
         root.flRoot.addView(inner.root)
         _rootBinding = root
         _binding = inner

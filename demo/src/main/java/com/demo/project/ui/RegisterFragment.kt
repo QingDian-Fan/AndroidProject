@@ -1,8 +1,6 @@
 package com.demo.project.ui
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigation
 import com.common.ui.BaseAppVMFragment
@@ -16,8 +14,7 @@ class RegisterFragment : BaseAppVMFragment<FragmentRegisterBinding, LoginViewMod
 
     override fun getViewModelClass(): Class<LoginViewModel> = LoginViewModel::class.java
 
-    override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentRegisterBinding =
-        FragmentRegisterBinding.inflate(inflater, container, false)
+    override fun getLayoutId(): Int = R.layout.fragment_register
 
     override fun initialize(savedInstanceState: Bundle?) {
         with(binding) {

@@ -4,35 +4,40 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import com.common.ui.BaseAppBindActivity
 import com.common.utils.StatusBarUtil
 import com.common.weight.video.VideoScaleType
+import com.demo.project.R
 import com.demo.project.databinding.ActivityVideoPlayerBinding
 import com.demo.project.utils.ext.gone
 
 class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
     companion object {
-        fun start(mContext: Context) {
+        const val KEY_VIDEO_URL_STRING="KEY_VIDEO_URL_STRING"
+        @JvmStatic
+        fun start(mContext: Context,urlString: String) {
             val intent = Intent()
             intent.setClass(mContext, VideoPlayerActivity::class.java)
+            intent.putExtra(KEY_VIDEO_URL_STRING,urlString)
             mContext.startActivity(intent)
         }
     }
 
-    override fun getViewBinding(
-        inflater: LayoutInflater,
-        container: ViewGroup
-    ): ActivityVideoPlayerBinding = ActivityVideoPlayerBinding.inflate(inflater, container, false)
+    override fun getLayoutId(): Int = R.layout.activity_video_player
 
     override fun initialize(savedInstanceState: Bundle?) {
         // 强制横屏
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         getTitleBarView()?.visibility = gone
+        var videoUrlString = intent.getStringExtra(KEY_VIDEO_URL_STRING)
         StatusBarUtil.hideStatusBar(this)
         binding.videoView.initData()
-        binding.videoView.setVideoPath("https://media.w3.org/2010/05/sintel/trailer.mp4")
+        videoUrlString?:run {
+            videoUrlString = "https://media.w3.org/2010/05/sintel/trailer.mp4"
+        }
+        videoUrlString?.let {
+            binding.videoView.setVideoPath(it)
+        }
         binding.videoView.setScaleType(VideoScaleType.RATIO_FILL_SIZE)
         binding.videoView.setSpeed(1f)
         binding.videoView.start()

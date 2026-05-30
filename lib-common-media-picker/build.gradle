@@ -54,6 +54,10 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation 'com.github.Baseflow:PhotoView:2.3.0'
 
+    // 视频预览（ExoPlayer / Media3）
+    implementation 'androidx.media3:media3-exoplayer:1.4.1'
+    implementation 'androidx.media3:media3-ui:1.4.1'
+
     // 公共基础模块
     implementation project(":lib_common-ui")
     implementation project(":lib_common-utils")
@@ -61,7 +65,75 @@ dependencies {
     implementation project(":lib_common-weight")
     implementation project(":lib_common-aop")
 
+    // AspectJ 运行时：本模块使用 @CheckPermissions，调用点织入后运行时需要 aspectjrt
+    implementation 'org.aspectj:aspectjrt:1.9.6'
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+//==================================== AspectJ 织入 ====================================
+// 本模块的方法（如 ImageSelectActivity.start()）使用 lib_common-aop 的 @CheckPermissions。
+// 切面定义在 lib_common-aop 中，这里把本模块 Kotlin/Java 调用点织入进去。
+import org.aspectj.bridge.IMessage
+import org.aspectj.bridge.MessageHandler
+import org.aspectj.tools.ajc.Main
+
+def weaveAspectJ = { String sourceDir, String outputDir, String classpath, String bootClasspath ->
+    File inPath = new File(sourceDir)
+    if (!inPath.exists()) {
+        return
+    }
+
+    MessageHandler handler = new MessageHandler(true)
+    String[] args = [
+            "-showWeaveInfo",
+            "-11",
+            "-inpath", sourceDir,
+            "-aspectpath", classpath,
+            "-d", outputDir,
+            "-classpath", classpath,
+            "-bootclasspath", bootClasspath
+    ]
+    new Main().run(args, handler)
+
+    for (IMessage message : handler.getMessages(null, true)) {
+        switch (message.getKind()) {
+            case IMessage.ABORT:
+            case IMessage.ERROR:
+            case IMessage.FAIL:
+                project.logger.error "AspectJ Error: " + message.message, message.thrown
+                break
+            case IMessage.WARNING:
+                project.logger.warn "AspectJ Warning: " + message.message, message.thrown
+                break
+            case IMessage.INFO:
+                project.logger.info "AspectJ Info: " + message.message, message.thrown
+                break
+        }
+    }
+}
+
+android.libraryVariants.all { variant ->
+    JavaCompile javaCompile = variant.javaCompileProvider.get()
+    String kotlinClassesDir = project.buildDir.path + "/tmp/kotlin-classes/" + variant.name
+    String bootClasspath = project.android.bootClasspath.join(File.pathSeparator)
+
+    javaCompile.doLast {
+        // ViewBinding 等 Java 生成类在 JavaCompile 后才完整可见，因此 Kotlin 调用点也放到这里织入。
+        weaveAspectJ(
+                kotlinClassesDir,
+                kotlinClassesDir,
+                javaCompile.classpath.asPath + File.pathSeparator + javaCompile.destinationDir.toString(),
+                bootClasspath
+        )
+
+        weaveAspectJ(
+                javaCompile.destinationDir.toString(),
+                javaCompile.destinationDir.toString(),
+                javaCompile.classpath.asPath,
+                bootClasspath
+        )
+    }
 }
