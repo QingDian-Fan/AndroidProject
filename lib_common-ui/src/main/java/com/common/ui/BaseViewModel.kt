@@ -27,15 +27,6 @@ abstract class BaseViewModel : ViewModel(), DefaultLifecycleObserver, ViewBehavi
     val _backPressEvent = MutableLiveData<Any?>()
     val _finishPageEvent = MutableLiveData<Any?>()
 
-    /**
-     * 获取一个 Repository 实例的懒加载委托。具体实现位于 app 模块（标注 @Repo），
-     * 由编译期生成的 RepoModule.init() 注册到 [RepoRegistry]，此处仅按接口类型取用。
-     *
-     * 用法：`private val repo by repo<DataRepo>()`
-     */
-    protected inline fun <reified T : Any> repo(): Lazy<T> =
-        lazy { RepoRegistry.get(T::class.java) }
-
     protected fun launchOnUI(block: suspend CoroutineScope.() -> Unit): Job {
         return viewModelScope.launch(Dispatchers.Main) { block() }
     }

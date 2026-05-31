@@ -2,10 +2,8 @@ package com.demo.project.repository.remote
 
 import com.common.http.HttpUtils
 import com.common.http.ResponseHolder
-import com.dian.annotation.RemoteRepository
 import com.squareup.moshi.Types
 
-@RemoteRepository(DataRepo::class)
 class DataRepoImpl :DataRepo{
     val map = hashMapOf<String, String>()
 

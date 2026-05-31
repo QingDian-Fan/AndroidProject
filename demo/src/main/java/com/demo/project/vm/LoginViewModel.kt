@@ -3,20 +3,19 @@ package com.demo.project.vm
 import androidx.lifecycle.MutableLiveData
 import com.common.ui.BaseViewModel
 import com.demo.project.repository.remote.DataRepo
+import com.demo.project.repository.remote.DataRepoImpl
 import kotlinx.coroutines.delay
 
 class LoginViewModel : BaseViewModel() {
-    private val repo by repo<DataRepo>()
-  //  protected val localRepo by lazy { DataBaseManager }
     val loginInfo by lazy { MutableLiveData<String>() }
-
+    private val mRepo: DataRepo by lazy { DataRepoImpl() }
     fun doLogin(username: String, password: String) {
         if (username.isBlank() || password.isBlank()) {
             showToast("账号或密码不能为空")
             return
         }
         launchOnUI {
-            repo.doLogin(username, password)
+            mRepo.doLogin(username, password)
                 .onSuccess {
                     //loginInfo.value = it
                 }
