@@ -33,12 +33,10 @@ ext {
     sign_jar_path = "${project.rootDir}/build-tools/apksigner.jar"
     //walle
     walle_jar_path = "${project.rootDir}/build-tools/walle-cli-all.jar"
-    walle_channel_config = "${project.rootDir}/app/channel"
-
-    mac_build_sdk_path = "/Users/dian/Library/Android/sdk/build-tools/30.0.2/"
+    walle_channel_config = "${project.rootDir}/channel"
 
     //keystore
-    keystore_file_path = file(build_key.keystoreReleaseFilepath).absolutePath
+    keystore_file_path = resolveExistingFilePath(build_key.keystoreReleaseFilepath, "demo")
     keystore_alias = build_key.keystoreAlias
     keystore_alias_password = build_key.keystoreAliasPSW
     keystore_password = build_key.keystorePSW
@@ -56,6 +54,52 @@ ext {
  */
 static def getMsgChannel() {
     return "feishu"
+}
+
+/**
+ * 注释：发布脚本运行在根工程，签名配置沿用demo模块的相对路径。
+ */
+def resolveExistingFilePath(String path, String moduleName = null) {
+    if (path == null || path.trim().isEmpty()) {
+        return ""
+    }
+    def candidates = []
+    if (moduleName != null && findProject(":${moduleName}") != null) {
+        candidates.add(project(":${moduleName}").file(path))
+    }
+    candidates.add(file(path))
+    candidates.add(rootProject.file(path))
+    def existingFile = candidates.find { it.exists() }
+    return (existingFile ?: candidates.first()).absolutePath
+}
+
+/**
+ * 注释：查找zipalign，优先使用当前Android SDK里的最高版本build-tools。
+ */
+def resolveZipAlignPath() {
+    if (isWindows()) {
+        def bundledZipAlign = rootProject.file("build-tools/zipalign.exe")
+        return bundledZipAlign.exists() ? bundledZipAlign.absolutePath : rootDir.getPath() + "/legu/zipalign"
+    }
+    def sdkDir = System.getenv("ANDROID_HOME") ?: System.getenv("ANDROID_SDK_ROOT") ?: "${System.properties['user.home']}/Library/Android/sdk"
+    def buildToolsDir = new File(sdkDir, "build-tools")
+    if (buildToolsDir.exists()) {
+        def zipAlign = buildToolsDir.listFiles()
+                ?.findAll { new File(it, "zipalign").exists() }
+                ?.sort { a, b -> b.name <=> a.name }
+                ?.collect { new File(it, "zipalign") }
+                ?.first()
+        if (zipAlign != null) {
+            return zipAlign.absolutePath
+        }
+    }
+    return "zipalign"
+}
+
+def deleteIfExists(File file) {
+    if (file.exists() && !file.delete()) {
+        throw new IOException("delete file failed: ${file.absolutePath}")
+    }
 }
 
 /**
@@ -130,12 +174,31 @@ def reinforce(String inputPath, String outputPath) {
     if (!shield.exists()) {
         throw new RuntimeException("jar not exists!")
     }
-    exec {
+    exec { execSpec ->
+        configureLeguProxyEnv(execSpec)
         if (isWindows()) {
             commandLine "powershell", "java -jar", legu_jar_path, "-sid", legu_app_id, "-skey", legu_app_key, "-uploadPath", inputPath, "-downloadPath", outputPath
         } else {
             commandLine "java", "-Dfile.encoding=utf-8", "-jar", shield.getAbsolutePath(), "-sid", legu_app_id, "-skey", legu_app_key, "-uploadPath", inputPath, "-downloadPath", outputPath
         }
+    }
+}
+
+/**
+ * 注释：乐固SDK读取HTTPS_PROXY时会错误地回读https_proxy。
+ * 这里统一补齐两个变量，避免只有大写环境变量时触发NPE。
+ */
+def configureLeguProxyEnv(execSpec) {
+    def proxy = System.getenv("https_proxy")
+    if (proxy == null || proxy.trim().isEmpty()) {
+        proxy = System.getenv("HTTPS_PROXY")
+    }
+    if (proxy == null || proxy.trim().isEmpty()) {
+        execSpec.environment "https_proxy", ""
+        execSpec.environment "HTTPS_PROXY", ""
+    } else {
+        execSpec.environment "https_proxy", proxy
+        execSpec.environment "HTTPS_PROXY", proxy
     }
 }
 
@@ -151,11 +214,13 @@ def zipAlignApk(File apk) {
     if (!file.exists()) {
         file.mkdirs()
     }
+    def outputApk = new File(file, apkName)
+    deleteIfExists(outputApk)
     exec {
         if (isWindows()) {
-            commandLine "powershell", rootDir.getPath() + "/legu/zipalign", "-v", "-p", "4", apk.getPath(), zipalign_apk_path + "/" + apkName
+            commandLine resolveZipAlignPath(), "-v", "-p", "-f", "4", apk.absolutePath, outputApk.absolutePath
         } else {
-            commandLine "sh", "-c", "${mac_build_sdk_path}zipalign -v -p 4 ${apk.getPath()} ${zipalign_apk_path}/${apkName}"
+            commandLine resolveZipAlignPath(), "-v", "-p", "-f", "4", apk.absolutePath, outputApk.absolutePath
         }
     }
 }
@@ -172,11 +237,15 @@ def signApkV2(File reinforceApk) {
     if (!dir.exists()) {
         dir.mkdirs()
     }
-    exec {
+    def outputApk = new File(dir, apk_name)
+    deleteIfExists(outputApk)
+    exec { execSpec ->
+        execSpec.environment "APK_SIGNER_STORE_PASS", keystore_password ?: ""
+        execSpec.environment "APK_SIGNER_KEY_PASS", keystore_alias_password ?: ""
         if (isWindows()) {
-            commandLine "powershell", "java", "-jar", sign_jar_path, "sign", "--ks", keystore_file_path, "--ks-key-alias", keystore_alias, "--ks-pass", "pass:" + keystore_password, "--key-pass", "pass:" + keystore_alias_password, "--out", signature_apk_path + "/" + apk_name, reinforceApk
+            commandLine "powershell", "java", "-jar", sign_jar_path, "sign", "--ks", keystore_file_path, "--ks-key-alias", keystore_alias, "--ks-pass", "env:APK_SIGNER_STORE_PASS", "--key-pass", "env:APK_SIGNER_KEY_PASS", "--out", outputApk.absolutePath, reinforceApk.absolutePath
         } else {
-            commandLine "java", "-jar", sign_jar_path, "sign", "--ks", keystore_file_path, "--ks-key-alias", keystore_alias, "--ks-pass", "pass:" + keystore_password, "--key-pass", "pass:" + keystore_alias_password, "--out", signature_apk_path + "/" + apk_name, reinforceApk
+            commandLine "java", "-jar", sign_jar_path, "sign", "--ks", keystore_file_path, "--ks-key-alias", keystore_alias, "--ks-pass", "env:APK_SIGNER_STORE_PASS", "--key-pass", "env:APK_SIGNER_KEY_PASS", "--out", outputApk.absolutePath, reinforceApk.absolutePath
         }
     }
 }
@@ -190,7 +259,12 @@ def buildChannelApks(File apk) {
     }
     def file = new File(channel_apk_path)
     if (!file.exists()) {
-        file.mkdir()
+        file.mkdirs()
+    }
+    file.listFiles()?.each { channelApk ->
+        if (channelApk.isFile() && channelApk.name.endsWith(".apk")) {
+            deleteIfExists(channelApk)
+        }
     }
     exec {
         //java -jar walle-cli-all.jar batch -f /Users/Meituan/walle/app/channel  /Users/Meituan/walle/app/build/outputs/apk/app.apk
