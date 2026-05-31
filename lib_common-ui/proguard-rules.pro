@@ -1,21 +1,19 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+-keepattributes Signature,*Annotation*,InnerClasses,EnclosingMethod
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# BaseAppBindActivity/BaseAppBindFragment reflect generated ViewBinding classes.
+-keep class **.databinding.*Binding { *; }
+-keep class * implements androidx.viewbinding.ViewBinding {
+    public static * bind(android.view.View);
+    public static * inflate(android.view.LayoutInflater);
+    public static * inflate(android.view.LayoutInflater, android.view.ViewGroup, boolean);
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Public UI base classes and skin enums can be referenced from host apps.
+-keep class com.common.ui.BaseActivity { *; }
+-keep class com.common.ui.BaseAppBindActivity { *; }
+-keep class com.common.ui.BaseFragment { *; }
+-keep class com.common.ui.BaseAppBindFragment { *; }
+-keep class com.common.ui.ViewBindingReflect { *; }
+-keep class com.common.ui.skin.Skin { *; }
+-keep class com.common.ui.skin.SkinNightMode { *; }
+-keep class com.common.ui.skin.Language { *; }

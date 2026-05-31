@@ -50,9 +50,9 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             zipAlignEnabled true
-            shrinkResources true
+            shrinkResources false
             resValue "string", "app_name", "DemoProject"
             buildConfigField "boolean", "isDebug", "false"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
