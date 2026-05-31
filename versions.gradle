@@ -20,7 +20,7 @@ ext.readLocalOrEnv = { String localKey, String envKey, String defaultValue = "" 
     if (value == null || value.toString().trim().isEmpty()) {
         value = System.getenv(envKey)
     }
-    return value == null ? defaultValue : value.toString()
+    return value == null ? defaultValue : value.toString().trim()
 }
 
 ext.buildConfigString = { String value ->

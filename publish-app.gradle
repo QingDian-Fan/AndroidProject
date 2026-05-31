@@ -2,22 +2,28 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import org.apache.tools.ant.taskdefs.condition.Os
 
-//https://www.pgyer.com/doc/view/api#uploadApp
+//https://www.pgyer.com/doc/view/api_upload
 ext {
     //蒲公英
     pgyer_api_key = readLocalOrEnv("pgyer.apiKey", "PGYER_API_KEY")
     pgyer_user_key = readLocalOrEnv("pgyer.userKey", "PGYER_USER_KEY")
-    pgyer_upload_url = "https://www.pgyer.com/apiv2/app/upload"
+    // 新版上传流程: 获取COS Token -> 上传至COS -> 轮询发布结果
+    pgyer_cos_token_url = "https://www.pgyer.com/apiv2/app/getCOSToken"
+    pgyer_build_info_url = "https://www.pgyer.com/apiv2/app/buildInfo"
+    // 应用平台类型: android/apk、ios/ipa、harmonyos/hap
+    pgyer_build_type = "android"
+    // 安装方式: 1=公开, 2=密码安装, 3=邀请安装
+    pgyer_build_install_type = "1"
 
     //更新文案
     update_description = "测试更新文案publish-app"
 
     // Apk输出路径
-    release_apk_path = "${project.rootDir}/app/build/outputs/apk/release/玩Android/"
-    legu_apk_path = "${project.rootDir}/app/build/outputs/apk/legu"
-    zipalign_apk_path = "${project.rootDir}/app/build/outputs/apk/zipalign"
-    channel_apk_path = "${project.rootDir}/app/build/outputs/apk/channel"
-    signature_apk_path = "${project.rootDir}/app/build/outputs/apk/signature"
+    release_apk_path = "${project.rootDir}/demo/build/outputs/apk/release/"
+    legu_apk_path = "${project.rootDir}/demo/build/outputs/apk/legu"
+    zipalign_apk_path = "${project.rootDir}/demo/build/outputs/apk/zipalign"
+    channel_apk_path = "${project.rootDir}/demo/build/outputs/apk/channel"
+    signature_apk_path = "${project.rootDir}/demo/build/outputs/apk/signature"
 
     //乐固
     legu_app_id = readLocalOrEnv("legu.appId", "LEGU_APP_ID")
@@ -58,7 +64,7 @@ static def getMsgChannel() {
 tasks.register('publishBuildRelease') {
     group 'pgyer'
     cleanFilesPath()
-    dependsOn('app:assembleRelease')
+    dependsOn('demo:assembleRelease')
     doLast {
         def apkDir = new File(release_apk_path)
         if (!apkDir.exists()) {
@@ -215,33 +221,128 @@ def loadGitBranch() {
 }
 
 /**
- * 注释：上传App至蒲公英
+ * 注释：执行curl命令并返回标准输出
  */
-def uploadPgyerApp(File file, String description) {
+def execCurl(List<String> args) {
     def out = new ByteArrayOutputStream()
+    def err = new ByteArrayOutputStream()
+    def command = ["curl"] + args
     exec {
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-            ExecSpec execSpec = commandLine "cmd", "/c", "curl -F _api_key=${pgyer_api_key} -F file=@${file.absolutePath} -F buildUpdateDescription=${description} ${pgyer_upload_url}"
-            execSpec.standardOutput = out
+            commandLine "cmd", "/c", command.collect { quoteCommandArg(it) }.join(" ")
         } else {
-            ExecSpec execSpec = commandLine "bash", "-c", "curl -F _api_key=${pgyer_api_key} -F file=@${file.absolutePath} -F buildUpdateDescription=${description} ${pgyer_upload_url}"
-            execSpec.standardOutput = out
+            commandLine command
         }
+        standardOutput = out
+        errorOutput = err
+        ignoreExitValue = true
     }
-    println("蒲公英上传结果：\n${out.toString()}")
-    def uploadResult = new JsonSlurper().parseText(out.toString())
-    if (uploadResult.code == 0) {
-        if (getMsgChannel()=="wechat") {
-            sendMsgToWeChat(getFileSize(file), uploadResult.data)
-        } else  if (getMsgChannel()=="dingding"){
-            sendMsgToDing(getFileSize(file), uploadResult.data)
-        }else {
-            sendMsgToFeishu(getFileSize(file), uploadResult.data)
-        }
+    if (err.size() > 0) {
+        println(err.toString().trim())
+    }
+    return out.toString("UTF-8")
+}
 
-    } else {
-        println("蒲公英上传失败原因:${uploadResult.message}")
+static def quoteCommandArg(String arg) {
+    if (arg == null) return '""'
+    return '"' + arg.replace('"', '\\"') + '"'
+}
+
+/**
+ * 注释：上传App至蒲公英(新版三步流程)
+ */
+def uploadPgyerApp(File file, String description) {
+    println("*************** 蒲公英上传开始 ***************")
+
+    // 第一步：获取COS上传凭证
+    def tokenJson = execCurl([
+            "-s",
+            "--form-string", "_api_key=${pgyer_api_key}",
+            "--form-string", "buildType=${pgyer_build_type}",
+            "--form-string", "buildInstallType=${pgyer_build_install_type}",
+            "--form-string", "buildUpdateDescription=${description ?: ""}",
+            pgyer_cos_token_url
+    ])
+    println("获取COS Token结果：\n${tokenJson}")
+    def tokenResult = new JsonSlurper().parseText(tokenJson)
+    if (tokenResult.code != 0) {
+        println("蒲公英获取COS Token失败:${tokenResult.message}")
+        return
     }
+    def endpoint = tokenResult.data.endpoint
+    def buildKey = tokenResult.data.key
+    def params = tokenResult.data.params
+
+    // 第二步：上传文件至COS(params里的所有字段都需要带上)
+    def uploadArgs = [
+            "-s",
+            "-w", "\n%{http_code}",
+            "--connect-timeout", "30",
+            "--max-time", "1800"
+    ]
+    params.each { k, v ->
+        uploadArgs.add("--form-string")
+        uploadArgs.add("${k}=${v}")
+    }
+    uploadArgs.add("--form-string")
+    uploadArgs.add("x-cos-meta-file-name=${file.name}")
+    uploadArgs.add("-F")
+    uploadArgs.add("file=@${file.absolutePath}")
+    uploadArgs.add(endpoint as String)
+    def uploadResult = execCurl(uploadArgs)
+    def uploadLines = uploadResult.readLines()
+    def httpCode = uploadLines ? uploadLines.last().trim() : ""
+    def responseBody = uploadLines.size() > 1 ? uploadLines[0..-2].join("\n").trim() : ""
+    if (httpCode != "204" && httpCode != "200") {
+        println("蒲公英文件上传失败, HTTP状态码:${httpCode}")
+        if (responseBody) {
+            println("蒲公英文件上传失败响应：\n${responseBody}")
+        }
+        return
+    }
+    println("文件已上传至COS, 等待蒲公英发布...")
+
+    // 第三步：轮询发布结果(code=0成功, 1247发布中, 1216失败)
+    def data = null
+    for (int i = 0; i < 60; i++) {
+        def infoJson = execCurl([
+                "-s",
+                "-G",
+                "--data-urlencode", "_api_key=${pgyer_api_key}",
+                "--data-urlencode", "buildKey=${buildKey}",
+                pgyer_build_info_url
+        ])
+        def infoResult = new JsonSlurper().parseText(infoJson)
+        if (infoResult.code == 0) {
+            data = infoResult.data
+            break
+        } else if (infoResult.code == 1247) {
+            println("应用正在发布中...第${i + 1}次查询")
+            sleep(3000)
+        } else {
+            println("蒲公英发布失败:${infoResult.message}")
+            return
+        }
+    }
+    if (data == null) {
+        println("蒲公英发布超时, 请稍后到蒲公英后台查看")
+        return
+    }
+    println("蒲公英上传成功：\n${data}")
+
+    // buildInfo接口不返回以下字段, 补齐以兼容通知模板
+    data.buildUpdateDescription = description
+    data.buildUpdated = data.buildCreated
+    data.buildBuildVersion = data.buildVersionNo
+
+    if (getMsgChannel() == "wechat") {
+        sendMsgToWeChat(getFileSize(file), data)
+    } else if (getMsgChannel() == "dingding") {
+        sendMsgToDing(getFileSize(file), data)
+    } else {
+        sendMsgToFeishu(getFileSize(file), data)
+    }
+    println("*************** 蒲公英上传结束 ***************")
 }
 
 /**
@@ -283,7 +384,7 @@ def sendMsgToWeChat(def fileSize, def data) {
     _content.append("\n\n**Android包大小**:\n\n${fileSize}")
     _content.append("\n\n**Android版本号**:\n\n${data.buildVersion}")
     _content.append("\n\n**Git分支**:\n\n${loadGitBranch()}")
-    _content.append("\n\n**下载地址**:\n\n[https://www.pgyer.com/${data.buildKey}](https://www.pgyer.com/${data.buildKey})")
+    _content.append("\n\n**下载地址**:\n\n[https://www.pgyer.com/${data.buildShortcutUrl}](https://www.pgyer.com/${data.buildShortcutUrl})")
     def json = new JsonBuilder()
     json {
         msgtype "markdown"
@@ -328,7 +429,7 @@ def sendMsgToDing(def fileSize, def data) {
     _content.append("\n\n**Android包大小**:\n\n${fileSize}")
     _content.append("\n\n**Android版本号**:\n\n${data.buildVersion}")
     _content.append("\n\n**Git分支**:\n\n${loadGitBranch()}")
-    _content.append("\n\n**下载地址**:\n\nhttps://www.pgyer.com/${data.buildKey}")
+    _content.append("\n\n**下载地址**:\n\nhttps://www.pgyer.com/${data.buildShortcutUrl}")
     _content.append("\n\n" + qrCodeUrl)
     def json = new JsonBuilder()
     json {
@@ -379,7 +480,7 @@ def sendMsgToFeishu(def fileSize, def data) {
     _content.append("\n**Android包大小**:\n${fileSize}")
     _content.append("\n**Android版本号**:\n${data.buildVersion}")
     _content.append("\n**Git分支**:\n${loadGitBranch()}")
-    _content.append("\n**下载地址**:\n[https://www.pgyer.com/${data.buildKey}](https://www.pgyer.com/${data.buildKey})")
+    _content.append("\n**下载地址**:\n[https://www.pgyer.com/${data.buildShortcutUrl}](https://www.pgyer.com/${data.buildShortcutUrl})")
     def qrCodeUrl = "${data.buildQRCodeURL}"
 
     def message = [
