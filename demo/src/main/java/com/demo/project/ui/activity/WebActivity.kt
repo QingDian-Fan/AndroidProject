@@ -27,11 +27,14 @@ class WebActivity : BaseAppBindActivity<ActivityWebBinding>() {
         fun start(
             mContext: Context,
             urlString: String,
-            titleString: String = ResourcesUtil.getString(R.string.app_name)
+            titleString: String? = null
         ) {
             val intent = Intent(mContext, WebActivity::class.java)
                 .putExtra(EXTRA_URL, urlString)
-                .putExtra(EXTRA_TITLE, titleString).apply {
+                .apply {
+                    titleString?.takeIf { it.isNotEmpty() }?.let {
+                        putExtra(EXTRA_TITLE, it)
+                    }
                     if (mContext !is Activity) {
                         flags=FLAG_ACTIVITY_NEW_TASK
                     }
@@ -48,9 +51,7 @@ class WebActivity : BaseAppBindActivity<ActivityWebBinding>() {
         val urlString = resolveInitialUrl()
         val titleString = intent.getStringExtra(EXTRA_TITLE)
 
-        setPageTitle(
-            if (!TextUtils.isEmpty(titleString)) titleString!! else ResourcesUtil.getString(R.string.app_name)
-        )
+        setPageTitle(resolveInitialTitle(titleString))
         setPageRightIcon(R.mipmap.icon_share)
         getTitleBarView()?.setListener { _, action, _ ->
             when (action) {
@@ -83,6 +84,11 @@ class WebActivity : BaseAppBindActivity<ActivityWebBinding>() {
             intent.data?.toString()?.takeIf { it.isNotEmpty() }?.let { return it }
         }
         return intent.getStringExtra(EXTRA_URL)?.takeIf { it.isNotEmpty() } ?: DEFAULT_URL
+    }
+
+    private fun resolveInitialTitle(titleString: String?): String {
+        return titleString?.takeIf { !TextUtils.isEmpty(it) }
+            ?: ResourcesUtil.getString(R.string.app_name)
     }
 
     private fun handleBack() {

@@ -18,6 +18,7 @@ class WebExplorerActivity : BaseAppBindActivity<ActivityWebExplorerBinding>() {
         private const val EXTRA_URL = "urlString"
 
         @JvmStatic
+        @JvmOverloads
         fun start(mContext: Context, urlString: String) {
             val intent = Intent(mContext, WebExplorerActivity::class.java)
                 .putExtra(EXTRA_URL, urlString)

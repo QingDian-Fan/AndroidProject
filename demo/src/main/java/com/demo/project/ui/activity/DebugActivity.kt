@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.util.Log
 import com.common.http.APIConfig.DEBUG_URL_CONFIG
 import com.common.http.APIConfig.getBaseUrl
 import com.common.ui.BaseAppBindActivity
@@ -20,10 +19,13 @@ import com.common.utils.ResourcesUtil
 import com.common.utils.ToastUtil
 import com.common.utils.bus.LiveDataBus
 import com.common.utils.datastore.AppDataStore
+import com.common.utils.ext.showAllowStateLoss
 import com.common.utils.ext.singleClick
 import com.common.weight.titlebar.CommonTitleBar
 import com.demo.project.R
 import com.demo.project.databinding.ActivityDebugBinding
+import com.demo.project.ui.dialog.DebugDialog
+import com.demo.project.ui.dialog.LogFileDialog
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -67,7 +69,7 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
                 onBackPressed()
             } else if (action == CommonTitleBar.ACTION_RIGHT_BUTTON) {
 
-                ToastUtil.showToast(this, "日志功能待接入")
+                LogFileDialog.getDialog().showAllowStateLoss(supportFragmentManager,"")
             }
         }
         val debugUrl: String = ResourcesUtil.getString(R.string.debug_base_url)
@@ -113,7 +115,7 @@ class DebugActivity : BaseAppBindActivity<ActivityDebugBinding>() {
             }
         }
         binding.btnSchema.singleClick {
-            ToastUtil.showToast(this, "Schema 调试待接入")
+            DebugDialog().showAllowStateLoss(supportFragmentManager,"")
         }
 
     }

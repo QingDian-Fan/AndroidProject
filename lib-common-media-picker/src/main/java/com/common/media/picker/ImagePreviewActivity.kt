@@ -253,7 +253,7 @@ class ImagePreviewActivity : BaseAppBindActivity<ActivityImagePreviewBinding>() 
 
     fun openVideoPlayerByReflect(context: Context, url: String) {
         try {
-            val clazz = Class.forName("com.demo.project.ui.VideoPlayerActivity")
+            val clazz = Class.forName("com.demo.project.ui.activity.VideoPlayerActivity")
 
             val method = clazz.getDeclaredMethod(
                 "start",

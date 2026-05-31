@@ -4,6 +4,9 @@ import android.content.Context
 import com.common.http.HttpUtils
 import com.common.scan.wechat.WeChatQRCodeDetector
 import com.common.theme.BaseApplication
+import com.common.utils.ExceptionHandlerUtil
+import com.common.utils.LogFileUtil
+import com.common.utils.LoginHookUtil
 import com.common.utils.Utils
 import com.common.weight.webview.dispatcher.WebCommandRegistry
 import com.demo.project.web.WebUtils
@@ -41,6 +44,10 @@ class ProjectApplication: BaseApplication() {
         OpenCV.initOpenCV()
         WeChatQRCodeDetector.init(this)
         WebUtils.initCommand()
+        LoginHookUtil.HookAms(this)
+
+        ExceptionHandlerUtil.init(this)
+        LogFileUtil.init(this)
     }
 
     private fun init() {
