@@ -1,4 +1,4 @@
-package com.demo.project.ui.view
+package com.common.weight
 
 import android.animation.ValueAnimator
 import android.content.Context

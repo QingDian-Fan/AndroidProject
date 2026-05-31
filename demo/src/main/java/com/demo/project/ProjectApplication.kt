@@ -9,6 +9,7 @@ import com.common.utils.LogFileUtil
 import com.common.utils.LoginHookUtil
 import com.common.utils.Utils
 import com.common.weight.webview.dispatcher.WebCommandRegistry
+import com.dian.generated.RepoModule
 import com.demo.project.web.WebUtils
 import com.demo.project.web.command.CommandOpenActivity
 import com.demo.project.web.command.CommandShowToast
@@ -41,6 +42,8 @@ class ProjectApplication: BaseApplication() {
         init()
         Utils.init(this,BuildConfig.isDebug)
         HttpUtils.getInstance().init()
+        // 注册各 Repository 实现（@Repo 标注，RepoProcessor 编译期生成 RepoModule）
+        RepoModule.init()
         OpenCV.initOpenCV()
         WeChatQRCodeDetector.init(this)
         WebUtils.initCommand()

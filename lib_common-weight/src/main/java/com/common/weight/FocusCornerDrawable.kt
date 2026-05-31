@@ -1,4 +1,4 @@
-package com.demo.project.ui.view
+package com.common.weight
 
 import android.graphics.*
 import android.graphics.drawable.Drawable

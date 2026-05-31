@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <com.demo.project.ui.view.CameraButtonView
+    <com.common.weight.CameraButtonView
         android:id="@+id/captureButton"
         android:layout_width="@dimen/dp_80"
         android:layout_height="@dimen/dp_80"

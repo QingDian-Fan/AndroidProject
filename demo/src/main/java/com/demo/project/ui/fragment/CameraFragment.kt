@@ -38,8 +38,8 @@ import com.common.utils.permissions.LivePermissions
 import com.common.utils.permissions.PermissionResult
 import com.demo.project.R
 import com.demo.project.databinding.FragmentCameraBinding
-import com.demo.project.ui.view.CameraButtonView
-import com.demo.project.ui.view.FocusCornerDrawable
+import com.common.weight.CameraButtonView
+import com.common.weight.FocusCornerDrawable
 import java.io.File
 import java.util.concurrent.TimeUnit
 
