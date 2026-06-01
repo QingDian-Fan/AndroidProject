@@ -2,5 +2,8 @@
     <string name="app_name">lib_common-weight</string>
 
     <string name="titlebar_search_hint">搜索</string>
+    <string name="expand">expand</string>
+    <string name="shrink">shrink</string>
+
 
 </resources>

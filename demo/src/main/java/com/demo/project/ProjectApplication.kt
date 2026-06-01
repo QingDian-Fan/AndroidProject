@@ -39,13 +39,18 @@ class ProjectApplication: BaseApplication() {
     override fun onCreate() {
         super.onCreate()
         init()
+        //初始化Utils库
         Utils.init(this,BuildConfig.isDebug)
+        //初始化网络请求
         HttpUtils.getInstance().init()
+        //初始化opencv 二维码扫描
         OpenCV.initOpenCV()
         WeChatQRCodeDetector.init(this)
+        //初始化wjs交互
         WebUtils.initCommand()
+        //初始化登陆页面
         LoginHookUtil.HookAms(this)
-
+        //初始化日志库
         ExceptionHandlerUtil.init(this)
         LogFileUtil.init(this)
     }
