@@ -94,4 +94,34 @@
         <attr name="sizeRatio" format="string" />
     </declare-styleable>
 
+    <declare-styleable name="CircleImageView">
+        <attr name="civ_border_width" format="dimension" />
+        <attr name="civ_border_color" format="color" />
+        <attr name="civ_border_overlay" format="boolean" />
+        <attr name="civ_fill_color" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="FoldTextView">
+        <attr name="foldText" format="string" />
+        <attr name="unFoldText" format="string" />
+        <attr name="foldLine" format="integer" />
+        <attr name="tailTextColor" format="color" />
+        <attr name="canFoldAgain" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="ContrastView">
+        <attr name="cv_left_color" format="color" />
+        <attr name="cv_right_color" format="color" />
+        <attr name="cv_middle_interval" format="dimension" />
+        <attr name="cv_left_value" format="float" />
+        <attr name="cv_right_value" format="float" />
+        <attr name="cv_radius_arc" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="PanelView">
+
+    </declare-styleable>
+    <declare-styleable name="TrackTextView">
+        <attr name="default_color" format="color" />
+        <attr name="change_color" format="color" />
+    </declare-styleable>
 </resources>

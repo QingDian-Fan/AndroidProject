@@ -16,7 +16,7 @@ ext {
     pgyer_build_install_type = "1"
 
     //更新文案
-    update_description = "测试更新文案publish-app"
+    update_description = "publish-app"
 
     // Apk输出路径
     release_apk_path = "${project.rootDir}/demo/build/outputs/apk/release/"

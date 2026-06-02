@@ -1,4 +1,4 @@
-package com.common.utils.swape;
+package com.common.utils.recyclerview.swape;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;

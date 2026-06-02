@@ -32,7 +32,7 @@ object ResourcesUtil {
         return getResources().getString(id, *params)
     }
 
-
+@JvmStatic
     fun getColor(@ColorRes id: Int): Int {
         return ContextCompat.getColor(Utils.getAppContext(), id)
     }
