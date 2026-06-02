@@ -1,0 +1,72 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.common.utils'
+    compileSdk build_versions.compile_sdk
+
+    defaultConfig {
+        minSdk build_versions.min_sdk
+        targetSdk build_versions.target_sdk
+        versionCode build_versions.sdk_version_code
+        versionName build_versions.sdk_version_name
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'proguard-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // Library 依然可以使用 Proguard
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+}
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.10.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    implementation project(":lib_common-theme")
+
+
+    /*===============================datastore===============================================*/
+    implementation "androidx.datastore:datastore:1.0.0"
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+    implementation "com.google.protobuf:protobuf-javalite:4.33.0"
+    /*===============================datastore===============================================*/
+
+    /*===============================二维码相关===============================================*/
+    implementation 'com.google.zxing:core:3.5.1'
+    /*===============================二维码相关===============================================*/
+
+    /*================================数据解析==============================================*/
+    implementation 'com.squareup.moshi:moshi-kotlin:1.12.0'
+    /*================================数据解析==============================================*/
+
+    /*=============================== walle ===============================================*/
+    implementation 'com.meituan.android.walle:library:1.1.7'
+    /*=============================== walle ===============================================*/
+
+    /*===============================上下拉刷新===============================================*/
+    implementation 'com.scwang.smart:refresh-layout-kernel:2.0.3'
+    implementation 'com.scwang.smart:refresh-header-classics:2.0.3'
+    implementation 'com.scwang.smart:refresh-footer-classics:2.0.3'
+    /*===============================上下拉刷新===============================================*/
+}

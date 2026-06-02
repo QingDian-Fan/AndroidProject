@@ -1,0 +1,122 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.common.aop'
+    compileSdk build_versions.compile_sdk
+
+    defaultConfig {
+        minSdk build_versions.min_sdk
+        targetSdk build_versions.target_sdk
+        versionCode build_versions.sdk_version_code
+        versionName build_versions.sdk_version_name
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'proguard-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // Library 依然可以使用 Proguard
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.10.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    implementation project(":lib_common-utils")
+
+
+    /*==================================AOP相关==============================================*/
+    implementation 'org.aspectj:aspectjrt:1.9.6'
+    /*==================================AOP相关==============================================*/
+}
+
+
+import org.aspectj.bridge.IMessage
+import org.aspectj.bridge.MessageHandler
+import org.aspectj.tools.ajc.Main
+
+def weaveAspectJ = { String sourceDir, String outputDir, String classpath, String bootClasspath ->
+    File inPath = new File(sourceDir)
+    if (!inPath.exists()) {
+        return
+    }
+
+    MessageHandler handler = new MessageHandler(true)
+    String[] args = [
+            "-showWeaveInfo",
+            "-11",
+            "-inpath", sourceDir,
+            "-aspectpath", classpath,
+            "-d", outputDir,
+            "-classpath", classpath,
+            "-bootclasspath", bootClasspath
+    ]
+    new Main().run(args, handler)
+
+    for (IMessage message : handler.getMessages(null, true)) {
+        switch (message.getKind()) {
+            case IMessage.ABORT:
+            case IMessage.ERROR:
+            case IMessage.FAIL:
+                project.logger.error "AspectJ Error: " + message.message, message.thrown
+                break
+            case IMessage.WARNING:
+                project.logger.warn "AspectJ Warning: " + message.message, message.thrown
+                break
+            case IMessage.INFO:
+                project.logger.info "AspectJ Info: " + message.message, message.thrown
+                break
+        }
+    }
+}
+
+android.libraryVariants.all { variant ->
+    JavaCompile javaCompile = variant.javaCompileProvider.get()
+    String variantName = variant.name.capitalize()
+    String kotlinClassesDir = project.buildDir.path + "/tmp/kotlin-classes/" + variant.name
+    String bootClasspath = project.android.bootClasspath.join(File.pathSeparator)
+
+    // 切面本身用 Kotlin 编写，必须在 Kotlin class 生成后织入，
+    // 否则 @Aspect 类不会生成 aspectOf()，使用方调用时会 NoSuchMethodError。
+    tasks.named("compile${variantName}Kotlin").configure { kotlinCompile ->
+        kotlinCompile.doLast {
+            weaveAspectJ(
+                    kotlinClassesDir,
+                    kotlinClassesDir,
+                    javaCompile.classpath.asPath + File.pathSeparator + javaCompile.destinationDir.toString(),
+                    bootClasspath
+            )
+        }
+    }
+
+    javaCompile.doLast {
+        weaveAspectJ(
+                javaCompile.destinationDir.toString(),
+                javaCompile.destinationDir.toString(),
+                javaCompile.classpath.asPath,
+                bootClasspath
+        )
+    }
+}

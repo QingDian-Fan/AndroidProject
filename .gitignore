@@ -1,0 +1,15 @@
+# Default ignored files
+.gradle
+/.gradle
+.idea
+/.idea
+.kotlin
+/.kotlin
+build
+/build
+local.properties
+*.jks
+*.keystore
+*.p12
+*.pem
+

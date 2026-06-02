@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">lib-common-media-picker</string>
+
+    <string name="text_image_select">图片选择</string>
+    <string name="text_video_select">视频选择</string>
+    <string name="text_media_select">选择媒体</string>
+    <string name="text_all_image">所有图片</string>
+    <string name="text_all_video">所有视频</string>
+    <string name="text_all_media">全部</string>
+    <string name="image_select_total">共 %d 张</string>
+    <string name="text_max_select">最多选择 %d 张</string>
+</resources>

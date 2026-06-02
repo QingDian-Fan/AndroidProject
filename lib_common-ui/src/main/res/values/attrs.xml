@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="skinColorMain" format="color|reference" />
+    <attr name="skinColorBackground" format="color|reference" />
+    <attr name="skinColorSurface" format="color|reference" />
+    <attr name="skinColorOnMain" format="color|reference" />
+    <attr name="skinColorTextMain" format="color|reference" />
+    <attr name="skinColorTextSecond" format="color|reference" />
+</resources>

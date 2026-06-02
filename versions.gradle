@@ -1,23 +1,44 @@
-/* application版本控制 */
+/*application版本控制*/
 def build_versions = [:]
-build_versions.min_sdk = 23
-build_versions.target_sdk = 32
-build_versions.compile_sdk = 32
+build_versions.min_sdk = 24
+build_versions.target_sdk = 35
+build_versions.compile_sdk = 35
 build_versions.tool_version = "30.0.2"
-build_versions.version_code = 1
-build_versions.version_name = "1.0.0"  //android版本信息 alpha beta rc release
+build_versions.version_code = 200
+build_versions.version_name = "2.0.0"  //android版本信息 alpha beta rc release
 build_versions.applicationId = "com.dian.demo"
+
+build_versions.sdk_version_code = 100  //android版本信息 alpha beta rc release
+build_versions.sdk_version_name = "1.0.0"  //android版本信息 alpha beta rc release
 ext.build_versions = build_versions
 
-/* 签名文件配置 */
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+
+ext.readLocalOrEnv = { String localKey, String envKey, String defaultValue = "" ->
+    def value = localProperties.getProperty(localKey)
+    if (value == null || value.toString().trim().isEmpty()) {
+        value = System.getenv(envKey)
+    }
+    return value == null ? defaultValue : value.toString().trim()
+}
+
+ext.buildConfigString = { String value ->
+    return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+}
+
+//签名文件配置
 def build_key = [:]
-build_key.keystoreReleaseFilepath = "../keystore/project.keystore"
-build_key.keystoreDebugFilepath = "../keystore/debug.keystore"
-build_key.keystoreAlias = "ProjectKeystore"
-build_key.debugKeystoreAlias = "DebugKeystore"
-build_key.keystoreAliasPSW = "dian3426"
-build_key.keystorePSW = "dian3426"
+build_key.keystoreReleaseFilepath = readLocalOrEnv("signing.release.storeFile", "SIGNING_RELEASE_STORE_FILE", "../keystore/project.keystore")
+build_key.keystoreDebugFilepath = readLocalOrEnv("signing.debug.storeFile", "SIGNING_DEBUG_STORE_FILE", "../keystore/debug.keystore")
+build_key.keystoreAlias = readLocalOrEnv("signing.release.keyAlias", "SIGNING_RELEASE_KEY_ALIAS")
+build_key.debugKeystoreAlias = readLocalOrEnv("signing.debug.keyAlias", "SIGNING_DEBUG_KEY_ALIAS")
+build_key.keystoreAliasPSW = readLocalOrEnv("signing.release.keyPassword", "SIGNING_RELEASE_KEY_PASSWORD")
+build_key.keystorePSW = readLocalOrEnv("signing.release.storePassword", "SIGNING_RELEASE_STORE_PASSWORD")
+build_key.debugKeystoreAliasPSW = readLocalOrEnv("signing.debug.keyPassword", "SIGNING_DEBUG_KEY_PASSWORD")
+build_key.debugKeystorePSW = readLocalOrEnv("signing.debug.storePassword", "SIGNING_DEBUG_STORE_PASSWORD")
 ext.build_key = build_key
-
-
 
