@@ -124,4 +124,11 @@
         <attr name="default_color" format="color" />
         <attr name="change_color" format="color" />
     </declare-styleable>
+
+    <declare-styleable name="CheckableGroup">
+        <attr name="checkMode" format="enum">
+            <enum name="single" value="0" />
+            <enum name="multiple" value="1" />
+        </attr>
+    </declare-styleable>
 </resources>
