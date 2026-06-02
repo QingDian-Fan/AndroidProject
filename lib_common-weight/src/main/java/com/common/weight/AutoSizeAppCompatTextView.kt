@@ -8,7 +8,7 @@ import android.text.TextPaint
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextUtils
-import com.dian.demo.R
+import com.common.weight.R
 import kotlin.math.max
 import kotlin.math.min
 

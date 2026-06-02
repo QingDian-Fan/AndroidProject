@@ -15,6 +15,7 @@
     <color name="text_color">#FF0A0E14</color>
     <color name="text_sub_color">#FF6C6C6C</color>
     <color name="text_light_color">#FF888888</color>
+    <color name="text_blue_color">#FF40A9FF</color>
     <color name="text_annotation">#FFC5C5C5</color>
     <color name="line_color">#FFF2F4FA</color>
 </resources>

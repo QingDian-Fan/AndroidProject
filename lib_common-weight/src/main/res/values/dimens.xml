@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- VideoPlayButton 在代码中通过 R.dimen 引用，库模块的 R 仅含自身资源，故在此本地定义 -->
+    <!-- VideoPlayButton / SettingBar 在代码中通过 R.dimen 引用，库模块的 R 仅含自身资源，故在此本地定义 -->
     <dimen name="dp_4">4dp</dimen>
+    <dimen name="dp_5">5dp</dimen>
+    <dimen name="dp_10">10dp</dimen>
+    <dimen name="dp_12">12dp</dimen>
+    <dimen name="dp_14">14dp</dimen>
+    <dimen name="dp_15">15dp</dimen>
     <dimen name="dp_60">60dp</dimen>
 </resources>

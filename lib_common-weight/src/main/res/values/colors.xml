@@ -6,6 +6,10 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
+    <!-- SettingBar 按压态/文字颜色，库模块 R 仅含自身资源，故在此本地定义（黑色不同透明度） -->
+    <color name="black5">#0D000000</color>
+    <color name="black60">#99000000</color>
+    <color name="black80">#CC000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="colorWhite">#ffffff</color>
     <color name="colorRed">#D93D57</color>
