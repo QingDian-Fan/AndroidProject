@@ -19,6 +19,16 @@
         android:background="@drawable/bg_btn_generate"
         android:onClick="clickView"
         android:paddingVertical="@dimen/dp_10"
+        android:text="图片选择"
+        android:textColor="@color/colorWhite" />
+    <Button
+        android:id="@+id/btn_video_activity"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_46"
+        android:layout_marginTop="@dimen/dp_30"
+        android:background="@drawable/bg_btn_generate"
+        android:onClick="clickView"
+        android:paddingVertical="@dimen/dp_10"
         android:text="视频播放"
         android:textColor="@color/colorWhite" />
 

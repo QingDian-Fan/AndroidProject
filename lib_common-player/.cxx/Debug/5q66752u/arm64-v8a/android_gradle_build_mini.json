@@ -1,0 +1,35 @@
+{
+  "buildFiles": [
+    "/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_ffmpeg-player/src/main/cpp/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/dian/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_ffmpeg-player/.cxx/Debug/5q66752u/arm64-v8a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/dian/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_ffmpeg-player/.cxx/Debug/5q66752u/arm64-v8a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "ffmpeg_player::@6890427a1f51a3e7e1df": {
+      "artifactName": "ffmpeg_player",
+      "abi": "arm64-v8a",
+      "output": "/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_ffmpeg-player/build/intermediates/cxx/Debug/5q66752u/obj/arm64-v8a/libffmpeg_player.so",
+      "runtimeFiles": [
+        "/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_ffmpeg-player/src/main/jniLibs/arm64-v8a/libavdevice.so",
+        "/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_ffmpeg-player/src/main/jniLibs/arm64-v8a/libavfilter.so",
+        "/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_ffmpeg-player/src/main/jniLibs/arm64-v8a/libavformat.so",
+        "/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_ffmpeg-player/src/main/jniLibs/arm64-v8a/libavcodec.so",
+        "/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_ffmpeg-player/src/main/jniLibs/arm64-v8a/libswresample.so",
+        "/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_ffmpeg-player/src/main/jniLibs/arm64-v8a/libswscale.so",
+        "/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_ffmpeg-player/src/main/jniLibs/arm64-v8a/libavutil.so"
+      ]
+    }
+  }
+}

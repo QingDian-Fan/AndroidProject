@@ -20,13 +20,6 @@ import androidx.appcompat.widget.AppCompatSeekBar
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.PlaybackParameters
-import androidx.media3.common.Player
-import androidx.media3.common.VideoSize
-import androidx.media3.exoplayer.ExoPlayer
 import com.common.weight.R
 import java.util.*
 import kotlin.math.abs
@@ -45,7 +38,22 @@ class VideoPlayerView @JvmOverloads constructor(
 ) : FrameLayout(context, attrs, defStyleAttr, defStyleRes), OnClickListener,
     SeekBar.OnSeekBarChangeListener {
 
-    private val player by lazy { ExoPlayer.Builder(context).build() }
+    private var engineFactory: VideoPlayerEngineFactory = defaultEngineFactory
+
+    private var playerEngine: VideoPlayerEngine? = null
+
+    private var videoPath: String? = null
+
+    private var playbackSpeed: Float = 1f
+
+    private val player: VideoPlayerEngine
+        get() = ensurePlayer()
+
+    companion object {
+
+        @JvmStatic
+        var defaultEngineFactory: VideoPlayerEngineFactory = ExoVideoPlayerEngineFactory
+    }
 
 
     private val surfaceView: SurfaceView by lazy { findViewById(R.id.surface_view) }
@@ -134,10 +142,59 @@ class VideoPlayerView @JvmOverloads constructor(
         audioManager = ContextCompat.getSystemService(context, AudioManager::class.java)!!
     }
 
-    //ExoPlayer 部分
+    // 播放引擎部分
     fun initData() {
-        player.setVideoSurfaceView(surfaceView)
-        player.addListener(playerListener)
+        ensurePlayer()
+    }
+
+    fun setPlayerEngineFactory(factory: VideoPlayerEngineFactory): VideoPlayerView {
+        engineFactory = factory
+        if (playerEngine != null) {
+            replacePlayer(factory.create(context))
+        }
+        return this
+    }
+
+    fun setPlayerEngine(engine: VideoPlayerEngine): VideoPlayerView {
+        engineFactory = VideoPlayerEngineFactory { engine }
+        replacePlayer(engine)
+        return this
+    }
+
+    private fun ensurePlayer(): VideoPlayerEngine {
+        val currentEngine = playerEngine
+        if (currentEngine != null) {
+            return currentEngine
+        }
+        return engineFactory.create(context).also { engine ->
+            playerEngine = engine
+            bindPlayer(engine)
+            applyPlayerConfig(engine)
+        }
+    }
+
+    private fun replacePlayer(newEngine: VideoPlayerEngine) {
+        val oldEngine = playerEngine
+        if (oldEngine === newEngine) {
+            bindPlayer(newEngine)
+            return
+        }
+        oldEngine?.setListener(null)
+        oldEngine?.release()
+        playerEngine = newEngine
+        isPrepare = false
+        bindPlayer(newEngine)
+        applyPlayerConfig(newEngine)
+    }
+
+    private fun bindPlayer(engine: VideoPlayerEngine) {
+        engine.attachSurface(surfaceView)
+        engine.setListener(playerListener)
+    }
+
+    private fun applyPlayerConfig(engine: VideoPlayerEngine) {
+        engine.setPlaybackSpeed(playbackSpeed)
+        videoPath?.let(engine::setDataSource)
     }
 
     fun setTitle(title: String) {
@@ -164,11 +221,14 @@ class VideoPlayerView @JvmOverloads constructor(
     }
 
     fun setSpeed(speed: Float) {
-        player.playbackParameters = PlaybackParameters(speed)
+        playbackSpeed = speed
+        player.setPlaybackSpeed(speed)
     }
 
     fun setVideoPath(urlString: String) {
-        player.setMediaItem(MediaItem.fromUri(urlString))
+        videoPath = urlString
+        isPrepare = false
+        player.setDataSource(urlString)
     }
 
     fun start(isStart: Boolean = true) {
@@ -214,8 +274,9 @@ class VideoPlayerView @JvmOverloads constructor(
     fun isPrepare() = isPrepare
 
     fun destroy() {
-        player.removeListener(playerListener)
-        player.release()
+        playerEngine?.setListener(null)
+        playerEngine?.release()
+        playerEngine = null
         removeCallbacks(mRefreshRunnable)
         removeCallbacks(mHideControllerRunnable)
         removeCallbacks(mShowControllerRunnable)
@@ -224,37 +285,35 @@ class VideoPlayerView @JvmOverloads constructor(
     }
 
 
-    /** ExoPlayer 时长可能返回 [C.TIME_UNSET]，此处统一兜底为 0 */
-    private fun safeDuration(): Long =
-        if (player.duration == C.TIME_UNSET) 0L else player.duration
+    private fun safeDuration(): Long = player.duration
 
     private var isPrepare: Boolean = false
 
-    private val playerListener = object : Player.Listener {
-        override fun onPlaybackStateChanged(playbackState: Int) {
-            when (playbackState) {
-                Player.STATE_BUFFERING -> setState(STATUS_LOADING)
-                Player.STATE_READY -> {
-                    if (!isPrepare) {
-                        onPrepared()
-                    }
-                    setState(STATUS_PLAYING)
-                }
-                Player.STATE_ENDED -> {
-                    // 播放完毕：按钮置为暂停（可播放）状态，并展示控制面板便于点击重播
-                    viewControl.pause()
-                    post(mShowControllerRunnable)
-                    onCompletion?.invoke()
-                }
-            }
+    private val playerListener = object : VideoPlayerEngine.Listener {
+        override fun onBuffering() {
+            setState(STATUS_LOADING)
         }
 
-        override fun onPlayerError(error: PlaybackException) {
+        override fun onReady() {
+            if (!isPrepare) {
+                onPrepared()
+            }
+            setState(STATUS_PLAYING)
+        }
+
+        override fun onEnded() {
+            // 播放完毕：按钮置为暂停（可播放）状态，并展示控制面板便于点击重播
+            viewControl.pause()
+            post(mShowControllerRunnable)
+            onCompletion?.invoke()
+        }
+
+        override fun onError(error: Throwable) {
             onError?.invoke(error)
         }
 
-        override fun onVideoSizeChanged(videoSize: VideoSize) {
-            applyScaleType(videoSize.width, videoSize.height)
+        override fun onVideoSizeChanged(width: Int, height: Int) {
+            applyScaleType(width, height)
         }
     }
 
@@ -298,7 +357,7 @@ class VideoPlayerView @JvmOverloads constructor(
                     pause()
                 } else {
                     // 播放结束后再次点击，从头开始播放
-                    if (player.playbackState == Player.STATE_ENDED) {
+                    if (player.isEnded) {
                         player.seekTo(0)
                     }
                     start(false)
@@ -629,7 +688,7 @@ class VideoPlayerView @JvmOverloads constructor(
     /** 播放完成回调 */
     var onCompletion: (() -> Unit)? = null
 
-    var onError: ((PlaybackException) -> Unit)? = null
+    var onError: ((Throwable) -> Unit)? = null
 
     /**
      * 时间转换

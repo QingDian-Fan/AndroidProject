@@ -1,0 +1,17 @@
+# ninja log v5
+0	743	1780772028917408184	CMakeFiles/ffmpeg_player.dir/ffmpeg_player_jni.cpp.o	de4be9b043ffd6c1
+745	884	1780772029063702688	/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_common-player/build/intermediates/cxx/Debug/104b3l15/obj/arm64-v8a/libffmpeg_player.so	caa6fe4c0ac078d6
+0	6	0	clean	16e404f6f8b61adf
+4	4390	1780772539206917487	CMakeFiles/ffmpeg_player.dir/ffmpeg_player_jni.cpp.o	de4be9b043ffd6c1
+4391	4964	1780772539782898949	/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_common-player/build/intermediates/cxx/Debug/104b3l15/obj/arm64-v8a/libffmpeg_player.so	caa6fe4c0ac078d6
+0	6	0	clean	16e404f6f8b61adf
+4	3030	1780773058695048552	CMakeFiles/ffmpeg_player.dir/ffmpeg_player_jni.cpp.o	de4be9b043ffd6c1
+3031	3468	1780773059151204575	/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_common-player/build/intermediates/cxx/Debug/104b3l15/obj/arm64-v8a/libffmpeg_player.so	caa6fe4c0ac078d6
+0	6	0	clean	16e404f6f8b61adf
+4	2399	1780773528785868770	CMakeFiles/ffmpeg_player.dir/ffmpeg_player_jni.cpp.o	de4be9b043ffd6c1
+2399	2791	1780773529183861572	/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_common-player/build/intermediates/cxx/Debug/104b3l15/obj/arm64-v8a/libffmpeg_player.so	caa6fe4c0ac078d6
+3	1123	1780773831318304768	CMakeFiles/ffmpeg_player.dir/ffmpeg_player_jni.cpp.o	de4be9b043ffd6c1
+1123	1253	1780773831455863416	/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_common-player/build/intermediates/cxx/Debug/104b3l15/obj/arm64-v8a/libffmpeg_player.so	caa6fe4c0ac078d6
+0	10	0	clean	16e404f6f8b61adf
+3	2101	1780773978050132126	CMakeFiles/ffmpeg_player.dir/ffmpeg_player_jni.cpp.o	de4be9b043ffd6c1
+2101	2633	1780773978582257661	/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject/lib_common-player/build/intermediates/cxx/Debug/104b3l15/obj/arm64-v8a/libffmpeg_player.so	caa6fe4c0ac078d6

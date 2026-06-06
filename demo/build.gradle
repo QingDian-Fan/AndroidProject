@@ -125,6 +125,7 @@ dependencies {
     implementation project(':lib_common-share')
     implementation project(':lib-common-media-picker')
     implementation project(':lib_common-scan')
+    implementation project(':lib_common-player')
 
     compileOnly project(':lib_annotation')
     kapt project(':lib_processor')

@@ -55,6 +55,9 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
         binding.btnDebugActivity.setOnClickListener {
             DebugActivity.start(this@HomeActivity)
         }
+        binding.btnVideoActivity.setOnClickListener {
+            VideoPlayerActivity.start(this@HomeActivity)
+        }
         binding.btnSelectActivity.setOnClickListener {
             ImageSelectUtil()
                 .setActivity(this@HomeActivity)

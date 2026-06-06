@@ -11,6 +11,7 @@ import com.common.utils.StatusBarUtil
 import com.common.weight.video.VideoScaleType
 import com.demo.project.R
 import com.demo.project.databinding.ActivityVideoPlayerBinding
+import com.demo.project.player.CommonPlayerVideoEngine
 import com.demo.project.utils.ext.gone
 
 class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
@@ -23,7 +24,7 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
         )
 
         @JvmStatic
-        fun start(mContext: Context,urlString: String) {
+        fun start(mContext: Context,urlString: String?=null) {
             val intent = Intent()
             intent.setClass(mContext, VideoPlayerActivity::class.java).apply {
                 if (mContext !is Activity) {
@@ -52,6 +53,9 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
             ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
 
+        if (!isAudio) {
+            binding.videoView.setPlayerEngineFactory { context -> CommonPlayerVideoEngine(context.applicationContext) }
+        }
         binding.videoView.initData()
         val playUrl = mediaUri ?: "https://media.w3.org/2010/05/sintel/trailer.mp4"
         binding.videoView.setVideoPath(playUrl)

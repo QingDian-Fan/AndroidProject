@@ -1,12 +1,15 @@
 # 视频播放器组件（video）
 
-基于 [ExoPlayer（AndroidX Media3）](https://developer.android.com/media/media3/exoplayer) 封装的一套自定义视频播放控件，提供完整的播放控制面板、手势交互（亮度 / 音量 / 进度）以及一个手绘的播放 / 暂停按钮动画。
+一套可注入播放引擎的自定义视频播放控件，默认基于 [ExoPlayer（AndroidX Media3）](https://developer.android.com/media/media3/exoplayer) 实现，提供完整的播放控制面板、手势交互（亮度 / 音量 / 进度）以及一个手绘的播放 / 暂停按钮动画。
 
 ## 目录结构
 
 | 文件 | 说明 |
 | --- | --- |
-| `VideoPlayerView.kt` | 播放器主控件，封装 ExoPlayer，承载 UI、手势、控制面板等全部逻辑 |
+| `VideoPlayerView.kt` | 播放器主控件，承载 UI、手势、控制面板等逻辑 |
+| `VideoPlayerEngine.kt` | 播放引擎抽象接口 |
+| `VideoPlayerEngineFactory.kt` | 播放引擎工厂接口 |
+| `ExoVideoPlayerEngine.kt` | 默认 ExoPlayer 播放引擎实现 |
 | `VideoPlayButton.kt` | 自定义播放 / 暂停按钮，使用 `Path` + `PathMeasure` 绘制可变形的过渡动画 |
 | `VideoScaleType.kt` | 视频画面缩放模式枚举 |
 
@@ -14,11 +17,12 @@
 
 ## VideoPlayerView
 
-继承自 `FrameLayout`，内部通过 `view_video_player` 布局填充 `SurfaceView` 及各控制控件，ExoPlayer 直接渲染到该 `SurfaceView`。
+继承自 `FrameLayout`，内部通过 `view_video_player` 布局填充 `SurfaceView` 及各控制控件，播放引擎渲染到该 `SurfaceView`。
 
 ### 主要特性
 
-- 基于 `ExoPlayer` 的播放、暂停、续播、进度跳转
+- 默认基于 `ExoPlayer` 的播放、暂停、续播、进度跳转
+- 支持通过 `VideoPlayerEngineFactory` 或 `VideoPlayerEngine` 注入自定义播放引擎
 - 顶部 / 底部控制面板的显示与隐藏动画（平移 + 透明度）
 - 锁屏功能（锁定后隐藏控制面板、屏蔽手势）
 - 手势交互：
@@ -38,6 +42,8 @@
 | `setScaleType(scaleType: VideoScaleType)` | 设置画面缩放模式 |
 | `setSpeed(speed: Float)` | 设置播放倍速 |
 | `setWindow(window: Window)` | 设置宿主窗口，用于亮度调节（默认自动从宿主 Activity 解析，通常无需手动调用） |
+| `setPlayerEngineFactory(factory: VideoPlayerEngineFactory)` | 设置播放引擎工厂，建议在 `initData()` / `setVideoPath()` 前调用 |
+| `setPlayerEngine(engine: VideoPlayerEngine)` | 直接注入播放引擎实例，建议在 `initData()` / `setVideoPath()` 前调用 |
 | `start(isStart: Boolean = true)` | 开始播放。`true` 表示首次加载并 `prepare()`，`false` 表示从暂停状态续播 |
 | `pause()` | 暂停播放 |
 | `resume()` | 续播（等价于 `start(false)`） |
@@ -51,7 +57,7 @@
 | --- | --- |
 | `onActionBack: (() -> Unit)?` | 点击返回按钮 |
 | `onCompletion: (() -> Unit)?` | 播放完成 |
-| `onError: ((PlaybackException) -> Unit)?` | 播放出错，回调 ExoPlayer 的 `PlaybackException` |
+| `onError: ((Throwable) -> Unit)?` | 播放出错 |
 
 ### 生命周期约定
 
@@ -81,7 +87,7 @@ override fun onDestroy() {
 布局中引入：
 
 ```xml
-<com.dian.demo.ui.view.video.VideoPlayerView
+<com.common.weight.video.VideoPlayerView
     android:id="@+id/video_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
@@ -99,7 +105,16 @@ videoView.start()
 videoView.onActionBack = { finish() }
 ```
 
-> 完整示例可参考 `com.dian.demo.ui.activity.VideoPlayerActivity`。
+> 完整示例可参考 `com.demo.project.ui.activity.VideoPlayerActivity`。
+
+注入自定义播放引擎：
+
+```kotlin
+videoView.setPlayerEngineFactory { context ->
+    CustomVideoPlayerEngine(context)
+}
+videoView.initData()
+```
 
 ---
 
