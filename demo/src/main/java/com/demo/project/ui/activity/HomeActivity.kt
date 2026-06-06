@@ -19,6 +19,7 @@ import com.common.utils.ToastUtil
 import com.demo.project.constants.ANDROID_ASSET_URI
 import com.demo.project.R
 import com.demo.project.databinding.ActivityMainBinding
+import com.demo.project.player.audio.AudioEngineType
 import com.demo.project.vm.MainViewModel
 
 class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
@@ -57,6 +58,9 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
         }
         binding.btnVideoActivity.setOnClickListener {
             VideoPlayerActivity.start(this@HomeActivity)
+        }
+        binding.btnAudioActivity.setOnClickListener {
+            AudioPlayerActivity.start(this@HomeActivity, engineType =  AudioEngineType.FFMPEG)
         }
         binding.btnSelectActivity.setOnClickListener {
             ImageSelectUtil()

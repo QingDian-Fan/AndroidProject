@@ -8,4 +8,13 @@
     <string name="text_ping_test">PING TEST</string>
     <string name="text_schema">SCHEMA</string>
     <string name="debug_page_title">调试页面</string>
+
+    <!-- 音频播放页 -->
+    <string name="audio_default_title">未知音频</string>
+    <string name="audio_state_preparing">准备中…</string>
+    <string name="audio_state_buffering">缓冲中…</string>
+    <string name="audio_state_playing">正在播放</string>
+    <string name="audio_state_paused">已暂停</string>
+    <string name="audio_state_completed">播放完成</string>
+    <string name="audio_state_error">播放出错：%1$s</string>
 </resources>

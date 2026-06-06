@@ -4,4 +4,14 @@
     <color name="white">#FFFFFFFF</color>
     <color name="text_blue_color">#FF40A9FF</color>
     <color name="colorPink">#FFFF6680</color>
+
+    <!-- 音频播放页 -->
+    <color name="audio_bg_top">#FFEDF1FB</color>
+    <color name="audio_bg_bottom">#FFFFFFFF</color>
+    <color name="audio_accent">#FF4A6CF7</color>
+    <color name="audio_cover_top">#FF6F8BF5</color>
+    <color name="audio_cover_bottom">#FF4A6CF7</color>
+    <color name="audio_text_primary">#FF1A1D26</color>
+    <color name="audio_text_secondary">#FF8A8F9C</color>
+    <color name="audio_track_bg">#FFE3E7F0</color>
 </resources>

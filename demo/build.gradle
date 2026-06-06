@@ -127,6 +127,11 @@ dependencies {
     implementation project(':lib_common-scan')
     implementation project(':lib_common-player')
 
+    /*================================音频播放（ExoPlayer/Media3）============================*/
+    implementation 'androidx.media3:media3-exoplayer:1.4.1'
+    implementation 'androidx.media3:media3-common:1.4.1'
+    /*================================音频播放（ExoPlayer/Media3）============================*/
+
     compileOnly project(':lib_annotation')
     kapt project(':lib_processor')
 
