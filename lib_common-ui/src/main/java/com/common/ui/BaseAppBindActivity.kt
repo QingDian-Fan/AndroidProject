@@ -23,6 +23,12 @@ abstract class BaseAppBindActivity<B : ViewBinding> : BaseActivity() {
     protected val binding: B
         get() = _binding ?: error("binding accessed before initContentView() or after onDestroy()")
 
+    protected val bindingOrNull: B?
+        get() = _binding
+
+    protected inline fun withBinding(block: B.() -> Unit) {
+        bindingOrNull?.block()
+    }
     /**
      * 子类返回页面对应的布局 id，基类会据此 inflate 并反射完成 ViewBinding 绑定。
      * 实现示例：`override fun getLayoutId() = R.layout.activity_xxx`
