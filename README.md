@@ -11,14 +11,14 @@ AndroidProject 是一个多模块 Android 示例项目，以 `demo` 工程演示
 | `lib_processor` | Java Library | 登录注解处理器，基于 AutoService 和 JavaPoet 生成登录 Hook 辅助代码。 |
 | `lib_common-theme` | Android Library | 全局 Application 基类和主题基础能力。 |
 | `lib_common-utils` | Android Library | 通用工具集合（Kotlin），包含权限、缓存、Toast、DataStore、设备/签名、键盘、日志、状态栏、刷新、富文本等工具。 |
-| `lib_common-weight` | Android Library | 自定义控件集合，目前主要沉淀标题栏、状态栏和单选组等相关控件。 |
+| `lib_common-weight` | Android Library | 自定义控件集合，沉淀标题栏、单选组、地址/日期选择、WebView 容器，以及一套可注入播放引擎、带手势控制的视频播放控件 `VideoPlayerView`。 |
 | `lib_common-ui` | Android Library | Activity/Fragment/ViewModel 基类、ViewBinding 页面容器、页面状态和换肤基础封装。 |
 | `lib_common-http` | Android Library | Retrofit/OkHttp 网络层、Cookie、缓存拦截器、下载、Room、Moshi/Gson 解析等。 |
 | `lib_common-aop` | Android Library | AspectJ 切面能力，包含防重复点击、网络检查、权限检查等注解和切面。 |
 | `lib_common-share` | Android Library | QQ、微信、微博和自定义渠道分享能力封装。 |
 | `lib-common-media-picker` | Android Library | 图片/相册选择能力，包含相册浏览、图片预览与多选等。 |
 | `lib_common-scan` | Android Library | 二维码扫描能力，基于相机预览与微信 QRCode/OpenCV 实现。 |
-| `lib_common-player` | Android Library | 基于 FFmpeg + AudioTrack/Surface 的音视频播放内核（C++ JNI 实现），对外提供 `FfmpegAudioPlayer`/`FfmpegVideoPlayer`。 |
+| `lib_common-player` | Android Library | 基于 FFmpeg + AudioTrack/Surface 的音视频播放内核（C++ JNI 实现），对外提供 `FfmpegAudioPlayer`（音频）/`FfmpegVideoPlayer`（视频，渲染到 `Surface`）。 |
 
 ## 构建环境
 
@@ -37,7 +37,7 @@ JAVA_HOME=/Users/dian/Library/Java/JavaVirtualMachines/corretto-17.0.16/Contents
 
 ## 本地配置
 
-敏感配置通过 `local.properties` 或环境变量读取。可参考 `local.properties.example` 添加签名、蒲公英、乐固、通知 webhook 和演示登录账号。
+敏感配置通过 `local.properties` 或环境变量读取（见 `versions.gradle` 中的 `readLocalOrEnv`），用于配置签名、蒲公英、乐固、通知 webhook 和演示登录账号等。`local.properties` 不纳入版本控制。
 
 示例：
 
@@ -109,6 +109,26 @@ AudioPlayerEngines.defaultType = AudioEngineType.FFMPEG
 ```
 
 新增播放内核：实现 `AudioPlayerEngine` → 在 `AudioEngineType` 增加类型 → 通过 `AudioPlayerEngines.register()` 注册，UI 层无需改动。
+
+视频侧设计：
+
+- `VideoPlayerView`（`lib_common-weight`）：自定义视频播放控件，内置播放/暂停、进度、缓冲、画面缩放、锁屏，以及亮度/音量/快进快退手势交互。
+- `VideoPlayerEngine` / `VideoPlayerEngineFactory`：播放引擎抽象，控件通过 `setPlayerEngineFactory()` / `setPlayerEngine()` 注入实现，UI 与内核解耦。
+- `ExoVideoPlayerEngine`：默认实现，基于 Media3 ExoPlayer。
+- `CommonPlayerVideoEngine`（`demo`）：基于 `lib_common-player` 的 FFmpeg 内核实现（音视频同步 + 音频焦点处理）。
+
+```kotlin
+// 默认 ExoPlayer
+binding.videoView.initData()
+binding.videoView.setVideoPath(url)
+
+// 切换到 FFmpeg 内核（在 initData()/setVideoPath() 前注入）
+binding.videoView.setPlayerEngineFactory { context ->
+    CommonPlayerVideoEngine(context.applicationContext)
+}
+```
+
+`demo` 的 `VideoPlayerActivity` 同时承接外部 `ACTION_VIEW` 调起与内部 URL 传入，并按媒体类型自动决定横竖屏（音频不强制横屏、视频强制横屏）。
 
 > 说明：FFmpeg 内核依赖 `lib_common-player` 的 native 库，`abiFilters` 当前为 `arm64-v8a` / `armeabi-v7a`，需在对应 ABI 的真机或模拟器上运行；ExoPlayer 内核需 `androidx.media3:media3-exoplayer`。
 
