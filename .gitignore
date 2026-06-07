@@ -1,15 +1,37 @@
-# Default ignored files
-.gradle
-/.gradle
-.idea
-/.idea
-.kotlin
-/.kotlin
-build
-/build
+# macOS
+.DS_Store
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.navigation/
+
+# Gradle / Kotlin / Android build output
+.gradle/
+.kotlin/
+build/
+out/
 local.properties
+
+# Android native build output
+.cxx/
+.externalNativeBuild/
+.ndkBuild/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+
+# Packaged artifacts
+*.apk
+*.aab
+*.ap_
+
+# Logs
+*.log
+
+# Signing / private keys
 *.jks
 *.keystore
 *.p12
 *.pem
-
