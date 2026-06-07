@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import android.telephony.TelephonyManager
-import com.common.theme.BaseApplication
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.NetworkInterface

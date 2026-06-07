@@ -1,8 +1,5 @@
 package com.common.http.interceptor
 
-
-
-import com.common.theme.BaseApplication
 import com.common.utils.NetWorkUtil
 import com.common.utils.Utils
 import okhttp3.CacheControl

@@ -3,8 +3,6 @@ package com.common.utils
 import android.app.Application
 import android.content.Context
 import android.os.Build
-import android.text.TextUtils
-import com.common.theme.BaseApplication
 import com.meituan.android.walle.WalleChannelReader
 
 object Utils {

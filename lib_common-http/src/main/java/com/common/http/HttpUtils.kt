@@ -9,7 +9,6 @@ import com.common.http.interceptor.NetCacheInterceptor
 import com.common.http.interceptor.OfflineCacheInterceptor
 import com.common.http.interceptor.ParamsInterceptor
 import com.common.http.interceptor.curl.CurlLogInterceptor
-import com.common.theme.BaseApplication
 import com.common.utils.LogUtil
 import com.common.utils.Utils
 

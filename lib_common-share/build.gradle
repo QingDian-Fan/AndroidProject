@@ -55,5 +55,4 @@ dependencies {
     /*================================图片加载==============================================*/
 
     implementation project(":lib_common-utils")
-    implementation project(":lib_common-theme")
 }

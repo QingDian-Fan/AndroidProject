@@ -50,8 +50,9 @@ dependencies {
     implementation project(":lib_common-utils")
     implementation project(":lib_common-theme")
     api project(":lib_common-weight")
-    implementation project(":lib_common-aop")
-    implementation 'org.aspectj:aspectjrt:1.9.6'
+    // UI 基类可被 AOP 织入，但不向宿主强传递 AOP；需要 AOP 的宿主显式依赖 lib_common-aop。
+    compileOnly project(":lib_common-aop")
+    compileOnly 'org.aspectj:aspectjrt:1.9.6'
 
     /*===============================lifecycle============================================*/
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'

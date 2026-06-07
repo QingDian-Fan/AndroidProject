@@ -3,4 +3,5 @@
 
     <string name="release_base_url" translatable="false">https://www.wanandroid.com/</string>
     <string name="debug_base_url" translatable="false">http://mobile.bwstudent.com/</string>
+    <string name="language" translatable="false">zh-CN</string>
 </resources>

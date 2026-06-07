@@ -1,10 +1,7 @@
 package com.common.http.interceptor
 
-
-
-import com.common.theme.BaseApplication
+import com.common.http.R
 import com.common.utils.DeviceIdUtil
-import com.common.utils.R
 import com.common.utils.ResourcesUtil
 import com.common.utils.Utils
 import com.common.utils.Utils.getApplicationId
@@ -81,7 +78,7 @@ class ParamsInterceptor : Interceptor {
         val timeStamp = System.currentTimeMillis().toString()
         val modifiedUrl = originalRequest.url.newBuilder()
             .addQueryParameter("app_version", Utils.getVersionName())
-            .addQueryParameter("language", ResourcesUtil.getString(com.common.theme.R.string.language))
+            .addQueryParameter("language", ResourcesUtil.getString(R.string.language))
             .addQueryParameter("uuid", DeviceIdUtil.getInstance().getDeviceId(Utils.getAppContext()))
             .addQueryParameter("sdk_version", DeviceIdUtil.getInstance().deviceSDK.toString())
             .addQueryParameter("device_brand", DeviceIdUtil.getInstance().deviceBrand)

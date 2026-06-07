@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.Gravity
 import android.view.View
 import android.widget.Toast
-import com.common.theme.BaseApplication
 
 /**
  * @author:  QingDian_Fan

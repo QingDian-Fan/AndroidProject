@@ -5,8 +5,6 @@ import android.content.Intent
 import android.view.Gravity
 import android.widget.Toast
 import androidx.core.content.FileProvider
-import com.common.theme.BaseApplication.Companion.getAppContext
-import com.common.theme.BaseApplication.Companion.getAppInstance
 import com.common.utils.ToastUtil.showToast
 import java.io.BufferedWriter
 import java.io.File
@@ -94,25 +92,25 @@ object LogFileUtil {
 
     fun doShareLogFile() {
         filePath ?: run {
-            Toast.makeText(getAppInstance(), "日志文件未初始化", Toast.LENGTH_SHORT).show()
+            Toast.makeText(Utils.getAppInstance(), "日志文件未初始化", Toast.LENGTH_SHORT).show()
             return
         }
         val file = File(filePath)
         if (!file.exists()) {
-            showToast(getAppContext(), "木有找到日志文件", false, Gravity.CENTER)
+            showToast(Utils.getAppContext(), "木有找到日志文件", false, Gravity.CENTER)
             return
         }
         //Uri logUri = Uri.parse(file.getAbsolutePath());
         val logUri = FileProvider.getUriForFile(
-            getAppInstance(),
-            getAppContext().packageName + ".provider", file
+            Utils.getAppInstance(),
+            Utils.getAppContext().packageName + ".provider", file
         )
         val intent = Intent(Intent.ACTION_SEND)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         intent.putExtra("subject", "log日志")
         intent.putExtra(Intent.EXTRA_STREAM, logUri)
         intent.setType("text/plain")
-        getAppContext().startActivity(intent)
+        Utils.getAppContext().startActivity(intent)
     }
 
 }
