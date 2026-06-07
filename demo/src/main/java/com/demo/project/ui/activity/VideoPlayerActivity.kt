@@ -57,7 +57,7 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
             binding.videoView.setPlayerEngineFactory { context -> CommonPlayerVideoEngine(context.applicationContext) }
         }
         binding.videoView.initData()
-        val playUrl = mediaUri ?: "https://media.w3.org/2010/05/sintel/trailer.mp4"
+        val playUrl = mediaUri ?: "rtmp://ns8.indexforce.com/home/mystream"
         binding.videoView.setVideoPath(playUrl)
         binding.videoView.setScaleType(VideoScaleType.RATIO_FILL_SIZE)
         binding.videoView.setSpeed(1f)

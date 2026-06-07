@@ -3,4 +3,5 @@
     <item type="id" name="status_bar_view" />
     <item type="id" name="translucent_view" />
     <item type="id" name="bgaqrcode_camera_preview" />
+    <item type="id" name="tag_video_url" />
 </resources>

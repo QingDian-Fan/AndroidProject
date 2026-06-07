@@ -69,4 +69,7 @@ dependencies {
     implementation 'com.scwang.smart:refresh-header-classics:2.0.3'
     implementation 'com.scwang.smart:refresh-footer-classics:2.0.3'
     /*===============================上下拉刷新===============================================*/
+
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+
 }
