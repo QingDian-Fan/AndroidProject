@@ -45,6 +45,22 @@
     public static * inflate(android.view.LayoutInflater);
     public static * inflate(android.view.LayoutInflater, android.view.ViewGroup, boolean);
 }
+-keep class * extends com.common.ui.BaseAppBindActivity { *; }
+-keep class * extends com.common.ui.BaseAppVMActivity { *; }
+-keep class * extends com.common.ui.BaseAppBindFragment { *; }
+-keep class * extends com.common.ui.BaseAppVMFragment { *; }
+-keep class * extends com.common.ui.skin.BaseSkinBindActivity { *; }
+-keep class * extends com.common.ui.skin.BaseSkinVMActivity { *; }
+-keep class * extends com.common.ui.skin.BaseSkinBindFragment { *; }
+-keep class * extends com.common.ui.skin.BaseSkinVMFragment { *; }
+-keep class com.common.ui.BaseAppBindActivity { *; }
+-keep class com.common.ui.BaseAppVMActivity { *; }
+-keep class com.common.ui.BaseAppBindFragment { *; }
+-keep class com.common.ui.BaseAppVMFragment { *; }
+-keep class com.common.ui.skin.BaseSkinBindActivity { *; }
+-keep class com.common.ui.skin.BaseSkinVMActivity { *; }
+-keep class com.common.ui.skin.BaseSkinBindFragment { *; }
+-keep class com.common.ui.skin.BaseSkinVMFragment { *; }
 
 # XML inflated custom views must keep their constructors.
 -keepclassmembers class * extends android.view.View {
@@ -116,6 +132,23 @@
 -keep class org.opencv.** { *; }
 -keep class com.common.scan.** { *; }
 -dontwarn org.opencv.**
+
+# FFmpeg 播放内核（lib_common-player）的 native 方法与 onNativeXxx JNI 回调由该模块的
+# consumer-rules.pro 保留，这里无需重复，仅作说明。
+
+#############################################
+# 音视频播放（player engine）
+#############################################
+
+# AudioPlayerActivity 通过 intent 传 AudioEngineType.name，再用 valueOf(String) 解析，
+# 需保留枚举名称并阻止 R8 的 enum 优化（unboxing）。
+-keepclassmembers enum com.demo.project.player.audio.AudioEngineType {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Media3/ExoPlayer 随 AAR 自带 consumer proguard 规则，通常无需手写；保险起见忽略告警。
+-dontwarn androidx.media3.**
 
 #############################################
 # Share SDKs / media / misc third party

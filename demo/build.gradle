@@ -50,9 +50,9 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             zipAlignEnabled true
-            shrinkResources false
+            shrinkResources true
             resValue "string", "app_name", "DemoProject"
             buildConfigField "boolean", "isDebug", "false"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -205,5 +205,13 @@ android.applicationVariants.all { variant ->
                 javaCompile.classpath.asPath,
                 bootClasspath
         )
+    }
+
+    tasks.matching { it.name == "minify${variantName}WithR8" }.configureEach { minifyTask ->
+        minifyTask.doFirst {
+            // AGP 8.13/R8 may touch these output folders before creating parents after a clean build.
+            file("${buildDir}/intermediates/dex/${variant.name}/minify${variantName}WithR8").mkdirs()
+            file("${buildDir}/intermediates/merged_java_res/${variant.name}/minify${variantName}WithR8").mkdirs()
+        }
     }
 }
