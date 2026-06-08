@@ -158,6 +158,14 @@ public final class FfmpegVideoPlayer {
         }
     }
 
+    @SuppressWarnings("unused")
+    private void onNativeVideoSize(int width, int height) {
+        PlayerListener current = listener;
+        if (current != null) {
+            current.onVideoSizeChanged(width, height);
+        }
+    }
+
     private native long nativeCreate();
 
     private static native void nativeSetDataSource(long handle, String pathOrUrl);

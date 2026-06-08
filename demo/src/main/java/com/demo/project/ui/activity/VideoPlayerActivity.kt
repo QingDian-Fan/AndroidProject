@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.view.WindowManager
 import com.common.ui.BaseAppBindActivity
 import com.common.utils.StatusBarUtil
 import com.common.weight.video.VideoScaleType
@@ -40,7 +41,10 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
 
     override fun initialize(savedInstanceState: Bundle?) {
         getTitleBarView()?.visibility = gone
-        StatusBarUtil.hideStatusBar(this)
+        // 播放期间保持屏幕常亮（页面销毁时随窗口自动清除）
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        // 全屏沉浸：隐藏状态栏 + 底部导航栏（手势 home 条）
+        StatusBarUtil.hideSystemBars(this)
 
         // 解析播放地址：外部 App 通过 ACTION_VIEW 调起时走 intent.data，内部调用走 extra
         val mediaUri = resolveMediaUri()
@@ -95,6 +99,12 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
         val path = uri?.substringBefore('?')?.lowercase() ?: return false
         return AUDIO_EXTENSIONS.any { path.endsWith(it) }
     }
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // 重新获得焦点时再次隐藏，避免上滑唤出后系统栏不再消失
+        if (hasFocus) StatusBarUtil.hideSystemBars(this)
+    }
+
     override fun onPause() {
         super.onPause()
         binding.videoView.pause()

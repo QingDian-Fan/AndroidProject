@@ -8,6 +8,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.widget.SeekBar
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.common.ui.BaseAppBindActivity
 import com.demo.project.R
 import com.demo.project.databinding.ActivityAudioPlayerBinding
@@ -39,7 +41,7 @@ class AudioPlayerActivity : BaseAppBindActivity<ActivityAudioPlayerBinding>() {
 
         /** 演示用默认音频地址 */
         private const val DEFAULT_AUDIO_URL =
-            "https://storage.googleapis.com/exoplayer-test-media-0/play.mp3"
+            "https://fangtian-education.oss-cn-beijing.aliyuncs.com/im/teacher/test/2026/06/03/2056909715238363138_1780477077969.m4a"
 
         /**
          * @param engineType 指定播放内核，传 null 使用 [AudioPlayerEngines.defaultType]（默认 ExoPlayer）。
@@ -81,6 +83,7 @@ class AudioPlayerActivity : BaseAppBindActivity<ActivityAudioPlayerBinding>() {
     override fun getLayoutId(): Int = R.layout.activity_audio_player
 
     override fun initialize(savedInstanceState: Bundle?) {
+        hideNavigationBar()
         val title = resolveTitle()
         setPageTitle(title)
         binding.tvTitle.text = title
@@ -88,6 +91,23 @@ class AudioPlayerActivity : BaseAppBindActivity<ActivityAudioPlayerBinding>() {
 
         setupControls()
         setupEngine(resolveMediaUri() ?: DEFAULT_AUDIO_URL, resolveEngineType())
+    }
+
+    /**
+     * 隐藏底部虚拟导航栏（仅本页生效，状态栏保留）。
+     * 用户上滑可临时唤出，失焦/重新获得焦点后会再次隐藏（见 [onWindowFocusChanged]）。
+     */
+    private fun hideNavigationBar() {
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.navigationBars())
+            systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) hideNavigationBar()
     }
 
     /** 创建并启动播放引擎（默认 ExoPlayer，可通过工厂切换到 FFmpeg 等内核） */

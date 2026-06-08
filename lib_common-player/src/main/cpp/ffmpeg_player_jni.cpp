@@ -127,12 +127,22 @@ struct BasePlayer {
 struct VideoPlayer : BasePlayer {
     jobject surface = nullptr;
     jmethodID on_prepared = nullptr;
+    jmethodID on_video_size = nullptr;
 
     void notifyPrepared() {
         bool attached = false;
         JNIEnv *env = attach_env(&attached);
         if (env != nullptr && owner != nullptr && on_prepared != nullptr) {
             env->CallVoidMethod(owner, on_prepared);
+        }
+        detach_env(attached);
+    }
+
+    void notifyVideoSize(int width, int height) {
+        bool attached = false;
+        JNIEnv *env = attach_env(&attached);
+        if (env != nullptr && owner != nullptr && on_video_size != nullptr) {
+            env->CallVoidMethod(owner, on_video_size, width, height);
         }
         detach_env(attached);
     }
@@ -344,6 +354,7 @@ static void run_video(VideoPlayer *player) {
     }
 
     ANativeWindow_setBuffersGeometry(window, width, height, WINDOW_FORMAT_RGBA_8888);
+    player->notifyVideoSize(width, height);
 
     AVStream *stream = media.format->streams[media.stream_index];
     AVRational frame_rate = av_guess_frame_rate(media.format, stream, nullptr);
@@ -584,6 +595,7 @@ Java_com_common_player_FfmpegVideoPlayer_nativeCreate(JNIEnv *env, jobject thiz)
     player->on_completion = env->GetMethodID(cls, "onNativeCompletion", "()V");
     player->on_error = env->GetMethodID(cls, "onNativeError", "(ILjava/lang/String;)V");
     player->on_progress = env->GetMethodID(cls, "onNativeProgress", "(JJ)V");
+    player->on_video_size = env->GetMethodID(cls, "onNativeVideoSize", "(II)V");
     return reinterpret_cast<jlong>(player);
 }
 
