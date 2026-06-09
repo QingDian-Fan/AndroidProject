@@ -1,6 +1,8 @@
 package com.demo.project.ui.fragment
 
 import android.os.Bundle
+import com.common.auth.AuthManager
+import com.common.auth.AuthSession
 import com.common.ui.BaseAppVMFragment
 import com.common.utils.ext.observeNonNull
 import com.common.utils.ext.singleClick
@@ -25,7 +27,12 @@ class LoginFragment : BaseAppVMFragment<FragmentLoginBinding, LoginViewModel>() 
 
         viewModel.loginInfo.observeNonNull(viewLifecycleOwner) {
             showToast("登录成功：$it")
-            activity?.finish()
+            activity?.let { owner ->
+                AuthManager.completeLogin(
+                    owner,
+                    AuthSession(userId = it, userName = it)
+                )
+            }
         }
     }
 }

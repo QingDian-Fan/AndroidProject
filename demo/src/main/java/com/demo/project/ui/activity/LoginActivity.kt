@@ -13,9 +13,11 @@ import com.common.utils.ext.gone
 import com.common.utils.ext.visible
 import com.common.weight.titlebar.CommonTitleBar
 import com.common.weight.titlebar.ScreenUtils
+import com.dian.annotation.LoginPage
 import com.demo.project.R
 import com.demo.project.databinding.ActivityLoginBinding
 
+@LoginPage
 class LoginActivity : BaseSkinBindActivity<ActivityLoginBinding>() {
 
     companion object {
