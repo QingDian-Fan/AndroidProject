@@ -111,6 +111,12 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             cachedDuration = durationMs.coerceAtLeast(0L)
         }
 
+        override fun onVideoSizeChanged(width: Int, height: Int) {
+            postToMain {
+                if (!released) listener?.onVideoSizeChanged(width, height)
+            }
+        }
+
         override fun onError(code: Int, message: String?) {
             postPlayerError(RuntimeException("FFmpeg video player error($code): ${message.orEmpty()}"))
         }

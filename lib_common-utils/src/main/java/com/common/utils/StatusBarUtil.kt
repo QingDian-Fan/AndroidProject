@@ -16,6 +16,9 @@ import androidx.annotation.ColorInt
 import androidx.annotation.IntRange
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.drawerlayout.widget.DrawerLayout
 
 object StatusBarUtil {
@@ -706,6 +709,27 @@ object StatusBarUtil {
             e.printStackTrace()
         }
         return result
+    }
+
+    /**
+     * 全屏沉浸：同时隐藏状态栏和底部导航栏（含手势 home 条），用户上滑可临时唤出。
+     * 适合视频全屏播放等场景。需在窗口重新获得焦点时再次调用（见 onWindowFocusChanged）。
+     */
+    @JvmStatic
+    fun hideSystemBars(activity: Activity?) {
+        val window = activity?.window ?: return
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.systemBars())
+            systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes = window.attributes.apply {
+                layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
+        }
     }
 
     @JvmStatic
