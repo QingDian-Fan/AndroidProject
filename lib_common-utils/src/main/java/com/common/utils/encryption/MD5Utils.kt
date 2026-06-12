@@ -12,7 +12,7 @@ object MD5Utils {
             val digest = md.digest(text.toByteArray())
             result = toHexString(digest);
         } catch (e: NoSuchAlgorithmException) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
         return result
     }

@@ -2,7 +2,6 @@ package com.demo.project.utils.scheme
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import java.lang.reflect.Method
 
 object SchemeUtils {
@@ -32,7 +31,7 @@ object SchemeUtils {
                 urlString.getQueryParameter("url")
             )
             KEY_DEBUG_ACTIVITY -> navigateActivity(mContext, PATH_DEBUG_ACTIVITY)
-            else -> Log.w(TAG, "未匹配到 host: ${urlString.host}")
+            else -> com.common.utils.LogUtil.w(TAG, "未匹配到 host: ${urlString.host}")
         }
     }
 
@@ -71,9 +70,9 @@ object SchemeUtils {
                 return
             }
 
-            Log.w(TAG, "$path 未找到匹配的 start 方法, 参数个数=${params.size}")
+            com.common.utils.LogUtil.w(TAG, "$path 未找到匹配的 start 方法, 参数个数=${params.size}")
         } catch (e: Exception) {
-            Log.e(TAG, "navigateActivity 调用失败: $path", e)
+            com.common.utils.LogUtil.e(TAG, "navigateActivity 调用失败: $path", e)
         }
     }
 

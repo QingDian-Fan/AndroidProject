@@ -7,8 +7,8 @@ import com.common.utils.ResourcesUtil
 import com.common.utils.ext.gone
 import com.common.utils.ext.singleClick
 import com.common.utils.ext.visible
-import com.common.theme.R
 import com.common.weight.databinding.ItemAddressTabBinding
+import com.common.theme.R as ThemeR
 
 class AddressTabAdapter(private val dataList: List<String>) :
     RecyclerView.Adapter<AddressTabAdapter.ItemViewHolder>() {
@@ -27,13 +27,13 @@ class AddressTabAdapter(private val dataList: List<String>) :
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         with(holder) {
             if (position == dataList.size) {
-                binding.tvTabText.text = "请选择"
+                binding.tvTabText.setText(com.common.weight.R.string.address_tab_select)
                 binding.cvTabIndicator.visible()
-                binding.tvTabText.setTextColor(ResourcesUtil.getColor(R.color.text_light_color))
+                binding.tvTabText.setTextColor(ResourcesUtil.getColor(ThemeR.color.text_light_color))
             } else {
                 binding.tvTabText.text = dataList[position]
                 binding.cvTabIndicator.gone()
-                binding.tvTabText.setTextColor(ResourcesUtil.getColor(R.color.text_color))
+                binding.tvTabText.setTextColor(ResourcesUtil.getColor(ThemeR.color.text_color))
                 itemView.singleClick {
                     onItemClick?.invoke(position)
                 }

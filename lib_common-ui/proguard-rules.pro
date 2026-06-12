@@ -13,12 +13,8 @@
 -keep class * extends com.common.ui.BaseAppVMActivity { *; }
 -keep class * extends com.common.ui.BaseAppBindFragment { *; }
 -keep class * extends com.common.ui.BaseAppVMFragment { *; }
--keep class * extends com.common.ui.skin.BaseSkinBindActivity { *; }
--keep class * extends com.common.ui.skin.BaseSkinVMActivity { *; }
--keep class * extends com.common.ui.skin.BaseSkinBindFragment { *; }
--keep class * extends com.common.ui.skin.BaseSkinVMFragment { *; }
 
-# Public UI base classes and skin enums can be referenced from host apps.
+# Public UI base classes can be referenced from host apps.
 -keep class com.common.ui.BaseActivity { *; }
 -keep class com.common.ui.BaseAppBindActivity { *; }
 -keep class com.common.ui.BaseAppVMActivity { *; }
@@ -26,10 +22,3 @@
 -keep class com.common.ui.BaseAppBindFragment { *; }
 -keep class com.common.ui.BaseAppVMFragment { *; }
 -keep class com.common.ui.ViewBindingReflect { *; }
--keep class com.common.ui.skin.BaseSkinBindActivity { *; }
--keep class com.common.ui.skin.BaseSkinVMActivity { *; }
--keep class com.common.ui.skin.BaseSkinBindFragment { *; }
--keep class com.common.ui.skin.BaseSkinVMFragment { *; }
--keep class com.common.ui.skin.Skin { *; }
--keep class com.common.ui.skin.SkinNightMode { *; }
--keep class com.common.ui.skin.Language { *; }

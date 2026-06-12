@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import com.common.share.R;
+import com.common.utils.ResourcesUtil;
 import com.sina.weibo.sdk.api.ImageObject;
 import com.sina.weibo.sdk.api.TextObject;
 import com.sina.weibo.sdk.api.WebpageObject;
@@ -72,16 +73,16 @@ public class WeiBoChannel extends CustomChannel {
             thumbBitmap.compress(Bitmap.CompressFormat.JPEG, 85, os);
             webObject.thumbData = os.toByteArray();
         }catch (Exception e){
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }finally {
             try {
                 if (os != null) {
                     os.close(); }
-            } catch (IOException e) { e.printStackTrace();
+            } catch (IOException e) { com.common.utils.LogUtil.printStackTrace(e);
             }
         }
         webObject.actionUrl = link;
-        webObject.defaultText = "分享网⻚";
+        webObject.defaultText = ResourcesUtil.getString(R.string.share_web_page);
         message.mediaObject = webObject;
         mWBAPI.shareMessage(mActivity, message, true);
     }

@@ -7,6 +7,8 @@ import android.media.MediaRecorder
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.common.utils.LogUtil
+import com.common.utils.R
+import com.common.utils.ResourcesUtil
 import com.common.utils.Utils
 import java.io.File
 import java.io.IOException
@@ -84,9 +86,9 @@ class AudioRecordManager {
         if (ActivityCompat.checkSelfPermission(
                 Utils.getAppContext(),
                 Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
+        ) != PackageManager.PERMISSION_GRANTED
         ) {
-            Toast.makeText(Utils.getAppContext(), "请赋予RECORD_AUDIO权限", Toast.LENGTH_LONG).show()
+            Toast.makeText(Utils.getAppContext(), ResourcesUtil.getString(R.string.audio_record_permission_required), Toast.LENGTH_LONG).show()
             return
         }
         // 创建 Record 对象

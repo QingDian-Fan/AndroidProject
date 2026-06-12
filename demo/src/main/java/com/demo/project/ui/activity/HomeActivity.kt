@@ -40,7 +40,7 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
     val mSelectList = ArrayList<String>()
 
     override fun initialize(savedInstanceState: Bundle?) {
-        getTitleBarView()?.setCenterText("功能菜单")
+        getTitleBarView()?.setCenterText(getString(R.string.home_page_title))
         binding.btnScanActivity.setOnClickListener {
             startActivityForResult(WeChatQRCodeActivity::class.java)
         }
@@ -61,6 +61,9 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
         }
         binding.btnAudioActivity.setOnClickListener {
             AudioPlayerActivity.start(this@HomeActivity, engineType =  AudioEngineType.FFMPEG)
+        }
+        binding.btnThemeSettingsActivity.setOnClickListener {
+            ThemeSettingsActivity.start(this@HomeActivity)
         }
         binding.btnSelectActivity.setOnClickListener {
             ImageSelectUtil()
@@ -86,7 +89,7 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
                 .setCancelListener(object : ImageCancelListener {
                     override fun cancel() {
                         mSelectList.clear()
-                        ToastUtil.showToast(this@HomeActivity, "取消了")
+                        ToastUtil.showToast(this@HomeActivity, getString(R.string.toast_selection_cancelled))
                     }
                 })
                 .create()

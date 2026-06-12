@@ -305,7 +305,7 @@ public class TextViewExpandableAnimation extends LinearLayout
                         try {
                             Thread.sleep(sleepTime);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            com.common.utils.LogUtil.printStackTrace(e);
                         }
 
                         handler.sendMessage(msg);
@@ -319,7 +319,7 @@ public class TextViewExpandableAnimation extends LinearLayout
                         try {
                             Thread.sleep(sleepTime);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            com.common.utils.LogUtil.printStackTrace(e);
                         }
 
                         handler.sendMessage(msg);

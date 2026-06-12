@@ -21,7 +21,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dp_2"
-            android:textColor="#666666"
+            android:textColor="@color/text_sub_color"
             android:textSize="12dp"
             tools:text="分享平台" />
 

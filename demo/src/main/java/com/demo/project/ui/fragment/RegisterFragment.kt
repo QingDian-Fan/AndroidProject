@@ -26,7 +26,7 @@ class RegisterFragment : BaseAppVMFragment<FragmentRegisterBinding, LoginViewMod
         }
 
         viewModel.loginInfo.observeNonNull(viewLifecycleOwner) {
-            showToast("注册成功")
+            showToast(R.string.toast_register_success)
             val options = NavOptions.Builder()
                 .setLaunchSingleTop(true)
                 .setPopUpTo(R.id.loginFragment, false)

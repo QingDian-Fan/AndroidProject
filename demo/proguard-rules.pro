@@ -49,18 +49,10 @@
 -keep class * extends com.common.ui.BaseAppVMActivity { *; }
 -keep class * extends com.common.ui.BaseAppBindFragment { *; }
 -keep class * extends com.common.ui.BaseAppVMFragment { *; }
--keep class * extends com.common.ui.skin.BaseSkinBindActivity { *; }
--keep class * extends com.common.ui.skin.BaseSkinVMActivity { *; }
--keep class * extends com.common.ui.skin.BaseSkinBindFragment { *; }
--keep class * extends com.common.ui.skin.BaseSkinVMFragment { *; }
 -keep class com.common.ui.BaseAppBindActivity { *; }
 -keep class com.common.ui.BaseAppVMActivity { *; }
 -keep class com.common.ui.BaseAppBindFragment { *; }
 -keep class com.common.ui.BaseAppVMFragment { *; }
--keep class com.common.ui.skin.BaseSkinBindActivity { *; }
--keep class com.common.ui.skin.BaseSkinVMActivity { *; }
--keep class com.common.ui.skin.BaseSkinBindFragment { *; }
--keep class com.common.ui.skin.BaseSkinVMFragment { *; }
 
 # XML inflated custom views must keep their constructors.
 -keepclassmembers class * extends android.view.View {

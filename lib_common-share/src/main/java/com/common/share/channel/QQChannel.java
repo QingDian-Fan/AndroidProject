@@ -51,13 +51,13 @@ public class QQChannel extends CustomChannel {
         if (!isQQZone) {
             Intent intent = new Intent("android.intent.action.SEND");
             intent.setType("text/plain");
-            intent.putExtra(Intent.EXTRA_SUBJECT, "分享");
+            intent.putExtra(Intent.EXTRA_SUBJECT, ResourcesUtil.getString(R.string.share_subject));
             intent.putExtra(Intent.EXTRA_TEXT, text);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.setComponent(new ComponentName("com.tencent.mobileqq", "com.tencent.mobileqq.activity.JumpActivity"));
             Utils.INSTANCE.getAppContext().startActivity(intent);
         } else {
-            ToastUtil.showToast(Utils.INSTANCE.getAppContext(),"暂不支持分享纯文本",false, Gravity.CENTER);
+            ToastUtil.showToast(Utils.INSTANCE.getAppContext(), ResourcesUtil.getString(R.string.share_text_not_supported), false, Gravity.CENTER);
         }
 
     }

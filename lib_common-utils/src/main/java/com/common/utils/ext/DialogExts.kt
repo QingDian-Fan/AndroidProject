@@ -1,6 +1,5 @@
 package com.common.utils.ext
 
-import android.util.Log
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 
@@ -35,8 +34,8 @@ fun DialogFragment.showAllowStateLoss(manager: FragmentManager, tag: String) {
         try {
             manager.beginTransaction().add(this, tag).commitNowAllowingStateLoss()
         } catch (exception: Exception) {
-            Log.i("DialogFragment", "showAllowStateLoss error")
+            com.common.utils.LogUtil.i("DialogFragment", "showAllowStateLoss error")
         }
-        Log.i("DialogFragment", "reflect showAllowStateLoss error")
+        com.common.utils.LogUtil.i("DialogFragment", "reflect showAllowStateLoss error")
     }
 }

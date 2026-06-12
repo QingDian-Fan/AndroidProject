@@ -13,8 +13,8 @@
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="@dimen/dp_5"
         android:paddingVertical="@dimen/dp_10"
+        android:text="@string/address_tab_select"
         android:textSize="@dimen/dp_14"
-        android:text="请选择"
         android:textColor="@color/text_light_color" />
 
     <androidx.cardview.widget.CardView

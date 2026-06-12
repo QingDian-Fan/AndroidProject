@@ -4,7 +4,6 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -94,7 +93,7 @@ public class LoginHookUtil {
             mInstanceField.set(singleton, proxyInstance);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
     }
 
@@ -113,9 +112,9 @@ public class LoginHookUtil {
                 getNeedLoginListMethod.setAccessible(true);
 //                Object obj = NeedLoginClazz.newInstance();
                 requireLoginNames.addAll((List<String>) getNeedLoginListMethod.invoke(null));
-                Log.d("HootUtil", "size" + requireLoginNames.size());
+                com.common.utils.LogUtil.d("HootUtil", "size" + requireLoginNames.size());
             } catch (Exception e) {
-                e.printStackTrace();
+                com.common.utils.LogUtil.printStackTrace(e);
             }
         }
         return requireLoginNames.contains(activityName);
@@ -135,7 +134,7 @@ public class LoginHookUtil {
                 String loginActivity = (String) getLoginActivityMethod.invoke(null);
                 loginActivityClazz = Class.forName(loginActivity);
             } catch (Exception e) {
-                e.printStackTrace();
+                com.common.utils.LogUtil.printStackTrace(e);
             }
         }
         return loginActivityClazz;
@@ -163,7 +162,7 @@ public class LoginHookUtil {
                 return result;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
         return false;
     }

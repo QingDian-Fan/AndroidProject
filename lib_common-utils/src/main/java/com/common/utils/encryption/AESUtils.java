@@ -61,7 +61,7 @@ public class AESUtils {
      * 处理异常
      */
     private static void handleException(String methodName, Exception e) {
-        e.printStackTrace();
+        com.common.utils.LogUtil.printStackTrace(e);
         //LogUtil.e(TAG, methodName + "---->" + e.getMessage());
     }
 

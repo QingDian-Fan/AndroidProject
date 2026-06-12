@@ -33,7 +33,7 @@ object CustomNetworkStateManager : DefaultLifecycleObserver {
                 is Fragment -> owner.requireActivity().registerReceiver(receiver, filter)
             }
         } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
     }
 
@@ -48,7 +48,7 @@ object CustomNetworkStateManager : DefaultLifecycleObserver {
                 is Fragment -> owner.requireActivity().unregisterReceiver(networkStateReceiver)
             }
         } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
     }
 }

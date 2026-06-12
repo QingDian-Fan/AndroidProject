@@ -86,7 +86,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 }
                 startContinuousAutoFocus();
             } catch (Exception e) {
-                e.printStackTrace();
+                com.common.utils.LogUtil.printStackTrace(e);
             }
         }
     }
@@ -99,7 +99,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 mCamera.setOneShotPreviewCallback(null);
                 mCamera.stopPreview();
             } catch (Exception e) {
-                e.printStackTrace();
+                com.common.utils.LogUtil.printStackTrace(e);
             }
         }
     }
@@ -208,7 +208,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 BGAQRCodeUtil.d("不支持缩放");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
     }
 
@@ -262,7 +262,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 mIsTouchFocusing = false;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             BGAQRCodeUtil.e("对焦测光失败：" + e.getMessage());
             startContinuousAutoFocus();
         }

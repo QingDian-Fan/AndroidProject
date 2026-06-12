@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.util.LruCache
 import android.widget.ImageView
 import com.bumptech.glide.Glide
@@ -150,7 +149,7 @@ object VideoFrameLoader {
     private val failureBackoffMap = ConcurrentHashMap<String, Long>()
 
     private fun log(msg: String) {
-        if (DEBUG) Log.d(TAG, msg)
+        if (DEBUG) com.common.utils.LogUtil.d(TAG, msg)
     }
 
     private fun viewKey(iv: ImageView): Int = System.identityHashCode(iv)

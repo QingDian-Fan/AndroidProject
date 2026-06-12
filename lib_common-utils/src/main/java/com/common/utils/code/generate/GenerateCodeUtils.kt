@@ -75,7 +75,7 @@ object GenerateCodeUtils {
             }
             return bitmap
         } catch (e: WriterException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return null
     }
@@ -123,7 +123,7 @@ object GenerateCodeUtils {
             }
             return bitmap
         } catch (e: WriterException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return null
     }

@@ -225,7 +225,7 @@ open class BaseWebView @JvmOverloads constructor(
                 if (webviewDir.exists()) webviewDir.deleteRecursively()
             }
             runCatching { context.deleteSharedPreferences("WebViewPrefs") }
-        }.onFailure { it.printStackTrace() }
+        }.onFailure { com.common.utils.LogUtil.printStackTrace(it) }
     }
 
     private companion object {

@@ -25,7 +25,7 @@ class ExceptionHandlerUtil private constructor() : Thread.UncaughtExceptionHandl
      * 处理错误信息
      */
     private fun handException(ex: Throwable) {
-        ex.printStackTrace()
+        com.common.utils.LogUtil.printStackTrace(ex)
         saveCrashToFile(ex)
         if (Looper.myLooper() == Looper.getMainLooper()) {
             Process.killProcess(Process.myPid())
@@ -57,11 +57,11 @@ class ExceptionHandlerUtil private constructor() : Thread.UncaughtExceptionHandl
                 fileOutputStream.flush()
                 fileOutputStream.close()
             } catch (e: IOException) {
-                e.printStackTrace()
+                com.common.utils.LogUtil.printStackTrace(e)
             }
             fileOutputStream.close()
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
     }
 
@@ -82,7 +82,7 @@ class ExceptionHandlerUtil private constructor() : Thread.UncaughtExceptionHandl
         fun doShareExceptionFile() {
             val file = File(LOG_PATH_SDCARD_DIR, LOG_NAME)
             if (!file.exists()) {
-                ToastUtil.showToast(Utils.getAppContext(), "木有找到日志文件", false, Gravity.CENTER)
+                ToastUtil.showToast(Utils.getAppContext(), ResourcesUtil.getString(R.string.toast_log_file_not_found), false, Gravity.CENTER)
                 return
             }
             val logUri: Uri = FileProvider.getUriForFile(
@@ -92,7 +92,7 @@ class ExceptionHandlerUtil private constructor() : Thread.UncaughtExceptionHandl
             val intent = Intent(Intent.ACTION_SEND)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            intent.putExtra("subject", "DomeProject日志")
+            intent.putExtra("subject", ResourcesUtil.getString(R.string.share_exception_subject))
             intent.putExtra(Intent.EXTRA_STREAM, logUri) // 添加附件，附件为file对象
             intent.type = "text/plain" // 纯文本则用text/plain的mime
             Utils.getAppContext().startActivity(intent)

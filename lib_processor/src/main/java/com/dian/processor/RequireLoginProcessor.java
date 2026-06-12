@@ -90,7 +90,7 @@ public class RequireLoginProcessor extends AbstractProcessor {
             // 5，生成文件
             javaFile.writeTo(processingEnv.getFiler());
         } catch (IOException e) {
-            e.printStackTrace();
+            mMessager.printMessage(Diagnostic.Kind.ERROR, "RequireLoginProcessor write file failed: " + e.getMessage());
         }
 
         mMessager.printMessage(Diagnostic.Kind.WARNING, "\nprocess finish ...\n");

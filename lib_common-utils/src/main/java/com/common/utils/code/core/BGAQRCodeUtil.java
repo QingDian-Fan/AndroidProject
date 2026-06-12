@@ -12,7 +12,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -41,13 +40,13 @@ public class BGAQRCodeUtil {
 
     public static void d(String tag, String msg) {
         if (debug) {
-            Log.d(tag, msg);
+            com.common.utils.LogUtil.d(tag, msg);
         }
     }
 
     public static void e(String msg) {
         if (debug) {
-            Log.e("BGAQRCode", msg);
+            com.common.utils.LogUtil.e("BGAQRCode", msg);
         }
     }
 
@@ -197,7 +196,7 @@ public class BGAQRCodeUtil {
 
             return BitmapFactory.decodeFile(picturePath, options);
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             return null;
         }
     }

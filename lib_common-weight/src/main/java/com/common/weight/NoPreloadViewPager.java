@@ -25,7 +25,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.FocusFinder;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -415,7 +414,7 @@ public class NoPreloadViewPager extends ViewGroup {
      */
     public void setOffscreenPageLimit(int limit) {
         if (limit < DEFAULT_OFFSCREEN_PAGES) {
-            Log.w(TAG, "Requested offscreen page limit " + limit + " too small; defaulting to " +
+            com.common.utils.LogUtil.w(TAG, "Requested offscreen page limit " + limit + " too small; defaulting to " +
                     DEFAULT_OFFSCREEN_PAGES);
             limit = DEFAULT_OFFSCREEN_PAGES;
         }
@@ -621,7 +620,7 @@ public class NoPreloadViewPager extends ViewGroup {
         // fling to a new position until we have finished the scroll to
         // that position, avoiding glitches from happening at that point.
         if (mPopulatePending) {
-            if (DEBUG) Log.i(TAG, "populate is pending, skipping for now...");
+            if (DEBUG) com.common.utils.LogUtil.i(TAG, "populate is pending, skipping for now...");
             return;
         }
 
@@ -639,14 +638,14 @@ public class NoPreloadViewPager extends ViewGroup {
         final int N = mAdapter.getCount();
         final int endPos = Math.min(N-1, mCurItem + pageLimit);
 
-        if (DEBUG) Log.v(TAG, "populating: startPos=" + startPos + " endPos=" + endPos);
+        if (DEBUG) com.common.utils.LogUtil.v(TAG, "populating: startPos=" + startPos + " endPos=" + endPos);
 
         // Add and remove pages in the existing list.
         int lastPos = -1;
         for (int i=0; i<mItems.size(); i++) {
             ItemInfo ii = mItems.get(i);
             if ((ii.position < startPos || ii.position > endPos) && !ii.scrolling) {
-                if (DEBUG) Log.i(TAG, "removing: " + ii.position + " @ " + i);
+                if (DEBUG) com.common.utils.LogUtil.i(TAG, "removing: " + ii.position + " @ " + i);
                 mItems.remove(i);
                 i--;
                 mAdapter.destroyItem(this, ii.position, ii.object);
@@ -659,7 +658,7 @@ public class NoPreloadViewPager extends ViewGroup {
                     lastPos = startPos;
                 }
                 while (lastPos <= endPos && lastPos < ii.position) {
-                    if (DEBUG) Log.i(TAG, "inserting: " + lastPos + " @ " + i);
+                    if (DEBUG) com.common.utils.LogUtil.i(TAG, "inserting: " + lastPos + " @ " + i);
                     addNewItem(lastPos, i);
                     lastPos++;
                     i++;
@@ -674,16 +673,16 @@ public class NoPreloadViewPager extends ViewGroup {
             lastPos++;
             lastPos = lastPos > startPos ? lastPos : startPos;
             while (lastPos <= endPos) {
-                if (DEBUG) Log.i(TAG, "appending: " + lastPos);
+                if (DEBUG) com.common.utils.LogUtil.i(TAG, "appending: " + lastPos);
                 addNewItem(lastPos, -1);
                 lastPos++;
             }
         }
 
         if (DEBUG) {
-            Log.i(TAG, "Current page list:");
+            com.common.utils.LogUtil.i(TAG, "Current page list:");
             for (int i=0; i<mItems.size(); i++) {
-                Log.i(TAG, "#" + i + ": page " + mItems.get(i).position);
+                com.common.utils.LogUtil.i(TAG, "#" + i + ": page " + mItems.get(i).position);
             }
         }
 
@@ -863,7 +862,7 @@ public class NoPreloadViewPager extends ViewGroup {
         for (int i = 0; i < size; ++i) {
             final View child = getChildAt(i);
             if (child.getVisibility() != GONE) {
-                if (DEBUG) Log.v(TAG, "Measuring #" + i + " " + child
+                if (DEBUG) com.common.utils.LogUtil.v(TAG, "Measuring #" + i + " " + child
                         + ": " + mChildWidthMeasureSpec);
                 child.measure(mChildWidthMeasureSpec, mChildHeightMeasureSpec);
             }
@@ -919,7 +918,7 @@ public class NoPreloadViewPager extends ViewGroup {
                 int loff = (width + mPageMargin) * ii.position;
                 int childLeft = getPaddingLeft() + loff;
                 int childTop = getPaddingTop();
-                if (DEBUG) Log.v(TAG, "Positioning #" + i + " " + child + " f=" + ii.object
+                if (DEBUG) com.common.utils.LogUtil.v(TAG, "Positioning #" + i + " " + child + " f=" + ii.object
                         + ":" + childLeft + "," + childTop + " " + child.getMeasuredWidth()
                         + "x" + child.getMeasuredHeight());
                 child.layout(childLeft, childTop,
@@ -932,10 +931,10 @@ public class NoPreloadViewPager extends ViewGroup {
 
     @Override
     public void computeScroll() {
-        if (DEBUG) Log.i(TAG, "computeScroll: finished=" + mScroller.isFinished());
+        if (DEBUG) com.common.utils.LogUtil.i(TAG, "computeScroll: finished=" + mScroller.isFinished());
         if (!mScroller.isFinished()) {
             if (mScroller.computeScrollOffset()) {
-                if (DEBUG) Log.i(TAG, "computeScroll: still scrolling");
+                if (DEBUG) com.common.utils.LogUtil.i(TAG, "computeScroll: still scrolling");
                 int oldX = getScrollX();
                 int oldY = getScrollY();
                 int x = mScroller.getCurrX();
@@ -1005,7 +1004,7 @@ public class NoPreloadViewPager extends ViewGroup {
         // Always take care of the touch gesture being complete.
         if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
             // Release the drag.
-            if (DEBUG) Log.v(TAG, "Intercept done!");
+            if (DEBUG) com.common.utils.LogUtil.v(TAG, "Intercept done!");
             mIsBeingDragged = false;
             mIsUnableToDrag = false;
             mActivePointerId = INVALID_POINTER;
@@ -1016,11 +1015,11 @@ public class NoPreloadViewPager extends ViewGroup {
         // are dragging.
         if (action != MotionEvent.ACTION_DOWN) {
             if (mIsBeingDragged) {
-                if (DEBUG) Log.v(TAG, "Intercept returning true!");
+                if (DEBUG) com.common.utils.LogUtil.v(TAG, "Intercept returning true!");
                 return true;
             }
             if (mIsUnableToDrag) {
-                if (DEBUG) Log.v(TAG, "Intercept returning false!");
+                if (DEBUG) com.common.utils.LogUtil.v(TAG, "Intercept returning false!");
                 return false;
             }
         }
@@ -1051,7 +1050,7 @@ public class NoPreloadViewPager extends ViewGroup {
                 final int scrollX = getScrollX();
                 final boolean atEdge = (dx > 0 && scrollX == 0) || (dx < 0 && mAdapter != null &&
                         scrollX >= (mAdapter.getCount() - 1) * getWidth() - 1);
-                if (DEBUG) Log.v(TAG, "Moved x to " + x + "," + y + " diff=" + xDiff + "," + yDiff);
+                if (DEBUG) com.common.utils.LogUtil.v(TAG, "Moved x to " + x + "," + y + " diff=" + xDiff + "," + yDiff);
 
                 if (canScroll(this, false, (int) dx, (int) x, (int) y)) {
                     // Nested view has scrollable area under this point. Let it be handled there.
@@ -1060,7 +1059,7 @@ public class NoPreloadViewPager extends ViewGroup {
                     return false;
                 }
                 if (xDiff > mTouchSlop && xDiff > yDiff) {
-                    if (DEBUG) Log.v(TAG, "Starting drag!");
+                    if (DEBUG) com.common.utils.LogUtil.v(TAG, "Starting drag!");
                     mIsBeingDragged = true;
                     setScrollState(SCROLL_STATE_DRAGGING);
                     mLastMotionX = x;
@@ -1071,7 +1070,7 @@ public class NoPreloadViewPager extends ViewGroup {
                         // direction to be counted as a drag...  abort
                         // any attempt to drag horizontally, to work correctly
                         // with children that have scrolling containers.
-                        if (DEBUG) Log.v(TAG, "Starting unable to drag!");
+                        if (DEBUG) com.common.utils.LogUtil.v(TAG, "Starting unable to drag!");
                         mIsUnableToDrag = true;
                     }
                 }
@@ -1098,7 +1097,7 @@ public class NoPreloadViewPager extends ViewGroup {
                     mIsUnableToDrag = false;
                 }
 
-                if (DEBUG) Log.v(TAG, "Down at " + mLastMotionX + "," + mLastMotionY
+                if (DEBUG) com.common.utils.LogUtil.v(TAG, "Down at " + mLastMotionX + "," + mLastMotionY
                         + " mIsBeingDragged=" + mIsBeingDragged
                         + "mIsUnableToDrag=" + mIsUnableToDrag);
                 break;
@@ -1164,9 +1163,9 @@ public class NoPreloadViewPager extends ViewGroup {
                     final float xDiff = Math.abs(x - mLastMotionX);
                     final float y = MotionEventCompat.getY(ev, pointerIndex);
                     final float yDiff = Math.abs(y - mLastMotionY);
-                    if (DEBUG) Log.v(TAG, "Moved x to " + x + "," + y + " diff=" + xDiff + "," + yDiff);
+                    if (DEBUG) com.common.utils.LogUtil.v(TAG, "Moved x to " + x + "," + y + " diff=" + xDiff + "," + yDiff);
                     if (xDiff > mTouchSlop && xDiff > yDiff) {
-                        if (DEBUG) Log.v(TAG, "Starting drag!");
+                        if (DEBUG) com.common.utils.LogUtil.v(TAG, "Starting drag!");
                         mIsBeingDragged = true;
                         mLastMotionX = x;
                         setScrollState(SCROLL_STATE_DRAGGING);

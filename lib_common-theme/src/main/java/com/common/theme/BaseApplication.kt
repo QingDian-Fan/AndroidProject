@@ -3,14 +3,9 @@ package com.common.theme
 import android.app.Application
 import android.content.Context
 
-
-
 open class BaseApplication : Application() {
     companion object {
-
         private var mContext: Context? = null
-
-
         private var instance: BaseApplication? = null
 
         @JvmStatic
@@ -22,12 +17,13 @@ open class BaseApplication : Application() {
         fun getAppInstance(): BaseApplication = checkNotNull(instance) {
             "BaseApplication instance is not initialized."
         }
-
     }
 
     override fun onCreate() {
         super.onCreate()
         init()
+        NightModeManager.init(this)
+        AppLanguageManager.init(this)
     }
 
     private fun init() {

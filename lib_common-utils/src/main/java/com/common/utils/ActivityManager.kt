@@ -11,7 +11,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import androidx.collection.ArrayMap
 import androidx.core.content.ContextCompat.startActivity
@@ -151,7 +150,7 @@ class ActivityManager private constructor() : ActivityLifecycleCallbacks {
             try {
                 restartIntent.send()
             } catch (e: PendingIntent.CanceledException) {
-                e.printStackTrace()
+                com.common.utils.LogUtil.printStackTrace(e)
             }
 
             finishAllActivities()

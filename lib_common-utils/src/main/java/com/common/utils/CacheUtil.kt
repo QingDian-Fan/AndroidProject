@@ -71,7 +71,7 @@ object CacheUtil {
             }
 
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return size
     }

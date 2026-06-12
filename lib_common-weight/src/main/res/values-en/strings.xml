@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">lib_common-weight</string>
+    <string name="titlebar_search_hint">Search</string>
+    <string name="expand">Expand</string>
+    <string name="shrink">Collapse</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="address_picker_title">Region picker</string>
+    <string name="address_tab_select">Select</string>
+    <string name="date_picker_title">Select date</string>
+    <string name="date_picker_year_format">%d</string>
+    <string name="date_picker_month_format">%d</string>
+    <string name="date_picker_day_format">%d</string>
+    <string name="video_default_title">Fast &amp; Furious Presents: Hobbs &amp; Shaw</string>
+    <string name="fold_text_collapse">[Collapse]</string>
+    <string name="fold_text_expand">[View all]</string>
+</resources>

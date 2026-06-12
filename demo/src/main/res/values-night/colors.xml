@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="text_blue_color">#FF69B7FF</color>
+    <color name="colorPink">#FFFF7F94</color>
+
+    <!-- 音频播放页 -->
+    <color name="audio_bg_top">#FF171A22</color>
+    <color name="audio_bg_bottom">#FF101217</color>
+    <color name="audio_accent">#FF7F98FF</color>
+    <color name="audio_cover_top">#FF8FA4FF</color>
+    <color name="audio_cover_bottom">#FF607BFF</color>
+    <color name="audio_text_primary">#FFEAEFF7</color>
+    <color name="audio_text_secondary">#FF9EA8B8</color>
+    <color name="audio_track_bg">#FF303642</color>
+</resources>

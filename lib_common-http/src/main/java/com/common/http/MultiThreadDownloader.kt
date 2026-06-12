@@ -1,7 +1,6 @@
 package com.common.http
 
 
-import android.util.Log
 import com.common.http.room.DownloadTaskDao
 import com.common.http.room.DownloadTaskEntry
 import com.common.utils.LogUtil
@@ -60,11 +59,11 @@ class MultiThreadDownloader(
             val existsProgress = db.getTask(taskId)
 
             if (!existsProgress.isNullOrEmpty() && File(savePath).exists()) {
-                Log.e("DL", "发现历史任务 → 自动续传")
+                com.common.utils.LogUtil.e("DL", "发现历史任务 → 自动续传")
 
                 resumeFromDB(existsProgress)
             } else {
-                Log.e("DL", "无历史任务 → 重新开始下载")
+                com.common.utils.LogUtil.e("DL", "无历史任务 → 重新开始下载")
 
                 startNewDownload()
             }
@@ -74,7 +73,7 @@ class MultiThreadDownloader(
     /** =================== 暂停 ==================== */
     fun pause() {
         pauseFlag = true
-        Log.e("DL", "暂停请求已发出")
+        com.common.utils.LogUtil.e("DL", "暂停请求已发出")
     }
 
     /** ==========================================================
@@ -114,7 +113,7 @@ class MultiThreadDownloader(
 
         db.insertAll(progressList)
 
-        Log.e("DL", "数据库初始化完毕，启动线程池")
+        com.common.utils.LogUtil.e("DL", "数据库初始化完毕，启动线程池")
 
         launchWorkers(progressList)
     }
@@ -188,14 +187,14 @@ class MultiThreadDownloader(
                 raf.close()
 
                 if (pauseFlag) {
-                    Log.e("DL", "线程 ${info.threadId} 暂停")
+                    com.common.utils.LogUtil.e("DL", "线程 ${info.threadId} 暂停")
                     return
                 }
 
                 markThreadFinish()
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                com.common.utils.LogUtil.printStackTrace(e)
                 callback?.onError(e.message ?: "下载失败")
             }
         }

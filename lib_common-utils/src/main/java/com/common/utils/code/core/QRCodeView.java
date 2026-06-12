@@ -79,7 +79,7 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
             try {
                 mCamera.setOneShotPreviewCallback(this);
             } catch (Exception e) {
-                e.printStackTrace();
+                com.common.utils.LogUtil.printStackTrace(e);
             }
         }
     }
@@ -160,7 +160,7 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
                     return cameraId;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                com.common.utils.LogUtil.printStackTrace(e);
             }
         }
         return NO_CAMERA_ID;
@@ -172,7 +172,7 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
             mCamera = Camera.open(cameraId);
             mCameraPreview.setCamera(mCamera);
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             if (mDelegate != null) {
                 mDelegate.onScanQRCodeOpenCameraError();
             }
@@ -192,7 +192,7 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
                 mCamera = null;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
     }
 
@@ -220,7 +220,7 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
             try {
                 mCamera.setOneShotPreviewCallback(null);
             } catch (Exception e) {
-                e.printStackTrace();
+                com.common.utils.LogUtil.printStackTrace(e);
             }
         }
     }
@@ -304,7 +304,7 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
             try {
                 handleAmbientBrightness(data, camera);
             } catch (Exception e) {
-                e.printStackTrace();
+                com.common.utils.LogUtil.printStackTrace(e);
             }
         }
 
@@ -396,7 +396,7 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
                     mCamera.setOneShotPreviewCallback(QRCodeView.this);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                com.common.utils.LogUtil.printStackTrace(e);
             }
         } else {
             mSpotAble = false;
@@ -405,7 +405,7 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
                     mDelegate.onScanQRCodeSuccess(result);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                com.common.utils.LogUtil.printStackTrace(e);
             }
         }
     }
@@ -477,7 +477,7 @@ public abstract class QRCodeView extends RelativeLayout implements Camera.Previe
             return false;
         } catch (Exception e) {
             mLocationPoints = null;
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             return false;
         }
     }

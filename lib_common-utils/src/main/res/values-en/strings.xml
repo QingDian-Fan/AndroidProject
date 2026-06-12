@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">lib_common-utils</string>
+    <string name="permission_desc_storage">Storage permission: used to read and write album and file content when adding or uploading images and audio.</string>
+    <string name="permission_desc_camera">Camera permission: used for taking photos, recording videos, and scanning QR codes.</string>
+    <string name="permission_desc_alarm">Alarm permission: used for scheduled reminders.</string>
+    <string name="toast_log_file_not_found">Log file not found</string>
+    <string name="toast_log_file_not_initialized">Log file is not initialized</string>
+    <string name="share_exception_subject">DomeProject logs</string>
+    <string name="share_log_subject">Log file</string>
+    <string name="audio_record_permission_required">Please grant RECORD_AUDIO permission</string>
+    <string name="refresh_loading">Loading...</string>
+    <string name="refresh_no_more_data">No more data</string>
+    <string name="permission_description_title">Permission description</string>
+</resources>

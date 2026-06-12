@@ -16,8 +16,8 @@
         android:layout_marginTop="15dp"
         android:layout_marginBottom="10dp"
         android:gravity="center"
-        android:text="切换环境"
-        android:textColor="#2D3748"
+        android:text="@string/dialog_switch_environment"
+        android:textColor="@color/text_color"
         android:textSize="@dimen/dp_18"
         android:textStyle="bold" />
 
@@ -36,8 +36,8 @@
             android:background="@drawable/bg_btn_debug"
             android:gravity="center"
             android:paddingVertical="@dimen/dp_10"
-            android:text="行为日志"
-            android:textColor="#2D3748"
+            android:text="@string/dialog_behavior_log"
+            android:textColor="@color/text_color"
             android:textSize="@dimen/dp_16" />
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -48,8 +48,8 @@
             android:background="@drawable/bg_btn_debug"
             android:gravity="center"
             android:paddingVertical="@dimen/dp_10"
-            android:text="崩溃日志"
-            android:textColor="#2D3748"
+            android:text="@string/dialog_crash_log"
+            android:textColor="@color/text_color"
             android:textSize="@dimen/dp_16" />
     </LinearLayout>
 

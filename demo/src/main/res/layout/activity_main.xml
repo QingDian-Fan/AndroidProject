@@ -1,99 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingHorizontal="30dp"
     tools:context=".ui.activity.HomeActivity">
 
-    <Button
-        android:id="@+id/btn_select_activity"
+    <LinearLayout
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_46"
-        android:layout_marginTop="@dimen/dp_30"
-        android:background="@drawable/bg_btn_generate"
-        android:onClick="clickView"
-        android:paddingVertical="@dimen/dp_10"
-        android:text="图片选择"
-        android:textColor="@color/colorWhite" />
-    <Button
-        android:id="@+id/btn_video_activity"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_46"
-        android:layout_marginTop="@dimen/dp_30"
-        android:background="@drawable/bg_btn_generate"
-        android:onClick="clickView"
-        android:paddingVertical="@dimen/dp_10"
-        android:text="视频播放"
-        android:textColor="@color/colorWhite" />
-    <Button
-        android:id="@+id/btn_audio_activity"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_46"
-        android:layout_marginTop="@dimen/dp_30"
-        android:background="@drawable/bg_btn_generate"
-        android:onClick="clickView"
-        android:paddingVertical="@dimen/dp_10"
-        android:text="音频播放"
-        android:textColor="@color/colorWhite" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="30dp"
+        android:paddingBottom="@dimen/dp_30">
 
-    <Button
-        android:id="@+id/btn_scan_activity"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_46"
-        android:layout_marginTop="@dimen/dp_30"
-        android:background="@drawable/bg_btn_generate"
-        android:onClick="clickView"
-        android:paddingVertical="@dimen/dp_10"
-        android:text="扫描二维码"
-        android:textColor="@color/colorWhite" />
+        <Button
+            android:id="@+id/btn_select_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:layout_marginTop="@dimen/dp_30"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="@dimen/dp_10"
+            android:text="@string/home_image_select"
+            android:textColor="@color/colorWhite" />
 
-    <Button
-        android:id="@+id/btn_camera_activity"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_46"
-        android:layout_marginTop="@dimen/dp_30"
-        android:background="@drawable/bg_btn_generate"
-        android:onClick="clickView"
-        android:paddingVertical="@dimen/dp_10"
-        android:text="相机"
-        android:textColor="@color/colorWhite" />
-    <Button
-        android:id="@+id/btn_web_activity"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_46"
-        android:layout_marginTop="@dimen/dp_30"
-        android:background="@drawable/bg_btn_generate"
-        android:onClick="clickView"
-        android:paddingVertical="@dimen/dp_10"
-        android:text="web页面"
-        android:textColor="@color/colorWhite" />
-    <Button
-        android:id="@+id/btn_browse_activity"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_46"
-        android:layout_marginTop="@dimen/dp_30"
-        android:background="@drawable/bg_btn_generate"
-        android:onClick="clickView"
-        android:paddingVertical="@dimen/dp_10"
-        android:text="浏览器页面"
-        android:textColor="@color/colorWhite" />
+        <Button
+            android:id="@+id/btn_video_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:layout_marginTop="@dimen/dp_30"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="@dimen/dp_10"
+            android:text="@string/home_video_player"
+            android:textColor="@color/colorWhite" />
 
-    <Button
-        android:id="@+id/btn_debug_activity"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_46"
-        android:layout_marginTop="@dimen/dp_30"
-        android:background="@drawable/bg_btn_generate"
-        android:onClick="clickView"
-        android:paddingVertical="@dimen/dp_10"
-        android:text="调试页面"
-        android:textColor="@color/colorWhite" />
+        <Button
+            android:id="@+id/btn_audio_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:layout_marginTop="@dimen/dp_30"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="@dimen/dp_10"
+            android:text="@string/home_audio_player"
+            android:textColor="@color/colorWhite" />
 
+        <Button
+            android:id="@+id/btn_theme_settings_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:layout_marginTop="@dimen/dp_30"
+            android:background="@drawable/bg_btn_generate"
+            android:paddingVertical="@dimen/dp_10"
+            android:text="@string/theme_settings_entry"
+            android:textColor="@color/colorWhite" />
 
-</LinearLayout>
+        <Button
+            android:id="@+id/btn_scan_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:layout_marginTop="@dimen/dp_30"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="@dimen/dp_10"
+            android:text="@string/home_scan_qr"
+            android:textColor="@color/colorWhite" />
+
+        <Button
+            android:id="@+id/btn_camera_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:layout_marginTop="@dimen/dp_30"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="@dimen/dp_10"
+            android:text="@string/home_camera"
+            android:textColor="@color/colorWhite" />
+
+        <Button
+            android:id="@+id/btn_web_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:layout_marginTop="@dimen/dp_30"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="@dimen/dp_10"
+            android:text="@string/home_web_page"
+            android:textColor="@color/colorWhite" />
+
+        <Button
+            android:id="@+id/btn_browse_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:layout_marginTop="@dimen/dp_30"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="@dimen/dp_10"
+            android:text="@string/home_browser_page"
+            android:textColor="@color/colorWhite" />
+
+        <Button
+            android:id="@+id/btn_debug_activity"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:layout_marginTop="@dimen/dp_30"
+            android:background="@drawable/bg_btn_generate"
+            android:onClick="clickView"
+            android:paddingVertical="@dimen/dp_10"
+            android:text="@string/debug_page_title"
+            android:textColor="@color/colorWhite" />
+
+    </LinearLayout>
+</ScrollView>

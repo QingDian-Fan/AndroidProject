@@ -77,7 +77,7 @@ object ResourcesUtil {
                 stringBuilder.append(line)
             }
         } catch (e: IOException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return stringBuilder.toString()
     }

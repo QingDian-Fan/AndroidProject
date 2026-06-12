@@ -103,7 +103,7 @@ public class ZXingView extends QRCodeView {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         } finally {
             mMultiFormatReader.reset();
         }

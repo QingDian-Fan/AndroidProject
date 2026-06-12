@@ -1,7 +1,6 @@
 package com.common.utils.code.decoder;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import com.common.utils.code.core.BGAQRCodeUtil;
 import com.google.zxing.BarcodeFormat;
@@ -164,13 +163,13 @@ public class QRCodeDecoder {
             result = new MultiFormatReader().decode(new BinaryBitmap(new HybridBinarizer(source)), ALL_HINT_MAP);
             return result.getText();
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             if (source != null) {
                 try {
                     result = new MultiFormatReader().decode(new BinaryBitmap(new GlobalHistogramBinarizer(source)), ALL_HINT_MAP);
                     return result.getText();
                 } catch (Throwable e2) {
-                    e2.printStackTrace();
+                    com.common.utils.LogUtil.printStackTrace(e2);
                 }
             }
             return null;

@@ -75,7 +75,7 @@ object DeviceIdUtil {
                     return sha1
                 }
             } catch (ex: Exception) {
-                ex.printStackTrace()
+                com.common.utils.LogUtil.printStackTrace(ex)
             }
         }
 
@@ -94,7 +94,7 @@ object DeviceIdUtil {
                 Settings.Secure.ANDROID_ID
             )
         } catch (ex: Exception) {
-            ex.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(ex)
         }
         return "unknown"
     }

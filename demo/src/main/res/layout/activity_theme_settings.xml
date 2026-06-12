@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_default"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/dp_30"
+    android:paddingTop="@dimen/dp_30">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/theme_settings_skin"
+        android:textColor="@color/text_color"
+        android:textSize="@dimen/sp_16" />
+
+    <RadioGroup
+        android:id="@+id/rg_theme_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_12"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rb_theme_follow_system"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:text="@string/theme_settings_follow_system"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/sp_15" />
+
+        <RadioButton
+            android:id="@+id/rb_theme_day"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:text="@string/theme_settings_day"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/sp_15" />
+
+        <RadioButton
+            android:id="@+id/rb_theme_night"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:text="@string/theme_settings_night"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/sp_15" />
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_24"
+        android:text="@string/theme_settings_language"
+        android:textColor="@color/text_color"
+        android:textSize="@dimen/sp_16" />
+
+    <RadioGroup
+        android:id="@+id/rg_language_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_12"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rb_language_follow_system"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:text="@string/theme_settings_follow_system"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/sp_15" />
+
+        <RadioButton
+            android:id="@+id/rb_language_chinese"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:text="@string/theme_settings_chinese"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/sp_15" />
+
+        <RadioButton
+            android:id="@+id/rb_language_english"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_46"
+            android:text="@string/theme_settings_english"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/sp_15" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/btn_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_46"
+        android:layout_marginTop="@dimen/dp_30"
+        android:background="@drawable/bg_btn_generate"
+        android:text="@string/theme_settings_confirm"
+        android:textColor="@color/colorWhite" />
+</LinearLayout>

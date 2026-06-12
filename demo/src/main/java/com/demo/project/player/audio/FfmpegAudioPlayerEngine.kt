@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
-import android.util.Log
 import com.common.player.FfmpegAudioPlayer
 import com.common.player.PlayerListener
 
@@ -245,7 +244,7 @@ class FfmpegAudioPlayerEngine(context: Context) : AudioPlayerEngine {
     }
 
     private fun postError(error: Throwable) {
-        Log.e(TAG, "player error", error)
+        com.common.utils.LogUtil.e(TAG, "player error", error)
         started = false
         paused = false
         ended = false

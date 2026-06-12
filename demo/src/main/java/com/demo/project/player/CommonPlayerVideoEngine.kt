@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
-import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
@@ -380,7 +379,7 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     }
 
     private fun postPlayerError(error: Throwable) {
-        Log.e(TAG, "player error", error)
+        com.common.utils.LogUtil.e(TAG, "player error", error)
         pendingPlay = false
         started = false
         paused = false

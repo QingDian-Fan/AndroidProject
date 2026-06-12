@@ -330,7 +330,7 @@ public class CircleImageView extends AppCompatImageView {
             drawable.draw(canvas);
             return bitmap;
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             return null;
         }
     }

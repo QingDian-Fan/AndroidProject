@@ -24,7 +24,7 @@ class LoginFragment : BaseAppVMFragment<FragmentLoginBinding, LoginViewModel>() 
         }
 
         viewModel.loginInfo.observeNonNull(viewLifecycleOwner) {
-            showToast("登录成功：$it")
+            showToast(getString(R.string.toast_login_success, it))
             activity?.finish()
         }
     }

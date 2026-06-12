@@ -477,7 +477,7 @@ object StatusBarUtil {
             val extraFlagField = clazz.getMethod("setExtraFlags", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
             extraFlagField.invoke(activity.window, if (darkIcon) darkModeFlag else 0, darkModeFlag)
         } catch (e: Exception) {
-            //e.printStackTrace();
+            //com.common.utils.LogUtil.printStackTrace(e);
         }
     }
 
@@ -501,7 +501,7 @@ object StatusBarUtil {
             meizuFlags.setInt(lp, value)
             activity.window.attributes = lp
         } catch (e: Exception) {
-            //e.printStackTrace();
+            //com.common.utils.LogUtil.printStackTrace(e);
         }
     }
 
@@ -681,7 +681,7 @@ object StatusBarUtil {
             extraFlagField.invoke(activity.window, if (darkmode) darkModeFlag else 0, darkModeFlag)
             result = true
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return result
     }
@@ -706,7 +706,7 @@ object StatusBarUtil {
             activity.window.attributes = lp
             result = true
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return result
     }

@@ -94,7 +94,7 @@ class ScreenShotListenManager(private val context: Context) {
             try {
                 context.contentResolver.unregisterContentObserver(it)
             } catch (e: Exception) {
-                e.printStackTrace()
+                com.common.utils.LogUtil.printStackTrace(e)
             }
             internalObserver = null
         }
@@ -102,7 +102,7 @@ class ScreenShotListenManager(private val context: Context) {
             try {
                 context.contentResolver.unregisterContentObserver(it)
             } catch (e: Exception) {
-                e.printStackTrace()
+                com.common.utils.LogUtil.printStackTrace(e)
             }
             externalObserver = null
         }
@@ -161,7 +161,7 @@ class ScreenShotListenManager(private val context: Context) {
             val height = cursor.getInt(heightIndex)
             return ScreenData(data, dateTaken, width, height)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
             return null
         } finally {
             if (cursor != null && !cursor.isClosed) {
@@ -248,7 +248,7 @@ class ScreenShotListenManager(private val context: Context) {
             val defaultDisplay = windowManager.defaultDisplay
             defaultDisplay.getRealSize(screenSize)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return screenSize
     }

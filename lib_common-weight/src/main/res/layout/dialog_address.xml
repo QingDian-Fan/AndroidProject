@@ -20,8 +20,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
+            android:text="@string/address_picker_title"
             android:textSize="@dimen/dp_16"
-            android:text="区域选择器"
             android:textColor="@color/text_color" />
 
         <androidx.appcompat.widget.AppCompatImageView

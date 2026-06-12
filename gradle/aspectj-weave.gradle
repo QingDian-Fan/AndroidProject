@@ -1,0 +1,176 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.aspectj:aspectjtools:1.9.6'
+        classpath 'org.aspectj:aspectjweaver:1.9.6'
+    }
+}
+
+import org.aspectj.bridge.IMessage
+import org.aspectj.bridge.MessageHandler
+import org.aspectj.tools.ajc.Main
+import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.tasks.compile.JavaCompile
+
+def aspectjWeaveOptions = [
+        javaVersion                      : "11",
+        showWeaveInfo                    : true,
+        weaveJavaOnJavaCompile           : true,
+        weaveKotlinOnKotlinCompile       : true,
+        weaveKotlinOnJavaCompile         : false,
+        kotlinClasspathIncludesJavaOutput: false,
+        cleanStaleAspectJRuntimeClasses  : true,
+        r8OutputWorkaround               : false
+]
+
+if (project.ext.has("aspectjWeaveConfig")) {
+    aspectjWeaveOptions.putAll(project.ext.aspectjWeaveConfig as Map)
+}
+
+def javaOutputDir = { JavaCompile javaCompile ->
+    if (javaCompile.metaClass.hasProperty(javaCompile, "destinationDirectory") != null) {
+        return javaCompile.destinationDirectory.get().asFile.toString()
+    }
+    return javaCompile.destinationDir.toString()
+}
+
+def joinClasspath = { List<String> entries ->
+    return entries.findAll { it != null && it.trim().length() > 0 }
+            .join(File.pathSeparator)
+}
+
+def kotlinWeaveClasspath = { JavaCompile javaCompile ->
+    String classpath = javaCompile.classpath.asPath
+    if (aspectjWeaveOptions.kotlinClasspathIncludesJavaOutput) {
+        classpath = joinClasspath([classpath, javaOutputDir(javaCompile)])
+    }
+    return classpath
+}
+
+def weaveAspectJ = { String sourceDir, String outputDir, String classpath, String bootClasspath ->
+    File inPath = new File(sourceDir)
+    if (!inPath.exists()) {
+        return
+    }
+
+    MessageHandler handler = new MessageHandler(true)
+    List<String> args = []
+    if (aspectjWeaveOptions.showWeaveInfo) {
+        args.add("-showWeaveInfo")
+    }
+    args.addAll([
+            "-${aspectjWeaveOptions.javaVersion}",
+            "-inpath", sourceDir,
+            "-aspectpath", classpath,
+            "-d", outputDir,
+            "-classpath", classpath,
+            "-bootclasspath", bootClasspath
+    ])
+    new Main().run(args as String[], handler)
+
+    for (IMessage message : handler.getMessages(null, true)) {
+        switch (message.getKind()) {
+            case IMessage.ABORT:
+            case IMessage.ERROR:
+            case IMessage.FAIL:
+                project.logger.error "AspectJ Error: " + message.message, message.thrown
+                break
+            case IMessage.WARNING:
+                project.logger.warn "AspectJ Warning: " + message.message, message.thrown
+                break
+            case IMessage.INFO:
+                project.logger.info "AspectJ Info: " + message.message, message.thrown
+                break
+        }
+    }
+}
+
+def configureAspectJVariant = { variant ->
+    def javaCompileProvider = variant.javaCompileProvider
+    String variantName = variant.name.capitalize()
+    String kotlinClassesDir = project.buildDir.path + "/tmp/kotlin-classes/" + variant.name
+    String bootClasspath = project.android.bootClasspath.join(File.pathSeparator)
+
+    if (aspectjWeaveOptions.weaveKotlinOnKotlinCompile) {
+        tasks.matching { it.name == "compile${variantName}Kotlin" }.configureEach { kotlinCompile ->
+            kotlinCompile.doLast {
+                JavaCompile javaCompile = javaCompileProvider.get()
+                weaveAspectJ(
+                        kotlinClassesDir,
+                        kotlinClassesDir,
+                        kotlinWeaveClasspath(javaCompile),
+                        bootClasspath
+                )
+            }
+        }
+    }
+
+    javaCompileProvider.configure { JavaCompile javaCompile ->
+        javaCompile.doLast {
+            if (aspectjWeaveOptions.weaveKotlinOnJavaCompile) {
+                weaveAspectJ(
+                        kotlinClassesDir,
+                        kotlinClassesDir,
+                        kotlinWeaveClasspath(javaCompile),
+                        bootClasspath
+                )
+            }
+
+            if (aspectjWeaveOptions.weaveJavaOnJavaCompile) {
+                String javaClassesDir = javaOutputDir(javaCompile)
+                weaveAspectJ(
+                        javaClassesDir,
+                        javaClassesDir,
+                        javaCompile.classpath.asPath,
+                        bootClasspath
+                )
+            }
+        }
+    }
+
+    if (aspectjWeaveOptions.r8OutputWorkaround) {
+        tasks.matching { it.name == "minify${variantName}WithR8" }.configureEach { minifyTask ->
+            minifyTask.doFirst {
+                file("${buildDir}/intermediates/dex/${variant.name}/minify${variantName}WithR8").mkdirs()
+                file("${buildDir}/intermediates/merged_java_res/${variant.name}/minify${variantName}WithR8").mkdirs()
+            }
+        }
+    }
+
+    if (aspectjWeaveOptions.cleanStaleAspectJRuntimeClasses) {
+        tasks.matching { it.name == "bundleLibRuntimeToDir${variantName}" }.configureEach { bundleTask ->
+            String runtimeClassesDir = "${buildDir}/intermediates/runtime_library_classes_dir/${variant.name}/${bundleTask.name}"
+            bundleTask.doFirst {
+                delete(fileTree(runtimeClassesDir) {
+                    include "**/*AjcClosure*.class"
+                })
+            }
+            bundleTask.doLast {
+                JavaCompile javaCompile = javaCompileProvider.get()
+                [kotlinClassesDir, javaOutputDir(javaCompile)].unique().each { String sourceDir ->
+                    File source = file(sourceDir)
+                    if (source.exists()) {
+                        copy {
+                            from(source) {
+                                include "**/*AjcClosure*.class"
+                            }
+                            into(runtimeClassesDir)
+                            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+plugins.withId("com.android.application") {
+    android.applicationVariants.all(configureAspectJVariant)
+}
+
+plugins.withId("com.android.library") {
+    android.libraryVariants.all(configureAspectJVariant)
+}

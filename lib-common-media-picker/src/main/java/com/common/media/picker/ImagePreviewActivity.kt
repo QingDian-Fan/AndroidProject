@@ -66,7 +66,7 @@ class ImagePreviewActivity : BaseAppBindActivity<ActivityImagePreviewBinding>() 
         binding.viewPager.registerOnPageChangeCallback(mPageChangeCallback)
         getTitleBarView()?.setCenterText("${(position + 1)}/${mAdapter?.itemCount}")
 
-        getTitleBarView()?.setRightText("全屏", Color.parseColor("#FF40A9FF"), ScreenUtils.dp2PxInt(this, 16f))
+        getTitleBarView()?.setRightText(getString(R.string.media_preview_fullscreen), Color.parseColor("#FF40A9FF"), ScreenUtils.dp2PxInt(this, 16f))
         getTitleBarView()?.setListener {  _, action, _ ->
             when (action) {
                 CommonTitleBar.ACTION_RIGHT_TEXT ->{
@@ -267,7 +267,7 @@ class ImagePreviewActivity : BaseAppBindActivity<ActivityImagePreviewBinding>() 
             method.invoke(null, context, url)
 
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
     }
 }

@@ -65,7 +65,7 @@ public class FileShareHelper {
             return realPath;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             return null;
         } finally {
             try { if (os != null) os.close(); } catch (Exception ignored) {}
@@ -87,7 +87,7 @@ public class FileShareHelper {
             bmp.compress(Bitmap.CompressFormat.JPEG, 60, fos);//通过io流的方式来压缩保存图片
             fos.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             return null;
         }
         return storePath + File.separator + fileName;

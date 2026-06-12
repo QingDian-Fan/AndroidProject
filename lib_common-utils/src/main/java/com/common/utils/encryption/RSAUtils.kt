@@ -79,7 +79,7 @@ class RSAUtils {
             oosPublic.writeObject(publicKey)
             oosPrivate.writeObject(privateKey)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         } finally {
             oosPublic?.close()
             oosPrivate?.close()

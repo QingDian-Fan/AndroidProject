@@ -7,4 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="refresh_footer_color">#4DB6AC</color>
+    <color name="permission_popup_bg">#CCCCCC</color>
+    <color name="permission_popup_title_color">#333333</color>
+    <color name="permission_popup_message_color">#666666</color>
 </resources>

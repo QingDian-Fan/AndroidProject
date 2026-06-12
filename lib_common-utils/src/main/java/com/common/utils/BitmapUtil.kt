@@ -16,7 +16,7 @@ object BitmapUtil {
             parcelFileDescriptor.close()
             return image
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return null
     }

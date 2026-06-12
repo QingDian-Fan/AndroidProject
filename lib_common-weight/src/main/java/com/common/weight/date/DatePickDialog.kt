@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.recyclerview.widget.RecyclerView
 import com.common.utils.ext.singleClick
+import com.common.weight.R
 import com.common.weight.databinding.DialogDatePickBinding
 import com.common.weight.date.PickerLayoutManager.Builder
 import com.common.weight.date.PickerLayoutManager.OnPickerListener
@@ -27,8 +28,8 @@ class DatePickDialog : AppCompatDialogFragment(), Runnable, OnPickerListener {
 
     private var _binding: DialogDatePickBinding? = null
     private val binding get() = _binding!!
-    private var startYear: Int = Calendar.getInstance(Locale.CHINA)[Calendar.YEAR] - 100
-    private var endYear: Int = Calendar.getInstance(Locale.CHINA)[Calendar.YEAR]
+    private var startYear: Int = Calendar.getInstance(Locale.getDefault())[Calendar.YEAR] - 100
+    private var endYear: Int = Calendar.getInstance(Locale.getDefault())[Calendar.YEAR]
     private lateinit var mYearAdapter: PickDateAdapter
     private lateinit var mMonthAdapter: PickDateAdapter
     private lateinit var mDateAdapter: PickDateAdapter
@@ -66,7 +67,7 @@ class DatePickDialog : AppCompatDialogFragment(), Runnable, OnPickerListener {
 
     private fun initData() {
         with(binding) {
-            tvTitle.text = "请选择日期"
+            tvTitle.setText(R.string.date_picker_title)
             binding.tvCancel.singleClick {
                 dismissAllowingStateLoss()
                 onCancel?.invoke()
@@ -87,19 +88,19 @@ class DatePickDialog : AppCompatDialogFragment(), Runnable, OnPickerListener {
 
             // 生产年份
             for (i in startYear..endYear) {
-                yearData.add("$i 年")
+                yearData.add(getString(R.string.date_picker_year_format, i))
             }
 
             // 生产月份
             for (i in 1..12) {
-                monthData.add("$i 月")
+                monthData.add(getString(R.string.date_picker_month_format, i))
             }
 
-            val calendar = Calendar.getInstance(Locale.CHINA)
+            val calendar = Calendar.getInstance(Locale.getDefault())
             val day = calendar.getActualMaximum(Calendar.DATE)
             // 生产天数
             for (i in 1..day) {
-                dayData.add("$i 日")
+                dayData.add(getString(R.string.date_picker_day_format, i))
             }
 
             mYearAdapter = PickDateAdapter(yearData)
@@ -169,14 +170,14 @@ class DatePickDialog : AppCompatDialogFragment(), Runnable, OnPickerListener {
     }
 
     override fun run() {
-        val calendar = Calendar.getInstance(Locale.CHINA)
+        val calendar = Calendar.getInstance(Locale.getDefault())
         calendar[startYear + yearManager.getPickedPosition(), monthManager.getPickedPosition()] =
             1
         val day = calendar.getActualMaximum(Calendar.DATE)
         if (mDateAdapter.itemCount != day) {
             dayData.clear()
             for (i in 1..day) {
-                dayData.add("$i 日")
+                dayData.add(getString(R.string.date_picker_day_format, i))
             }
             mDateAdapter.notifyDataSetChanged()
         }

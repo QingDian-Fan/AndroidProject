@@ -63,7 +63,7 @@ object NetWorkUtil {
                 }
             }
         } catch (ex: SocketException) {
-            ex.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(ex)
         }
         return ret
     }

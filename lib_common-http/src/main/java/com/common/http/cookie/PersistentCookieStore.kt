@@ -3,7 +3,6 @@ package com.common.http.cookie
 import android.content.Context
 import android.content.SharedPreferences
 import android.text.TextUtils
-import android.util.Log
 import com.common.utils.Utils
 import okhttp3.Cookie
 import okhttp3.HttpUrl
@@ -127,7 +126,7 @@ class PersistentCookieStore {
             val outputStream = ObjectOutputStream(os)
             outputStream.writeObject(cookie)
         } catch (e: IOException) {
-            Log.d(LOG_TAG, "IOException in encodeCookie", e)
+            com.common.utils.LogUtil.d(LOG_TAG, "IOException in encodeCookie", e)
             return null
         }
 
@@ -147,11 +146,11 @@ class PersistentCookieStore {
             val objectInputStream = ObjectInputStream(byteArrayInputStream)
             return (objectInputStream.readObject() as OkHttpCookies).getCookies()
         } catch (e: IOException) {
-            Log.d(LOG_TAG, "IOException in decodeCookie", e)
+            com.common.utils.LogUtil.d(LOG_TAG, "IOException in decodeCookie", e)
         } catch (e: ClassNotFoundException) {
-            Log.d(LOG_TAG, "ClassNotFoundException in decodeCookie", e)
+            com.common.utils.LogUtil.d(LOG_TAG, "ClassNotFoundException in decodeCookie", e)
         } catch (e: RuntimeException) {
-            Log.d(LOG_TAG, "RuntimeException in decodeCookie", e)
+            com.common.utils.LogUtil.d(LOG_TAG, "RuntimeException in decodeCookie", e)
         }
 
         return null

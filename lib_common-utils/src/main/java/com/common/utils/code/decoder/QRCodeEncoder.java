@@ -88,7 +88,7 @@ public class QRCodeEncoder {
             bitmap.setPixels(pixels, 0, size, 0, 0, size, size);
             return addLogoToQRCode(bitmap, logo);
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             return null;
         }
     }
@@ -116,7 +116,7 @@ public class QRCodeEncoder {
             canvas.save();
             canvas.restore();
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             bitmap = null;
         }
         return bitmap;
@@ -159,7 +159,7 @@ public class QRCodeEncoder {
             }
             return bitmap;
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
 
         return null;

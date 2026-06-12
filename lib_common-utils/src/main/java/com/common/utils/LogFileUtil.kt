@@ -49,8 +49,7 @@ object LogFileUtil {
                     filePath = logFile.absolutePath
                     writer = BufferedWriter(FileWriter(logFile, true))
                     fos = FileOutputStream(logFile, true)
-                } catch (e: IOException) {
-                    e.printStackTrace()
+                } catch (_: IOException) {
                 }
             }
         }
@@ -70,8 +69,7 @@ object LogFileUtil {
                 try {
                     output.write(logLine)
                     output.flush()
-                } catch (e: IOException) {
-                    e.printStackTrace()
+                } catch (_: IOException) {
                 }
             }
         }
@@ -82,8 +80,7 @@ object LogFileUtil {
             try {
                 writer?.close()
                 writer = null
-            } catch (e: IOException) {
-                e.printStackTrace()
+            } catch (_: IOException) {
             }
         }
     }
@@ -92,12 +89,12 @@ object LogFileUtil {
 
     fun doShareLogFile() {
         filePath ?: run {
-            Toast.makeText(Utils.getAppInstance(), "日志文件未初始化", Toast.LENGTH_SHORT).show()
+            Toast.makeText(Utils.getAppInstance(), ResourcesUtil.getString(R.string.toast_log_file_not_initialized), Toast.LENGTH_SHORT).show()
             return
         }
         val file = File(filePath)
         if (!file.exists()) {
-            showToast(Utils.getAppContext(), "木有找到日志文件", false, Gravity.CENTER)
+            showToast(Utils.getAppContext(), ResourcesUtil.getString(R.string.toast_log_file_not_found), false, Gravity.CENTER)
             return
         }
         //Uri logUri = Uri.parse(file.getAbsolutePath());
@@ -107,7 +104,7 @@ object LogFileUtil {
         )
         val intent = Intent(Intent.ACTION_SEND)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        intent.putExtra("subject", "log日志")
+        intent.putExtra("subject", ResourcesUtil.getString(R.string.share_log_subject))
         intent.putExtra(Intent.EXTRA_STREAM, logUri)
         intent.setType("text/plain")
         Utils.getAppContext().startActivity(intent)

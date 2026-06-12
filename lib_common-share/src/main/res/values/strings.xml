@@ -9,6 +9,9 @@
     <string name="share_save_img">保存图片</string>
     <string name="link_is_copy">链接已复制到粘贴板中</string>
     <string name="img_is_save">图片已保存到相册</string>
+    <string name="share_subject">分享</string>
+    <string name="share_web_page">分享网页</string>
+    <string name="share_text_not_supported">暂不支持分享纯文本</string>
 
     <string name="share_cancel">分享取消</string>
     <string name="share_denied">分享拒绝</string>

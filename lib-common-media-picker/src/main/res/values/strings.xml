@@ -9,4 +9,6 @@
     <string name="text_all_media">全部</string>
     <string name="image_select_total">共 %d 张</string>
     <string name="text_max_select">最多选择 %d 张</string>
+    <string name="media_picker_confirm">确 定</string>
+    <string name="media_preview_fullscreen">全屏</string>
 </resources>

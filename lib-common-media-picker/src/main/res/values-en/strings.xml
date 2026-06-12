@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">lib-common-media-picker</string>
+    <string name="text_image_select">Select images</string>
+    <string name="text_video_select">Select videos</string>
+    <string name="text_media_select">Select media</string>
+    <string name="text_all_image">All images</string>
+    <string name="text_all_video">All videos</string>
+    <string name="text_all_media">All</string>
+    <string name="image_select_total">%d items</string>
+    <string name="text_max_select">Select up to %d items</string>
+    <string name="media_picker_confirm">OK</string>
+    <string name="media_preview_fullscreen">Fullscreen</string>
+</resources>

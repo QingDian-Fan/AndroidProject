@@ -80,7 +80,7 @@ class ProcessDataTask extends AsyncTask<Void, Void, ScanResult> {
 
             return qrCodeView.processData(data, width, height, false);
         } catch (Exception e1) {
-            e1.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e1);
             try {
                 if (width != 0 && height != 0) {
                     BGAQRCodeUtil.d("识别失败重试");
@@ -89,7 +89,7 @@ class ProcessDataTask extends AsyncTask<Void, Void, ScanResult> {
                     return null;
                 }
             } catch (Exception e2) {
-                e2.printStackTrace();
+                com.common.utils.LogUtil.printStackTrace(e2);
                 return null;
             }
         }

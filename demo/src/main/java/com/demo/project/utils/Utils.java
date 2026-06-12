@@ -202,7 +202,7 @@ public class Utils {
                 return new String(data, "UTF-8");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
         return null;
     }
@@ -295,7 +295,7 @@ public class Utils {
         try {
             str = new String(b, "GBK");
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
         return str.charAt(0);
     }
@@ -354,7 +354,7 @@ public class Utils {
             imm.hideSoftInputFromWindow(activity.getCurrentFocus()
                     .getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
     }
 
@@ -563,9 +563,9 @@ public class Utils {
                 return errorInfo;
             }
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         } catch (java.text.ParseException e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
         if (Integer.parseInt(strMonth) > 12 || Integer.parseInt(strMonth) == 0) {
             errorInfo = "身份证月份无效";
@@ -752,7 +752,7 @@ public class Utils {
             byte[] digest = MessageDigest.getInstance("md5").digest(data);
             ret = Base64Encode(digest);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
         return ret;
     }

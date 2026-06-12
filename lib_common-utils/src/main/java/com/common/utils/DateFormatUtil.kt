@@ -3,7 +3,6 @@ package com.common.utils
 
 import android.annotation.SuppressLint
 import android.text.TextUtils
-import android.util.Log
 import java.text.DateFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -185,7 +184,7 @@ object DateFormatUtil {
         try {
             date = mSimpleDateFormat.parse(strDate)
         } catch (e: ParseException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return date
     }
@@ -204,7 +203,7 @@ object DateFormatUtil {
             c.time = date
             c.add(calendarField, offset)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return c.time
     }
@@ -232,7 +231,7 @@ object DateFormatUtil {
             c.add(calendarField, offset)
             mDateTime = mSimpleDateFormat.format(c.time)
         } catch (e: ParseException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return mDateTime
     }
@@ -255,7 +254,7 @@ object DateFormatUtil {
             c.add(calendarField, offset)
             strDate = mSimpleDateFormat.format(c.time)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return strDate
     }
@@ -288,7 +287,7 @@ object DateFormatUtil {
         try {
             strDate = mSimpleDateFormat.format(date)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return strDate
     }
@@ -309,7 +308,7 @@ object DateFormatUtil {
             val mSimpleDateFormat2 = SimpleDateFormat(format)
             mDateTime = mSimpleDateFormat2.format(c.time)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return mDateTime
     }
@@ -326,7 +325,7 @@ object DateFormatUtil {
             val mSimpleDateFormat = SimpleDateFormat(format)
             thisDateTime = mSimpleDateFormat.format(milliseconds)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return thisDateTime
     }
@@ -344,7 +343,7 @@ object DateFormatUtil {
             val c: Calendar = GregorianCalendar()
             curDateTime = mSimpleDateFormat.format(c.time)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return curDateTime
     }
@@ -359,7 +358,7 @@ object DateFormatUtil {
             c.add(Calendar.DAY_OF_MONTH, 0)
             curDateTime = mSimpleDateFormat.format(c.time)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return curDateTime
     }
@@ -373,7 +372,7 @@ object DateFormatUtil {
             c.add(Calendar.DAY_OF_MONTH, 0)
             curDateTime = mSimpleDateFormat.format(c.time)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return curDateTime
     }
@@ -387,7 +386,7 @@ object DateFormatUtil {
             c.add(Calendar.DAY_OF_MONTH, i)
             curDateTime = mSimpleDateFormat.format(c.time)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return curDateTime
     }
@@ -401,7 +400,7 @@ object DateFormatUtil {
             c.add(Calendar.HOUR_OF_DAY, i)
             curDateTime = mSimpleDateFormat.format(c.time)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return curDateTime
     }
@@ -422,7 +421,7 @@ object DateFormatUtil {
             c.add(calendarField, offset)
             mDateTime = mSimpleDateFormat.format(c.time)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return mDateTime
     }
@@ -542,7 +541,7 @@ object DateFormatUtil {
                 strDate = mSimpleDateFormat.format(c.time)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return strDate
     }
@@ -562,7 +561,7 @@ object DateFormatUtil {
             c[GregorianCalendar.DAY_OF_MONTH] = 1
             strDate = mSimpleDateFormat.format(c.time)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return strDate
     }
@@ -583,7 +582,7 @@ object DateFormatUtil {
             c.roll(Calendar.DATE, -1)
             strDate = mSimpleDateFormat.format(c.time)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return strDate
     }
@@ -805,7 +804,7 @@ object DateFormatUtil {
                 -1
             }
         } catch (e: ParseException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return ret
     }
@@ -823,9 +822,9 @@ object DateFormatUtil {
         try {
             sendDate = sdf.parse(dateStr)
             val dateNow = Date(System.currentTimeMillis())
-            Log.e("JPush", "date=$sendDate")
+            com.common.utils.LogUtil.e("JPush", "date=$sendDate")
             val times = dateNow.time - sendDate.time
-            Log.e("JPush", "date.getTime()=" + sendDate.time)
+            com.common.utils.LogUtil.e("JPush", "date.getTime()=" + sendDate.time)
             if (times > 0) {
                 ret = (times / ONE_HOUR_MILLISECONDS).toInt()
                 val sdqf = Math.floor((times / ONE_HOUR_MILLISECONDS).toDouble()).toInt()
@@ -833,9 +832,9 @@ object DateFormatUtil {
                 ret = -1
             }
         } catch (e: ParseException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
-        Log.e("JPush", "ret=$ret")
+        com.common.utils.LogUtil.e("JPush", "ret=$ret")
         return ret
     }
 
@@ -1027,7 +1026,7 @@ object DateFormatUtil {
         try {
             date = sdf.parse(dateStr)
         } catch (e: ParseException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return date!!.time
     }
@@ -1049,7 +1048,7 @@ object DateFormatUtil {
                 -1
             }
         } catch (exception: Exception) {
-            exception.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(exception)
         }
         return 0
     }
@@ -1064,7 +1063,7 @@ object DateFormatUtil {
         try {
             date = format.parse(day)
         } catch (ex: Exception) {
-            ex.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(ex)
         }
         if (date == null) return ""
         println("front:" + format.format(date)) //显示输入的日期

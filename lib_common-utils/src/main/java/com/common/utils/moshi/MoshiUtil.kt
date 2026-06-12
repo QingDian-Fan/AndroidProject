@@ -23,7 +23,7 @@ object MoshiUtil {
         try {
             return adapter.indent(indent).toJson(src)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return ""
 
@@ -73,7 +73,7 @@ object MoshiUtil {
         try {
             return adapter.fromJson(jsonStr)
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return null
     }

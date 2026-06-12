@@ -138,80 +138,12 @@ dependencies {
 
 }
 
-//==================================== AspectJ 织入 ====================================
-// lib_common-aop 只提供切面定义；demo 自己生成的 OnClickListener/注解方法也需要在本模块织入。
-import org.aspectj.bridge.IMessage
-import org.aspectj.bridge.MessageHandler
-import org.aspectj.tools.ajc.Main
-
-def weaveAspectJ = { String sourceDir, String outputDir, String classpath, String bootClasspath ->
-    File inPath = new File(sourceDir)
-    if (!inPath.exists()) {
-        return
-    }
-
-    MessageHandler handler = new MessageHandler(true)
-    String[] args = [
-            "-showWeaveInfo",
-            "-11",
-            "-inpath", sourceDir,
-            "-aspectpath", classpath,
-            "-d", outputDir,
-            "-classpath", classpath,
-            "-bootclasspath", bootClasspath
-    ]
-    new Main().run(args, handler)
-
-    for (IMessage message : handler.getMessages(null, true)) {
-        switch (message.getKind()) {
-            case IMessage.ABORT:
-            case IMessage.ERROR:
-            case IMessage.FAIL:
-                project.logger.error "AspectJ Error: " + message.message, message.thrown
-                break
-            case IMessage.WARNING:
-                project.logger.warn "AspectJ Warning: " + message.message, message.thrown
-                break
-            case IMessage.INFO:
-                project.logger.info "AspectJ Info: " + message.message, message.thrown
-                break
-        }
-    }
-}
-
-android.applicationVariants.all { variant ->
-    JavaCompile javaCompile = variant.javaCompileProvider.get()
-    String variantName = variant.name.capitalize()
-    String kotlinClassesDir = project.buildDir.path + "/tmp/kotlin-classes/" + variant.name
-    String bootClasspath = project.android.bootClasspath.join(File.pathSeparator)
-
-    // Kotlin class 必须在 KotlinCompile 任务内织入。否则 ajc 生成的 AjcClosure*.class
-    // 会晚于 AGP 对 Kotlin 输出的快照，运行时可能出现 NoClassDefFoundError。
-    tasks.named("compile${variantName}Kotlin").configure { kotlinCompile ->
-        kotlinCompile.doLast {
-            weaveAspectJ(
-                    kotlinClassesDir,
-                    kotlinClassesDir,
-                    javaCompile.classpath.asPath,
-                    bootClasspath
-            )
-        }
-    }
-
-    javaCompile.doLast {
-        weaveAspectJ(
-                javaCompile.destinationDir.toString(),
-                javaCompile.destinationDir.toString(),
-                javaCompile.classpath.asPath,
-                bootClasspath
-        )
-    }
-
-    tasks.matching { it.name == "minify${variantName}WithR8" }.configureEach { minifyTask ->
-        minifyTask.doFirst {
-            // AGP 8.13/R8 may touch these output folders before creating parents after a clean build.
-            file("${buildDir}/intermediates/dex/${variant.name}/minify${variantName}WithR8").mkdirs()
-            file("${buildDir}/intermediates/merged_java_res/${variant.name}/minify${variantName}WithR8").mkdirs()
-        }
-    }
-}
+// lib_common-aop 只提供切面定义；demo 自身生成的 OnClickListener/注解方法也需要在本模块织入。
+// demo 使用 ViewBinding，需等 JavaCompile 生成 Binding class 后再织入 Kotlin class。
+ext.aspectjWeaveConfig = [
+        weaveKotlinOnKotlinCompile       : false,
+        weaveKotlinOnJavaCompile         : true,
+        kotlinClasspathIncludesJavaOutput: true,
+        r8OutputWorkaround               : true
+]
+apply from: rootProject.file("gradle/aspectj-weave.gradle")

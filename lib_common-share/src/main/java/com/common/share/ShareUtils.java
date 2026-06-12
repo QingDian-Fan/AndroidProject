@@ -30,7 +30,7 @@ public class ShareUtils {
         try {
             output.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
         }
 
         return result;

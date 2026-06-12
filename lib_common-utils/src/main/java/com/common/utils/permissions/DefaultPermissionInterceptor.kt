@@ -3,6 +3,7 @@ package com.common.utils.permissions
 import android.Manifest
 import android.content.Context
 import androidx.fragment.app.FragmentActivity
+import com.common.utils.R
 import com.common.utils.ext.showAllowStateLoss
 
 class DefaultPermissionInterceptor(var mPermissionDescription: String = "") :
@@ -49,15 +50,15 @@ class DefaultPermissionInterceptor(var mPermissionDescription: String = "") :
             Manifest.permission.READ_MEDIA_IMAGES,
             Manifest.permission.READ_MEDIA_VIDEO,
             Manifest.permission.READ_MEDIA_AUDIO -> {
-                return "存储权限:用于添加、上传图片和音频等场景中读取和写入相册和文件内容"
+                return mContext.getString(R.string.permission_desc_storage)
             }
 
             Manifest.permission.CAMERA -> {
-                return "相机权限：用于拍照、录制视频、扫描二维码等场景"
+                return mContext.getString(R.string.permission_desc_camera)
             }
 
             Manifest.permission.SCHEDULE_EXACT_ALARM -> {
-                return "闹钟权限：用于定时提醒等场景"
+                return mContext.getString(R.string.permission_desc_alarm)
             }
         }
         return ""

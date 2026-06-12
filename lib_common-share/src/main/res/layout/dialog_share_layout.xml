@@ -56,7 +56,7 @@
             android:gravity="center"
             android:paddingHorizontal="@dimen/dp_15"
             android:paddingVertical="@dimen/dp_5"
-            android:textColor="#546E7A"
+            android:textColor="@color/text_sub_color"
             android:textSize="12dp"
             tools:text="分享Content" />
 
@@ -74,7 +74,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
-            android:background="#50aaaaaa" />
+            android:background="@color/line_color" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tv_share_cancel"

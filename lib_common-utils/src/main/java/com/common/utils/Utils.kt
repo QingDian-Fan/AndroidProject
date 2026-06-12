@@ -24,6 +24,7 @@ object Utils {
         mApplication = context
         appContext = context.applicationContext
         isDebug = debug
+        LogUtil.configure(debug)
     }
 
     fun getApplicationId(): String {

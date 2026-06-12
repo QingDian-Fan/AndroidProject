@@ -2,7 +2,6 @@ package com.common.http
 
 import android.content.Context
 import android.net.ParseException
-import android.util.Log
 import android.view.Gravity
 import android.webkit.MimeTypeMap
 import com.common.utils.moshi.MoshiUtil
@@ -312,7 +311,7 @@ open class HttpClient : HttpClientBase() {
      * 捕获异常
      */
     open fun catchException(cause: Throwable): HttpError {
-        Log.e("Error--->", "网络请求：message:${cause.message}")
+        com.common.utils.LogUtil.e("Error--->", "网络请求：message:${cause.message}")
         return when (cause) {
             is ConnectException,
             is UnknownHostException -> HttpError(

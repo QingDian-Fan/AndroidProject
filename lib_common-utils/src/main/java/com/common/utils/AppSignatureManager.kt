@@ -74,7 +74,7 @@ class AppSignatureManager private constructor() {
             @Suppress("DEPRECATION")
             return packageInfo.signatures
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return null
     }

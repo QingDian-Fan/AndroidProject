@@ -6,8 +6,6 @@ buildscript {
     apply from: 'pgyer-upload.gradle'
     apply from: 'publish-app.gradle'
     dependencies {
-        classpath 'org.aspectj:aspectjtools:1.9.6'
-        classpath 'org.aspectj:aspectjweaver:1.9.6'
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.9.4' // ✅
 
     }

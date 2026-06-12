@@ -7,7 +7,6 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
@@ -86,7 +85,7 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
                     else -> {
                         Toast.makeText(
                             requireContext(),
-                            "请到设置中打开相机权限，否则无法使用该功能",
+                            getString(R.string.toast_camera_permission_denied),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -150,7 +149,7 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
                 enableTouchControls()
 
             } catch (exc: Exception) {
-                Log.e("CameraX", "Use case binding failed", exc)
+                com.common.utils.LogUtil.e("CameraX", "Use case binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(context))
     }
@@ -171,7 +170,7 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
             ContextCompat.getMainExecutor(context),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    Log.e("CameraX", "Photo capture failed: ${exc.message}", exc)
+                    com.common.utils.LogUtil.e("CameraX", "Photo capture failed: ${exc.message}", exc)
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {

@@ -78,7 +78,7 @@ object IntentUtil {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             context.startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
     }
 
@@ -109,7 +109,7 @@ object IntentUtil {
             packageInfo = context.packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
         } catch (e: PackageManager.NameNotFoundException) {
             packageInfo = null
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return packageInfo != null
     }

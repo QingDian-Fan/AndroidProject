@@ -8,7 +8,6 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -354,7 +353,7 @@ public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener, 
     @Deprecated
     public void closeVisibleBG() {
         if (bgVisibleView == null) {
-            Log.e(TAG, "No rows found for which background options are visible");
+            com.common.utils.LogUtil.e(TAG, "No rows found for which background options are visible");
             return;
         }
         bgVisibleView.animate()
@@ -370,7 +369,7 @@ public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener, 
 
     public void closeVisibleBG(final OnSwipeListener mSwipeCloseListener) {
         if (bgVisibleView == null) {
-            Log.e(TAG, "No rows found for which background options are visible");
+            com.common.utils.LogUtil.e(TAG, "No rows found for which background options are visible");
             return;
         }
         final ObjectAnimator translateAnimator = ObjectAnimator.ofFloat(bgVisibleView,

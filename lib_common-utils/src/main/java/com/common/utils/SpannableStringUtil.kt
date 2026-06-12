@@ -37,7 +37,6 @@ import android.text.style.SuperscriptSpan
 import android.text.style.TypefaceSpan
 import android.text.style.URLSpan
 import android.text.style.UnderlineSpan
-import android.util.Log
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.IntDef
@@ -740,7 +739,7 @@ object SpannableStringUtil {
                     drawable = d
                     inputStream?.close()
                 } catch (e: Exception) {
-                    Log.e("sms", "Failed to loaded content $contentUri", e)
+                    com.common.utils.LogUtil.e("sms", "Failed to loaded content $contentUri", e)
                 }
             } else {
                 try {
@@ -748,7 +747,7 @@ object SpannableStringUtil {
                     drawable = d
                     d?.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
                 } catch (e: Exception) {
-                    Log.e("sms", "Unable to find resource: $mResourceId")
+                    com.common.utils.LogUtil.e("sms", "Unable to find resource: $mResourceId")
                 }
             }
             return drawable

@@ -17,6 +17,8 @@ package com.common.scan.camera.util;
 
 import android.util.Log;
 
+import com.common.scan.BuildConfig;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Locale;
@@ -46,7 +48,7 @@ public class LogUtils {
     /**
      * 是否显示日志
      */
-    private static boolean isShowLog = true;
+    private static boolean isShowLog = BuildConfig.DEBUG;
 
     /**
      * 日志优先级别

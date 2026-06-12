@@ -6,7 +6,6 @@ import android.media.AudioManager;
 import android.media.PlaybackParams;
 import android.media.AudioTrack;
 import android.os.Build;
-import android.util.Log;
 
 public final class FfmpegAudioPlayer {
     private static final String TAG = "FfmpegAudioPlayer";
@@ -231,7 +230,7 @@ public final class FfmpegAudioPlayer {
 
     private void notifyAudioError(int code, String message) {
         String safeMessage = message == null ? "" : message;
-        Log.e(TAG, "audio error " + code + ": " + safeMessage);
+        com.common.utils.LogUtil.e(TAG, "audio error " + code + ": " + safeMessage);
         if (audioErrorNotified) {
             return;
         }

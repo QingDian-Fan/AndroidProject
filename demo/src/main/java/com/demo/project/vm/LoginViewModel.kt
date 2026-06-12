@@ -2,6 +2,7 @@ package com.demo.project.vm
 
 import androidx.lifecycle.MutableLiveData
 import com.common.ui.BaseViewModel
+import com.demo.project.R
 import com.demo.project.repository.remote.DataRepo
 import com.demo.project.repository.remote.DataRepoImpl
 import kotlinx.coroutines.delay
@@ -11,7 +12,7 @@ class LoginViewModel : BaseViewModel() {
     private val mRepo: DataRepo by lazy { DataRepoImpl() }
     fun doLogin(username: String, password: String) {
         if (username.isBlank() || password.isBlank()) {
-            showToast("账号或密码不能为空")
+            showToast(R.string.toast_account_password_empty)
             return
         }
         launchOnUI {
@@ -31,11 +32,11 @@ class LoginViewModel : BaseViewModel() {
 
     fun doRegister(username: String, password: String, rePassword: String) {
         if (username.isBlank() || password.isBlank()) {
-            showToast("账号或密码不能为空")
+            showToast(R.string.toast_account_password_empty)
             return
         }
         if (password != rePassword) {
-            showToast("两次密码不一致")
+            showToast(R.string.toast_password_not_match)
             return
         }
         launchOnUI {

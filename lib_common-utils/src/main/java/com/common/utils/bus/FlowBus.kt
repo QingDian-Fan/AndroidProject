@@ -1,6 +1,5 @@
 package com.common.utils.bus
 
-import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -67,8 +66,8 @@ object FlowBus {
                          try {
                            action(it)
                           }catch (e:Exception){
-                           e.printStackTrace()
-                           Log.e(TAG, "FlowBus - Error:$e")
+                           com.common.utils.LogUtil.printStackTrace(e)
+                           com.common.utils.LogUtil.e(TAG, "FlowBus - Error:$e")
                           }
                         }
                       }
@@ -81,8 +80,8 @@ object FlowBus {
                          try {
                            action(it)
                           }catch (e:Exception){
-                           e.printStackTrace()
-                           Log.e(TAG, "FlowBus - Error:$e")
+                           com.common.utils.LogUtil.printStackTrace(e)
+                           com.common.utils.LogUtil.e(TAG, "FlowBus - Error:$e")
                           }
                         }
                       }
@@ -102,7 +101,7 @@ object FlowBus {
         
            override fun onDestroy(owner: LifecycleOwner) {
                  super.onDestroy(owner)
-                 Log.w(TAG, "FlowBus ==== 自动onDestroy")
+                 com.common.utils.LogUtil.w(TAG, "FlowBus ==== 自动onDestroy")
                  val subscriptCount = _events.subscriptionCount.value
                  if (subscriptCount <= 0)
                    busMap.remove(key)
@@ -110,7 +109,7 @@ object FlowBus {
         
            // 手动调用的销毁方法，用于Service、广播等
            fun destroy() {
-                 Log.w(TAG, "FlowBus ==== 手动销毁")
+                 com.common.utils.LogUtil.w(TAG, "FlowBus ==== 手动销毁")
                  val subscriptionCount = _events.subscriptionCount.value
                  if (subscriptionCount <= 0) {
                        busMap.remove(key)

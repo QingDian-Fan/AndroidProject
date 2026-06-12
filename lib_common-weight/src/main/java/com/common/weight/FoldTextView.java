@@ -14,7 +14,6 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import androidx.appcompat.widget.AppCompatTextView;
 
@@ -29,10 +28,6 @@ public class FoldTextView extends AppCompatTextView {
 
     // 默认打点文字
     private static final String DEFAULT_ELLIPSIZE = "...";
-    // 默认收起文字
-    private static final String DEFAULT_FOLD_TEXT = "[收起]";
-    // 默认展开文字
-    private static final String DEFAULT_UNFOLD_TEXT = "[查看全部]";
     // 默认固定行数
     private static final int DEFAULT_FOLD_LINE = 2;
     // 默认收起和展开文字颜色
@@ -119,11 +114,11 @@ public class FoldTextView extends AppCompatTextView {
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FoldTextView);
         mFoldText = a.getString(R.styleable.FoldTextView_foldText);
         if (null == mFoldText) {
-            mFoldText = DEFAULT_FOLD_TEXT;
+            mFoldText = getResources().getString(R.string.fold_text_collapse);
         }
         mUnFoldText = a.getString(R.styleable.FoldTextView_unFoldText);
         if (null == mUnFoldText) {
-            mUnFoldText = DEFAULT_UNFOLD_TEXT;
+            mUnFoldText = getResources().getString(R.string.fold_text_expand);
         }
         mFoldLine = a.getInt(R.styleable.FoldTextView_foldLine, DEFAULT_FOLD_LINE);
         if (mFoldLine < 1) {
@@ -172,7 +167,7 @@ public class FoldTextView extends AppCompatTextView {
                 if (index > 0) {
                     // 得到一个字符串，该字符串恰好占据mFoldLine行数的高度
                     CharSequence strWhichHasExactlyFoldLine = getText().subSequence(0, index);
-                    Log.d(TAG, "strWhichHasExactlyFoldLine-->" + strWhichHasExactlyFoldLine);
+                    com.common.utils.LogUtil.d(TAG, "strWhichHasExactlyFoldLine-->" + strWhichHasExactlyFoldLine);
                     layout = makeTextLayout(strWhichHasExactlyFoldLine);
                     // 把这个高度设置成最终的高度，这样下方View就不会抖动了
                     setMeasuredDimension(getMeasuredWidth(), layout.getHeight() + getPaddingTop() + getPaddingBottom());
@@ -184,7 +179,7 @@ public class FoldTextView extends AppCompatTextView {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.d(TAG, "onDraw() " + mCountOnDraw++ + ", getMeasuredHeight() " + getMeasuredHeight());
+        com.common.utils.LogUtil.d(TAG, "onDraw() " + mCountOnDraw++ + ", getMeasuredHeight() " + getMeasuredHeight());
 
         if (!mHasDrawn) {
             resetText();
@@ -372,7 +367,7 @@ public class FoldTextView extends AppCompatTextView {
     private SpannableString createFoldSpan(CharSequence text) {
         long startTime = System.currentTimeMillis();
         CharSequence destStr = tailorText(text);
-        Log.d(TAG, (System.currentTimeMillis() - startTime) + "ms");
+        com.common.utils.LogUtil.d(TAG, (System.currentTimeMillis() - startTime) + "ms");
 
         int start = destStr.length() - mUnFoldText.length();
         int end = destStr.length();
@@ -389,7 +384,7 @@ public class FoldTextView extends AppCompatTextView {
      * @return 裁剪后的文本
      */
     private CharSequence tailorText(CharSequence text) {
-        Log.d(TAG, "使用备用方法: tailorTextBackUp() " + mCountBackUp++);
+        com.common.utils.LogUtil.d(TAG, "使用备用方法: tailorTextBackUp() " + mCountBackUp++);
 
         SpannableStringBuilder destStr = new SpannableStringBuilder(text);
         destStr.append(DEFAULT_ELLIPSIZE);
@@ -399,7 +394,7 @@ public class FoldTextView extends AppCompatTextView {
         // 如果行数大于固定行数
         if (layout.getLineCount() > getFoldLine()) {
             int index = layout.getLineEnd(getFoldLine() - 1);
-            Log.d(TAG, destStr.charAt(index)+ "");
+            com.common.utils.LogUtil.d(TAG, destStr.charAt(index)+ "");
             if (text.length() < index) {
                 index = text.length();
             }
@@ -446,5 +441,4 @@ public class FoldTextView extends AppCompatTextView {
     }
 
 }
-
 

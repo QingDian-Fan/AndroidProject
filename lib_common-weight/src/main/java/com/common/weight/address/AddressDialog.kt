@@ -114,7 +114,7 @@ class AddressDialog : AppCompatDialogFragment() {
                 stringBuilder.append(lineString)
             }
         } catch (e: IOException) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
         return JSONArray(stringBuilder.toString())
     }

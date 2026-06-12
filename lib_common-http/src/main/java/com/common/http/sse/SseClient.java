@@ -1,6 +1,5 @@
 package com.common.http.sse;
 
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -120,7 +119,7 @@ public class SseClient {
         try {
             return GsonFactory.getSingletonGson().fromJson(data, responseType);
         } catch (Exception e) {
-            Log.e(TAG, "SSE 数据解析失败: " + data, e);
+            com.common.utils.LogUtil.e(TAG, "SSE 数据解析失败: " + data, e);
             return null;
         }
     }

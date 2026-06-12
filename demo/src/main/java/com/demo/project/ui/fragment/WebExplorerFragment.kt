@@ -132,7 +132,16 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
     }
 
     private fun showWebMenu() {
-        val actions = arrayOf("首页", "回到顶部", "刷新", "关闭", "收藏", "书签", "分享", "设置")
+        val actions = arrayOf(
+            getString(R.string.web_menu_home),
+            getString(R.string.web_menu_top),
+            getString(R.string.web_menu_refresh),
+            getString(R.string.web_menu_close),
+            getString(R.string.web_menu_collect),
+            getString(R.string.web_menu_bookmark),
+            getString(R.string.web_menu_share),
+            getString(R.string.web_menu_settings)
+        )
         AlertDialog.Builder(requireContext())
             .setItems(actions) { dialog, which ->
                 when (which) {
@@ -143,7 +152,7 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
                     4 -> currentWebEntry()?.let { CollectWebPageUtil.collectWebPage(it) }
                     5 -> currentWebEntry()?.let { WebBookMarkUtil.markWebPage(it) }
                     6 -> showShareDialog()
-                    7 -> showToast("设置功能未接入")
+                    7 -> showToast(R.string.web_settings_not_ready)
                 }
                 dialog.dismiss()
             }

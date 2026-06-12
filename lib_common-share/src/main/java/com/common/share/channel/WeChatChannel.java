@@ -140,7 +140,7 @@ public class WeChatChannel extends CustomChannel {
             bmp.compress(Bitmap.CompressFormat.JPEG, 90, fos);//通过io流的方式来压缩保存图片
             fos.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             return null;
         }
         if (checkVersionValid(Utils.INSTANCE.getAppContext()) && checkAndroidNotBelowN()) {
@@ -174,7 +174,7 @@ public class WeChatChannel extends CustomChannel {
             context.grantUriPermission("com.tencent.mm", contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);// 这里填微信包名
             return contentUri.toString();   // contentUri.toString() 即是以"content://"开头的用于共享的路径
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            com.common.utils.LogUtil.printStackTrace(e);
             return null;
         }
     }

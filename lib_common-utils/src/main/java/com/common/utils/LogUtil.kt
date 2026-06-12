@@ -10,7 +10,8 @@ object LogUtil {
     @JvmField
     var isDebug = Utils.isDebug
 
-    var isWriteFile = true
+    @JvmField
+    var isWriteFile = false
 
     private lateinit var className: String
     private lateinit var methodName: String
@@ -70,6 +71,37 @@ object LogUtil {
     @JvmStatic
     fun e(tag: String, message: String) {
         e(Throwable().stackTrace, tag, message)
+    }
+
+    @JvmStatic
+    fun i(tag: String, message: String, throwable: Throwable?) {
+        i(Throwable().stackTrace, tag, appendThrowable(message, throwable))
+    }
+
+    @JvmStatic
+    fun d(tag: String, message: String, throwable: Throwable?) {
+        d(Throwable().stackTrace, tag, appendThrowable(message, throwable))
+    }
+
+    @JvmStatic
+    fun v(tag: String, message: String, throwable: Throwable?) {
+        v(Throwable().stackTrace, tag, appendThrowable(message, throwable))
+    }
+
+    @JvmStatic
+    fun w(tag: String, message: String, throwable: Throwable?) {
+        w(Throwable().stackTrace, tag, appendThrowable(message, throwable))
+    }
+
+    @JvmStatic
+    fun e(tag: String, message: String, throwable: Throwable?) {
+        e(Throwable().stackTrace, tag, appendThrowable(message, throwable))
+    }
+
+    @JvmStatic
+    fun configure(debug: Boolean, writeFile: Boolean = debug) {
+        isDebug = debug
+        isWriteFile = writeFile
     }
 
     @JvmStatic
@@ -144,8 +176,9 @@ object LogUtil {
     }
 
     @JvmStatic
-    fun printStackTrace(throwable: Throwable) {
-        if (isDebug) throwable.printStackTrace()
+    fun printStackTrace(throwable: Throwable?) {
+        throwable ?: return
+        e("Throwable", "printStackTrace", throwable)
     }
 
     @JvmStatic
@@ -155,5 +188,10 @@ object LogUtil {
         for (stackTraceElement in Thread.currentThread().stackTrace) {
             d(tag, stackTraceElement.toString())
         }
+    }
+
+    private fun appendThrowable(message: String, throwable: Throwable?): String {
+        if (throwable == null) return message
+        return "$message\n${Log.getStackTraceString(throwable)}"
     }
 }

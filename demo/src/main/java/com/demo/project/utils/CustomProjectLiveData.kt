@@ -45,7 +45,7 @@ class CustomProjectLiveData<T> : MutableLiveData<T>() {
             mLastVersion.isAccessible = false
             mVersion.isAccessible = false
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.common.utils.LogUtil.printStackTrace(e)
         }
     }
 }
