@@ -31,8 +31,26 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
-                sh 'git rev-parse --abbrev-ref HEAD && git rev-parse --short HEAD'
+                sh '''
+                    set -e
+                    fetched=0
+                    for attempt in 1 2 3; do
+                      if git fetch origin master; then
+                        fetched=1
+                        break
+                      fi
+                      echo "git fetch origin master failed, retry ${attempt}/3" >&2
+                      sleep 3
+                    done
+                    git checkout master
+                    if [ "$fetched" = "1" ]; then
+                      git merge --ff-only origin/master
+                    else
+                      echo "Warning: unable to reach origin/master; continue with current local master checkout." >&2
+                    fi
+                    git rev-parse --abbrev-ref HEAD
+                    git rev-parse --short HEAD
+                '''
             }
         }
 

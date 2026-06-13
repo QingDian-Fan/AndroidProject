@@ -44,9 +44,26 @@ if [ "$BUILD_TYPE" = "Release" ]; then
   fi
 fi
 
-git fetch origin master
-git checkout master
-git pull --ff-only origin master
+sync_master() {
+  local fetched=0
+  for attempt in 1 2 3; do
+    if git fetch origin master; then
+      fetched=1
+      break
+    fi
+    echo "git fetch origin master failed, retry ${attempt}/3" >&2
+    sleep 3
+  done
+
+  git checkout master
+  if [ "$fetched" = "1" ]; then
+    git merge --ff-only origin/master
+  else
+    echo "Warning: unable to reach origin/master; continue with current local master checkout." >&2
+  fi
+}
+
+sync_master
 
 chmod +x ./gradlew
 "$JAVA_HOME/bin/java" -version
