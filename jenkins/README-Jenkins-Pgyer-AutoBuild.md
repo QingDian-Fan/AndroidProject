@@ -77,19 +77,21 @@ cd /Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject
 
 ## 构建参数填写说明
 
-Debug 包最少需要填写：
+Debug 包最少需要以下配置。可以在 Jenkins 参数里填写，也可以复用项目根目录 `local.properties` 里的同名配置；脚本会优先让 Gradle 按项目现有的 `readLocalOrEnv` 逻辑读取配置。
 
 - `BUILD_TYPE`：选择 `Debug`
-- `PGYER_API_KEY`：蒲公英 `_api_key`
-- `PGYER_USER_KEY`：蒲公英 `userKey`
-- `NOTIFY_DING_WEBHOOK`：钉钉机器人 Webhook。当前 `pgyer-upload.gradle` 的 `getMsgChannel()` 固定返回 `dingding`，因此上传成功后会发送钉钉通知。
+- Jenkins 参数 `PGYER_API_KEY` 或 `local.properties` 中的 `pgyer.apiKey`
+- Jenkins 参数 `PGYER_USER_KEY` 或 `local.properties` 中的 `pgyer.userKey`
+- Jenkins 参数 `NOTIFY_DING_WEBHOOK` 或 `local.properties` 中的 `notify.dingWebhook`
+
+当前 `pgyer-upload.gradle` 的 `getMsgChannel()` 固定返回 `dingding`，因此上传成功后会发送钉钉通知。
 
 Release 包额外需要填写：
 
-- `SIGNING_RELEASE_STORE_FILE`
-- `SIGNING_RELEASE_KEY_ALIAS`
-- `SIGNING_RELEASE_STORE_PASSWORD`
-- `SIGNING_RELEASE_KEY_PASSWORD`
+- Jenkins 参数 `SIGNING_RELEASE_STORE_FILE` 或 `local.properties` 中的 `signing.release.storeFile`
+- Jenkins 参数 `SIGNING_RELEASE_KEY_ALIAS` 或 `local.properties` 中的 `signing.release.keyAlias`
+- Jenkins 参数 `SIGNING_RELEASE_STORE_PASSWORD` 或 `local.properties` 中的 `signing.release.storePassword`
+- Jenkins 参数 `SIGNING_RELEASE_KEY_PASSWORD` 或 `local.properties` 中的 `signing.release.keyPassword`
 
 `JDK_HOME` 已默认配置为：
 
@@ -144,3 +146,13 @@ JAVA_HOME=/Users/dian/Library/Java/JavaVirtualMachines/corretto-17.0.17/Contents
 ```
 
 Gradle 已确认存在 `pgyerBuildDebug` 和 `pgyerBuildRelease` 任务。
+
+## 已处理过的失败
+
+如果控制台日志出现：
+
+```text
+Missing required Jenkins parameter/env: PGYER_API_KEY
+```
+
+原因是旧版脚本只检查 Jenkins 参数，没有兼容项目根目录 `local.properties`。新版 `jenkins/pgyer-build.sh` 已改为同时支持 Jenkins 参数和 `local.properties`。

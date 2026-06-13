@@ -40,18 +40,33 @@ pipeline {
             steps {
                 sh '''
                     set -e
+                    has_local_property() {
+                      key="$1"
+                      [ -f local.properties ] && grep -Eq "^[[:space:]]*${key}[[:space:]]*=[[:space:]]*[^[:space:]]+" local.properties
+                    }
+                    required_config() {
+                      env_name="$1"
+                      local_key="$2"
+                      eval "env_value=\\${$env_name:-}"
+                      if [ -z "$env_value" ] && ! has_local_property "$local_key"; then
+                        echo "Missing required config: set Jenkins parameter/env $env_name or local.properties key $local_key" >&2
+                        exit 2
+                      fi
+                    }
                     test -x "$JAVA_HOME/bin/java"
                     "$JAVA_HOME/bin/java" -version
                     test -d "$ANDROID_SDK_ROOT"
-                    test -n "$PGYER_API_KEY"
-                    test -n "$PGYER_USER_KEY"
-                    test -n "$NOTIFY_DING_WEBHOOK"
+                    required_config PGYER_API_KEY "pgyer\\.apiKey"
+                    required_config PGYER_USER_KEY "pgyer\\.userKey"
+                    required_config NOTIFY_DING_WEBHOOK "notify\\.dingWebhook"
                     if [ "$BUILD_TYPE" = "Release" ]; then
-                      test -n "$SIGNING_RELEASE_STORE_FILE"
-                      test -f "$SIGNING_RELEASE_STORE_FILE"
-                      test -n "$SIGNING_RELEASE_KEY_ALIAS"
-                      test -n "$SIGNING_RELEASE_STORE_PASSWORD"
-                      test -n "$SIGNING_RELEASE_KEY_PASSWORD"
+                      required_config SIGNING_RELEASE_STORE_FILE "signing\\.release\\.storeFile"
+                      required_config SIGNING_RELEASE_KEY_ALIAS "signing\\.release\\.keyAlias"
+                      required_config SIGNING_RELEASE_STORE_PASSWORD "signing\\.release\\.storePassword"
+                      required_config SIGNING_RELEASE_KEY_PASSWORD "signing\\.release\\.keyPassword"
+                      if [ -n "$SIGNING_RELEASE_STORE_FILE" ]; then
+                        test -f "$SIGNING_RELEASE_STORE_FILE"
+                      fi
                     fi
                 '''
             }
