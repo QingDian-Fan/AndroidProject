@@ -1,0 +1,112 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>AndroidProject 自动打包并通过 pgyer-upload.gradle 上传蒲公英。仓库：https://github.com/QingDian-Fan/AndroidProject，分支：master。</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>BUILD_TYPE</name>
+          <description>选择打包类型；Debug 调用 pgyerBuildDebug，Release 调用 pgyerBuildRelease。</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>Debug</string>
+              <string>Release</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>PROJECT_DIR</name>
+          <description>当前 GitHub 代码 checkout 目录。</description>
+          <defaultValue>/Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject</defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>JDK_HOME</name>
+          <description>JDK 17 路径。</description>
+          <defaultValue>/Users/dian/Library/Java/JavaVirtualMachines/corretto-17.0.17/Contents/Home</defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ANDROID_SDK_ROOT_OVERRIDE</name>
+          <description>Android SDK 路径。</description>
+          <defaultValue>/Users/dian/Library/Android/sdk</defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>PGYER_API_KEY</name>
+          <description>蒲公英 _api_key，传给 pgyer-upload.gradle。</description>
+          <defaultValue></defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>PGYER_USER_KEY</name>
+          <description>蒲公英 userKey，传给 pgyer-upload.gradle。</description>
+          <defaultValue></defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>NOTIFY_DING_WEBHOOK</name>
+          <description>钉钉机器人 Webhook；pgyer-upload.gradle 当前固定发送钉钉通知。</description>
+          <defaultValue></defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SIGNING_RELEASE_STORE_FILE</name>
+          <description>Release 签名文件路径；Debug 可留空。</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SIGNING_RELEASE_KEY_ALIAS</name>
+          <description>Release 签名 alias；Debug 可留空。</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>SIGNING_RELEASE_STORE_PASSWORD</name>
+          <description>Release keystore 密码；Debug 可留空。</description>
+          <defaultValue></defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>SIGNING_RELEASE_KEY_PASSWORD</name>
+          <description>Release key 密码；Debug 可留空。</description>
+          <defaultValue></defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>20</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>20</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <authToken>androidproject-pgyer-token</authToken>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>cd /Users/dian/AndroidStudioProjets/DemoProjects/GitHubProjects/AndroidProject
+/bin/bash ./jenkins/pgyer-build.sh</command>
+      <configuredLocalRules/>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>demo/build/outputs/apk/**/*.apk</artifacts>
+      <allowEmptyArchive>true</allowEmptyArchive>
+      <onlyIfSuccessful>false</onlyIfSuccessful>
+      <fingerprint>true</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+      <caseSensitive>true</caseSensitive>
+      <followSymlinks>false</followSymlinks>
+    </hudson.tasks.ArtifactArchiver>
+  </publishers>
+  <buildWrappers/>
+</project>
