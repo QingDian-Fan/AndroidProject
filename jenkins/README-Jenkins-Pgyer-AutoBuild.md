@@ -156,3 +156,19 @@ Missing required Jenkins parameter/env: PGYER_API_KEY
 ```
 
 原因是旧版脚本只检查 Jenkins 参数，没有兼容项目根目录 `local.properties`。新版 `jenkins/pgyer-build.sh` 已改为同时支持 Jenkins 参数和 `local.properties`。
+
+如果控制台日志出现：
+
+```text
+蒲公英获取COS Token失败: 接口无响应
+curl command failed
+```
+
+说明 APK 已经开始执行上传流程，但 Jenkins 机器无法访问蒲公英接口。先在 Jenkins 机器上验证网络：
+
+```bash
+curl -I --connect-timeout 15 --max-time 30 https://www.pgyer.com/
+curl -sS --connect-timeout 15 --max-time 30 https://www.pgyer.com/apiv2/app/getCOSToken
+```
+
+如果本机需要代理访问外网，需要确保 Jenkins 服务进程也带有 `HTTP_PROXY` / `HTTPS_PROXY` 环境变量；只在普通终端里配置代理，不一定会传给 Homebrew 启动的 Jenkins 服务。

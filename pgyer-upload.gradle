@@ -133,7 +133,7 @@ def execCurl(List<String> args) {
     def out = new ByteArrayOutputStream()
     def err = new ByteArrayOutputStream()
     def command = ["curl"] + args
-    exec {
+    def result = exec {
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
             commandLine "cmd", "/c", command.collect { quoteCommandArg(it) }.join(" ")
         } else {
@@ -145,6 +145,9 @@ def execCurl(List<String> args) {
     }
     if (err.size() > 0) {
         println(err.toString().trim())
+    }
+    if (result.exitValue != 0) {
+        throw new RuntimeException("curl command failed, exit=${result.exitValue}, stderr=${err.toString().trim()}")
     }
     return out.toString("UTF-8")
 }
@@ -165,6 +168,11 @@ def uploadApp(File file, String description) {
     // 第一步：获取COS上传凭证
     def tokenJson = execCurl([
             "-s",
+            "-S",
+            "--connect-timeout", "30",
+            "--max-time", "120",
+            "--retry", "2",
+            "--retry-delay", "3",
             "--form-string", "_api_key=${api_key}",
             "--form-string", "buildType=${build_type}",
             "--form-string", "buildInstallType=${build_install_type}",
@@ -172,6 +180,9 @@ def uploadApp(File file, String description) {
             cos_token_url
     ])
     println("获取COS Token结果：\n${tokenJson}")
+    if (tokenJson == null || tokenJson.trim().isEmpty()) {
+        throw new RuntimeException("蒲公英获取COS Token失败: 接口无响应，请检查 Jenkins 机器到 ${cos_token_url} 的网络、代理或防火墙")
+    }
     def tokenResult = new JsonSlurper().parseText(tokenJson)
     if (tokenResult.code != 0) {
         println("蒲公英获取COS Token失败:${tokenResult.message}")
@@ -215,10 +226,17 @@ def uploadApp(File file, String description) {
     for (int i = 0; i < 60; i++) {
         def infoJson = execCurl([
                 "-G",
+                "-s",
+                "-S",
+                "--connect-timeout", "30",
+                "--max-time", "120",
                 "--data-urlencode", "_api_key=${api_key}",
                 "--data-urlencode", "buildKey=${buildKey}",
                 build_info_url
         ])
+        if (infoJson == null || infoJson.trim().isEmpty()) {
+            throw new RuntimeException("蒲公英查询发布结果失败: 接口无响应，请检查 Jenkins 机器到 ${build_info_url} 的网络、代理或防火墙")
+        }
         def infoResult = new JsonSlurper().parseText(infoJson)
         if (infoResult.code == 0) {
             data = infoResult.data
