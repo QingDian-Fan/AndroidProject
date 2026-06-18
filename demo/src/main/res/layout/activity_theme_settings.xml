@@ -3,95 +3,125 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_default"
-    android:orientation="vertical"
-    android:paddingHorizontal="@dimen/dp_30"
-    android:paddingTop="@dimen/dp_30">
+    android:orientation="vertical">
 
-    <TextView
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/theme_settings_skin"
-        android:textColor="@color/text_color"
-        android:textSize="@dimen/sp_16" />
+        android:layout_height="@dimen/dp_50">
 
-    <RadioGroup
-        android:id="@+id/rg_theme_mode"
+        <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="@dimen/dp_50"
+            android:layout_height="@dimen/dp_50"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/theme_settings_entry"
+            android:padding="@dimen/dp_13"
+            android:src="@drawable/ic_web_back" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/theme_settings_entry"
+            android:textColor="@color/text_color"
+            android:textSize="@dimen/sp_17"
+            android:textStyle="bold" />
+    </FrameLayout>
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dp_12"
-        android:orientation="vertical">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:scrollbars="none">
 
-        <RadioButton
-            android:id="@+id/rb_theme_follow_system"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_46"
-            android:text="@string/theme_settings_follow_system"
-            android:textColor="@color/text_color"
-            android:textSize="@dimen/sp_15" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/dp_16"
+            android:paddingTop="@dimen/dp_8">
 
-        <RadioButton
-            android:id="@+id/rb_theme_day"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_46"
-            android:text="@string/theme_settings_day"
-            android:textColor="@color/text_color"
-            android:textSize="@dimen/sp_15" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/dp_4"
+                android:text="@string/theme_settings_skin"
+                android:textColor="@color/text_sub_color"
+                android:textSize="@dimen/sp_13" />
 
-        <RadioButton
-            android:id="@+id/rb_theme_night"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_46"
-            android:text="@string/theme_settings_night"
-            android:textColor="@color/text_color"
-            android:textSize="@dimen/sp_15" />
-    </RadioGroup>
+            <RadioGroup
+                android:id="@+id/rg_theme_mode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_8"
+                android:background="@drawable/bg_settings_card"
+                android:divider="@drawable/divider_settings_item"
+                android:orientation="vertical"
+                android:showDividers="middle">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dp_24"
-        android:text="@string/theme_settings_language"
-        android:textColor="@color/text_color"
-        android:textSize="@dimen/sp_16" />
+                <RadioButton
+                    android:id="@+id/rb_theme_follow_system"
+                    style="@style/ThemeSettingsRadioStyle"
+                    android:text="@string/theme_settings_follow_system" />
 
-    <RadioGroup
-        android:id="@+id/rg_language_mode"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dp_12"
-        android:orientation="vertical">
+                <RadioButton
+                    android:id="@+id/rb_theme_day"
+                    style="@style/ThemeSettingsRadioStyle"
+                    android:text="@string/theme_settings_day" />
 
-        <RadioButton
-            android:id="@+id/rb_language_follow_system"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_46"
-            android:text="@string/theme_settings_follow_system"
-            android:textColor="@color/text_color"
-            android:textSize="@dimen/sp_15" />
+                <RadioButton
+                    android:id="@+id/rb_theme_night"
+                    style="@style/ThemeSettingsRadioStyle"
+                    android:text="@string/theme_settings_night" />
+            </RadioGroup>
 
-        <RadioButton
-            android:id="@+id/rb_language_chinese"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_46"
-            android:text="@string/theme_settings_chinese"
-            android:textColor="@color/text_color"
-            android:textSize="@dimen/sp_15" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_20"
+                android:paddingHorizontal="@dimen/dp_4"
+                android:text="@string/theme_settings_language"
+                android:textColor="@color/text_sub_color"
+                android:textSize="@dimen/sp_13" />
 
-        <RadioButton
-            android:id="@+id/rb_language_english"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dp_46"
-            android:text="@string/theme_settings_english"
-            android:textColor="@color/text_color"
-            android:textSize="@dimen/sp_15" />
-    </RadioGroup>
+            <RadioGroup
+                android:id="@+id/rg_language_mode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_8"
+                android:background="@drawable/bg_settings_card"
+                android:divider="@drawable/divider_settings_item"
+                android:orientation="vertical"
+                android:showDividers="middle">
+
+                <RadioButton
+                    android:id="@+id/rb_language_follow_system"
+                    style="@style/ThemeSettingsRadioStyle"
+                    android:text="@string/theme_settings_follow_system" />
+
+                <RadioButton
+                    android:id="@+id/rb_language_chinese"
+                    style="@style/ThemeSettingsRadioStyle"
+                    android:text="@string/theme_settings_chinese" />
+
+                <RadioButton
+                    android:id="@+id/rb_language_english"
+                    style="@style/ThemeSettingsRadioStyle"
+                    android:text="@string/theme_settings_english" />
+            </RadioGroup>
+        </LinearLayout>
+    </ScrollView>
 
     <Button
         android:id="@+id/btn_confirm"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_46"
-        android:layout_marginTop="@dimen/dp_30"
+        android:layout_margin="@dimen/dp_16"
         android:background="@drawable/bg_btn_generate"
+        android:stateListAnimator="@null"
         android:text="@string/theme_settings_confirm"
-        android:textColor="@color/colorWhite" />
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/sp_16" />
 </LinearLayout>

@@ -5,14 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
-import android.widget.Button
-import android.widget.RadioGroup
 import androidx.appcompat.app.AppCompatActivity
 import com.common.theme.AppLanguage
 import com.common.theme.AppLanguageManager
 import com.common.theme.NightMode
 import com.common.theme.NightModeManager
 import com.demo.project.R
+import com.demo.project.databinding.ActivityThemeSettingsBinding
 
 class ThemeSettingsActivity : AppCompatActivity() {
 
@@ -33,24 +32,22 @@ class ThemeSettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_theme_settings)
+        val binding = ActivityThemeSettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         selectedNightMode = NightModeManager.currentMode
         selectedLanguage = AppLanguageManager.currentLanguage
 
-        val themeGroup = findViewById<RadioGroup>(R.id.rg_theme_mode)
-        val languageGroup = findViewById<RadioGroup>(R.id.rg_language_mode)
-        val confirmButton = findViewById<Button>(R.id.btn_confirm)
+        binding.rgThemeMode.check(selectedNightMode.toThemeRadioId())
+        binding.rgLanguageMode.check(selectedLanguage.toLanguageRadioId())
 
-        themeGroup.check(selectedNightMode.toThemeRadioId())
-        languageGroup.check(selectedLanguage.toLanguageRadioId())
-
-        themeGroup.setOnCheckedChangeListener { _, checkedId ->
+        binding.ivBack.setOnClickListener { finish() }
+        binding.rgThemeMode.setOnCheckedChangeListener { _, checkedId ->
             selectedNightMode = checkedId.toNightMode()
         }
-        languageGroup.setOnCheckedChangeListener { _, checkedId ->
+        binding.rgLanguageMode.setOnCheckedChangeListener { _, checkedId ->
             selectedLanguage = checkedId.toAppLanguage()
         }
-        confirmButton.setOnClickListener {
+        binding.btnConfirm.setOnClickListener {
             AppLanguageManager.setLanguage(this, selectedLanguage)
             NightModeManager.setMode(this, selectedNightMode)
             finish()

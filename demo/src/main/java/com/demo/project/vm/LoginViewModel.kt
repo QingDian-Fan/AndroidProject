@@ -18,7 +18,7 @@ class LoginViewModel : BaseViewModel() {
         launchOnUI {
             mRepo.doLogin(username, password)
                 .onSuccess {
-                    //loginInfo.value = it
+                    loginInfo.value = username
                 }
                 .onFailure { _, _ ->
                     showErrorView(true)

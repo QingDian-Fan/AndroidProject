@@ -15,7 +15,9 @@ import com.common.weight.titlebar.CommonTitleBar
 import com.common.weight.titlebar.ScreenUtils
 import com.demo.project.R
 import com.demo.project.databinding.ActivityLoginBinding
+import com.dian.annotation.LoginPage
 
+@LoginPage
 class LoginActivity : BaseAppBindActivity<ActivityLoginBinding>() {
 
     companion object {

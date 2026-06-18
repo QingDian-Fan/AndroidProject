@@ -117,6 +117,7 @@ dependencies {
 
     implementation project(':lib_common-theme')
     implementation project(':lib_common-utils')
+    implementation project(':lib_common-auth')
     implementation project(':lib_common-weight')
     implementation project(':lib_common-ui')
     implementation project(':lib_common-http')

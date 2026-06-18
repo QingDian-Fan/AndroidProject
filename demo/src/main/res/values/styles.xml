@@ -24,6 +24,20 @@
         <item name="android:paddingEnd">@dimen/dp_10</item>
     </style>
 
+    <style name="ThemeSettingsRadioStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/dp_50</item>
+        <item name="android:button">@null</item>
+        <item name="android:drawableEnd">?android:attr/listChoiceIndicatorSingle</item>
+        <item name="android:drawableTint">@color/selector_theme_settings_radio</item>
+        <item name="android:paddingStart">@dimen/dp_16</item>
+        <item name="android:paddingEnd">@dimen/dp_16</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:textColor">@color/text_color</item>
+        <item name="android:textSize">@dimen/sp_15</item>
+    </style>
+
     <style name="HorizontalLineStyle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">2px</item>
