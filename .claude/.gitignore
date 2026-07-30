@@ -1,0 +1,4 @@
+# Claude Code runtime state and machine-local overrides
+state/
+scheduled_tasks.lock
+settings.local.json

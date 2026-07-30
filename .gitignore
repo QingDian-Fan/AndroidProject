@@ -31,6 +31,10 @@ cmake_install.cmake
 *.log
 ajcore.*.txt
 
+# Local automation and AI review artifacts
+.scripts/
+.ai-code-reviews/
+
 # Signing / private keys
 *.jks
 *.keystore

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew assembleDebug)",
+      "Bash(./gradlew :demo:assembleDebug)",
+      "Bash(./gradlew :demo:testDebugUnitTest)",
+      "Bash(./gradlew :demo:connectedDebugAndroidTest)",
+      "Bash(./gradlew :lib_common-utils:testDebugUnitTest)",
+      "Bash(./gradlew tasks)",
+      "Bash(./gradlew projects)",
+      "Bash(git status)",
+      "Bash(git status --short)",
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(rg *)",
+      "mcp__codegraph__codegraph_explore",
+      "mcp__codegraph__codegraph_search",
+      "mcp__codegraph__codegraph_node",
+      "mcp__codegraph__codegraph_callers",
+      "mcp__codegraph__codegraph_callees",
+      "mcp__codegraph__codegraph_impact",
+      "mcp__codegraph__codegraph_files",
+      "mcp__codegraph__codegraph_status"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean *)",
+      "Bash(git checkout -- *)",
+      "Read(/local.properties)",
+      "Read(/.env)",
+      "Read(/.env.*)",
+      "Read(/secrets/**)",
+      "Read(/**/*.jks)",
+      "Read(/**/*.keystore)",
+      "Read(/**/*.p12)",
+      "Read(/**/*.pem)",
+      "Read(/**/*.key)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/mark-gradle-check-pending.sh",
+            "args": [],
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/run-gradle-check-on-stop.sh",
+            "args": [],
+            "timeout": 1200
+          }
+        ]
+      }
+    ]
+  }
+}
