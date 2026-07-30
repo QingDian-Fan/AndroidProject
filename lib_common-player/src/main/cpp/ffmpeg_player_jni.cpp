@@ -18,6 +18,7 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/channel_layout.h>
+#include <libavutil/display.h>
 #include <libavutil/error.h>
 #include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
@@ -296,6 +297,69 @@ static void copy_to_window(ANativeWindow_Buffer *window_buffer, const uint8_t *s
     }
 }
 
+static int normalize_rotation(double rotation) {
+    if (!std::isfinite(rotation)) {
+        return 0;
+    }
+    int degrees = static_cast<int>(std::lround(rotation)) % 360;
+    if (degrees < 0) {
+        degrees += 360;
+    }
+    return (degrees == 90 || degrees == 180 || degrees == 270) ? degrees : 0;
+}
+
+static int read_display_rotation(AVStream *stream) {
+    if (stream == nullptr || stream->codecpar == nullptr) {
+        return 0;
+    }
+    const AVPacketSideData *side_data = av_packet_side_data_get(
+            stream->codecpar->coded_side_data,
+            stream->codecpar->nb_coded_side_data,
+            AV_PKT_DATA_DISPLAYMATRIX);
+    if (side_data == nullptr || side_data->data == nullptr ||
+        side_data->size < 9 * sizeof(int32_t)) {
+        return 0;
+    }
+    auto *matrix = reinterpret_cast<const int32_t *>(side_data->data);
+    return normalize_rotation(av_display_rotation_get(matrix));
+}
+
+static void copy_to_window_with_rotation(ANativeWindow_Buffer *window_buffer,
+                                         const uint8_t *src_data,
+                                         int src_linesize,
+                                         int src_width,
+                                         int src_height,
+                                         int rotation) {
+    if (rotation == 0) {
+        copy_to_window(window_buffer, src_data, src_linesize, src_width, src_height);
+        return;
+    }
+
+    auto *dst = static_cast<uint8_t *>(window_buffer->bits);
+    int dst_linesize = window_buffer->stride * 4;
+    int dst_width = (rotation == 90 || rotation == 270) ? src_height : src_width;
+    int dst_height = (rotation == 90 || rotation == 270) ? src_width : src_height;
+
+    for (int y = 0; y < dst_height; ++y) {
+        auto *dst_row = dst + y * dst_linesize;
+        for (int x = 0; x < dst_width; ++x) {
+            int src_x = x;
+            int src_y = y;
+            if (rotation == 90) {
+                src_x = src_width - 1 - y;
+                src_y = x;
+            } else if (rotation == 180) {
+                src_x = src_width - 1 - x;
+                src_y = src_height - 1 - y;
+            } else if (rotation == 270) {
+                src_x = y;
+                src_y = src_height - 1 - x;
+            }
+            std::memcpy(dst_row + x * 4, src_data + src_y * src_linesize + src_x * 4, 4);
+        }
+    }
+}
+
 static void run_video(VideoPlayer *player) {
     MediaContext media;
     int ret = open_media(player->source, AVMEDIA_TYPE_VIDEO, &media);
@@ -336,6 +400,10 @@ static void run_video(VideoPlayer *player) {
 
     int width = media.codec->width;
     int height = media.codec->height;
+    AVStream *stream = media.format->streams[media.stream_index];
+    int rotation = read_display_rotation(stream);
+    int display_width = (rotation == 90 || rotation == 270) ? height : width;
+    int display_height = (rotation == 90 || rotation == 270) ? width : height;
     std::vector<uint8_t> rgba_buffer(av_image_get_buffer_size(AV_PIX_FMT_RGBA, width, height, 1));
     av_image_fill_arrays(rgba_frame->data, rgba_frame->linesize, rgba_buffer.data(),
                          AV_PIX_FMT_RGBA, width, height, 1);
@@ -353,10 +421,9 @@ static void run_video(VideoPlayer *player) {
         return;
     }
 
-    ANativeWindow_setBuffersGeometry(window, width, height, WINDOW_FORMAT_RGBA_8888);
-    player->notifyVideoSize(width, height);
+    ANativeWindow_setBuffersGeometry(window, display_width, display_height, WINDOW_FORMAT_RGBA_8888);
+    player->notifyVideoSize(display_width, display_height);
 
-    AVStream *stream = media.format->streams[media.stream_index];
     AVRational frame_rate = av_guess_frame_rate(media.format, stream, nullptr);
     int64_t frame_delay_us = 40000;
     if (frame_rate.num > 0 && frame_rate.den > 0) {
@@ -401,8 +468,8 @@ static void run_video(VideoPlayer *player) {
 
             ANativeWindow_Buffer window_buffer;
             if (ANativeWindow_lock(window, &window_buffer, nullptr) == 0) {
-                copy_to_window(&window_buffer, rgba_frame->data[0], rgba_frame->linesize[0],
-                               width, height);
+                copy_to_window_with_rotation(&window_buffer, rgba_frame->data[0],
+                                             rgba_frame->linesize[0], width, height, rotation);
                 ANativeWindow_unlockAndPost(window);
             }
             av_frame_unref(frame);

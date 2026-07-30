@@ -61,7 +61,7 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
             binding.videoView.setPlayerEngineFactory { context -> CommonPlayerVideoEngine(context.applicationContext) }
         }
         binding.videoView.initData()
-        val playUrl = mediaUri ?: "https://oss.qinxuestudy.com/homework/student/test/2026/06/18/2052631338333810690/1781745782752_B40F0031-4A50-4D0F-858B-9BD787497A30/iOS_VIDEO_1781745782386_BB12D0B3-7227-460F-A246-5D88B886334B.mp4"
+        val playUrl = mediaUri ?: "https://oss.qinxuestudy.com/fangtian-education/homework/2026/06/18/2052631338333810690_1781780255897/VID_20260520_153925.mp4"
         binding.videoView.setVideoPath(playUrl)
         binding.videoView.setScaleType(VideoScaleType.RATIO_FILL_SIZE)
         binding.videoView.setSpeed(1f)
