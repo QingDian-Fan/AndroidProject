@@ -11,6 +11,8 @@
             <enum name="dark" value="0" />
             <enum name="light" value="1" />
         </attr>
+        <!-- 根据系统日夜间配置自动选择状态栏图标颜色。启用后忽略 statusBarMode。 -->
+        <attr name="autoStatusBarMode" format="boolean" />
 
         <!-- 标题栏背景 图片或颜色 -->
         <attr name="titleBarColor" format="color" />

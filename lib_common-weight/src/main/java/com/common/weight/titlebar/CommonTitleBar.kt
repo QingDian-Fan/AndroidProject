@@ -3,6 +3,7 @@ package com.common.weight.titlebar
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.res.Configuration
 import android.graphics.Color
 import android.text.Editable
 import android.text.TextUtils
@@ -65,6 +66,7 @@ class CommonTitleBar @JvmOverloads constructor(
     private var titleBarHeight = 0
     private var statusBarColor = 0
     private var statusBarMode = 0
+    private var autoStatusBarMode = false
 
     private var showBottomLine = true
     private var bottomLineColor = 0
@@ -127,6 +129,7 @@ class CommonTitleBar @JvmOverloads constructor(
             ).toInt()
             statusBarColor = array.getColor(R.styleable.CommonTitleBar_statusBarColor, Color.WHITE)
             statusBarMode = array.getInt(R.styleable.CommonTitleBar_statusBarMode, 0)
+            autoStatusBarMode = array.getBoolean(R.styleable.CommonTitleBar_autoStatusBarMode, false)
 
             showBottomLine = array.getBoolean(R.styleable.CommonTitleBar_showBottomLine, true)
             bottomLineColor = array.getColor(R.styleable.CommonTitleBar_bottomLineColor, Color.parseColor("#dddddd"))
@@ -545,11 +548,18 @@ class CommonTitleBar @JvmOverloads constructor(
     private fun setUpImmersionTitleBar() {
         val window = findWindow() ?: return
         StatusBarUtils.transparentStatusBar(window)
-        if (statusBarMode == 0) {
+        if (autoStatusBarMode && isNightMode()) {
+            StatusBarUtils.setLightMode(window)
+        } else if (autoStatusBarMode || statusBarMode == 0) {
             StatusBarUtils.setDarkMode(window)
         } else {
             StatusBarUtils.setLightMode(window)
         }
+    }
+
+    private fun isNightMode(): Boolean {
+        return resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+            Configuration.UI_MODE_NIGHT_YES
     }
 
     private fun findWindow(): Window? {

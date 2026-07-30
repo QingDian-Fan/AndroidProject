@@ -14,10 +14,15 @@
             android:id="@+id/title_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:autoStatusBarMode="true"
+            app:bottomLineColor="@color/title_bar_divider"
+            app:centerTextColor="@color/title_bar_text"
             app:centerTextMarquee="false"
             app:centerType="textView"
-            app:leftImageResource="@mipmap/action_back"
-            app:leftType="imageButton" />
+            app:leftImageResource="@drawable/ic_action_back"
+            app:leftType="imageButton"
+            app:statusBarColor="@color/title_bar_background"
+            app:titleBarColor="@color/title_bar_background" />
     </FrameLayout>
 
     <FrameLayout
