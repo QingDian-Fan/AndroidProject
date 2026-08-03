@@ -41,6 +41,8 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
 
     override fun initialize(savedInstanceState: Bundle?) {
         getTitleBarView()?.setCenterText(getString(R.string.home_page_title))
+        // 首页是任务栈根页面，没有可返回的上级页面，隐藏标题栏左上角返回按钮
+        hideActionBack()
         binding.btnScanActivity.setOnClickListener {
             startActivityForResult(WeChatQRCodeActivity::class.java)
         }
