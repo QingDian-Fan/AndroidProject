@@ -29,7 +29,26 @@ extern "C" {
 
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "FfmpegPlayer", __VA_ARGS__)
 
+/** 视频帧落后主时钟超过该值时丢弃，用于追赶音频 */
+static const int64_t SYNC_DROP_THRESHOLD_MS = 80;
+/** 单帧最长等待时间，避免主时钟异常时长时间卡住画面 */
+static const int64_t SYNC_MAX_WAIT_MS = 1000;
+/** 时间戳跳变阈值，超过该值认为播放时钟需要重建 */
+static const int64_t SYNC_RESET_THRESHOLD_MS = 2000;
+/** 主时钟超过该时长未更新视为失效，退化为视频自身时钟 */
+static const int64_t MASTER_CLOCK_TIMEOUT_US = 1000000;
+/** 同步等待的分片时长，保证能及时响应暂停、seek 与倍速切换 */
+static const int64_t SYNC_SLEEP_SLICE_US = 20000;
+/** 连续丢帧上限，避免长时间不刷新画面 */
+static const int MAX_CONTINUOUS_DROP_FRAMES = 15;
+/** 暂停状态下 seek 时，为对齐目标位置最多丢弃的帧数 */
+static const int MAX_SEEK_SKIP_FRAMES = 600;
+
 static JavaVM *g_vm = nullptr;
+
+static float clamp_speed(float speed) {
+    return speed > 0.0f ? speed : 1.0f;
+}
 
 static std::string ff_error(int code) {
     char buffer[AV_ERROR_MAX_STRING_SIZE] = {0};
@@ -73,8 +92,19 @@ struct BasePlayer {
     std::atomic<int64_t> duration_ms{0};
     std::atomic<int64_t> seek_request_ms{-1};
     std::atomic<int64_t> last_progress_callback_ms{-1};
+    /** seek 请求序号，与 seek_done_serial 不相等表示解码器尚未完成定位 */
+    std::atomic<int64_t> seek_serial{0};
+    std::atomic<int64_t> seek_done_serial{0};
+    /** 需要重建播放时钟（首帧、seek、恢复播放、倍速切换） */
+    std::atomic_bool clock_rebase_requested{true};
 
     virtual ~BasePlayer() = default;
+
+    /** seek 被解码线程消费后的回调，供子类同步输出设备状态 */
+    virtual void onSeekConsumed(int64_t /* position_ms */, bool /* success */) {}
+
+    /** 解码线程结束后的回调，供子类清理播放时钟等状态 */
+    virtual void onStopped() {}
 
     void notifyCompletion() {
         bool attached = false;
@@ -117,18 +147,61 @@ struct BasePlayer {
         detach_env(attached);
     }
 
-    void waitIfPaused() {
+    /** 暂停期间阻塞解码线程，收到停止或 seek 请求时立即唤醒 */
+    void waitForResumeOrSeek() {
         std::unique_lock<std::mutex> lock(mutex);
         cv.wait(lock, [&] {
-            return stop_requested.load() || !pause_requested.load();
+            return stop_requested.load() || !pause_requested.load() ||
+                   seek_request_ms.load() >= 0;
         });
+    }
+
+    void requestSeek(int64_t position_ms) {
+        std::lock_guard<std::mutex> lock(mutex);
+        // 先自增序号再挂请求，保证解码线程取到请求时一定能读到对应的序号
+        seek_serial.fetch_add(1);
+        seek_request_ms = position_ms;
+        current_position_ms = position_ms;
+        clock_rebase_requested = true;
+        cv.notify_all();
+    }
+
+    bool isSeeking() const {
+        return seek_done_serial.load() != seek_serial.load();
+    }
+
+    void resetSeekState() {
+        seek_request_ms = -1;
+        seek_serial = 0;
+        seek_done_serial = 0;
     }
 };
 
 struct VideoPlayer : BasePlayer {
-    jobject surface = nullptr;
     jmethodID on_prepared = nullptr;
     jmethodID on_video_size = nullptr;
+
+    /** 渲染窗口可在播放过程中被替换（Surface 重建），访问需持锁 */
+    std::mutex window_mutex;
+    ANativeWindow *window = nullptr;
+    bool window_dirty = false;
+    int display_width = 0;
+    int display_height = 0;
+
+    /** 由上层（音频输出进度）推送的主时钟锚点 */
+    std::atomic<int64_t> master_clock_ms{0};
+    std::atomic<int64_t> master_clock_time_us{0};
+    /** 无音频轨时使用的视频自身时钟锚点，仅解码线程访问 */
+    int64_t video_clock_pts_ms = 0;
+    int64_t video_clock_time_us = 0;
+
+    void onStopped() override {
+        master_clock_time_us = 0;
+        master_clock_ms = 0;
+        video_clock_time_us = 0;
+        video_clock_pts_ms = 0;
+        clock_rebase_requested = true;
+    }
 
     void notifyPrepared() {
         bool attached = false;
@@ -152,6 +225,32 @@ struct VideoPlayer : BasePlayer {
 struct AudioPlayer : BasePlayer {
     jmethodID on_audio_format = nullptr;
     jmethodID on_audio_data = nullptr;
+    jmethodID on_audio_flush = nullptr;
+    jmethodID on_audio_unavailable = nullptr;
+
+    /** 解码器完成定位后通知上层丢弃 AudioTrack 中的旧数据并重建输出时钟 */
+    void notifyAudioFlush(int64_t position_ms) {
+        bool attached = false;
+        JNIEnv *env = attach_env(&attached);
+        if (env != nullptr && owner != nullptr && on_audio_flush != nullptr) {
+            env->CallVoidMethod(owner, on_audio_flush, static_cast<jlong>(position_ms));
+        }
+        detach_env(attached);
+    }
+
+    /** 媒体中不存在可解码的音频轨 */
+    void notifyAudioUnavailable() {
+        bool attached = false;
+        JNIEnv *env = attach_env(&attached);
+        if (env != nullptr && owner != nullptr && on_audio_unavailable != nullptr) {
+            env->CallVoidMethod(owner, on_audio_unavailable);
+        }
+        detach_env(attached);
+    }
+
+    void onSeekConsumed(int64_t position_ms, bool /* success */) override {
+        notifyAudioFlush(position_ms);
+    }
 
     void notifyAudioFormat(int sample_rate, int channels) {
         bool attached = false;
@@ -162,13 +261,13 @@ struct AudioPlayer : BasePlayer {
         detach_env(attached);
     }
 
-    void notifyAudioData(const uint8_t *data, int size) {
+    void notifyAudioData(const uint8_t *data, int size, int64_t pts_ms) {
         bool attached = false;
         JNIEnv *env = attach_env(&attached);
         if (env != nullptr && owner != nullptr && on_audio_data != nullptr && size > 0) {
             jbyteArray array = env->NewByteArray(size);
             env->SetByteArrayRegion(array, 0, size, reinterpret_cast<const jbyte *>(data));
-            env->CallVoidMethod(owner, on_audio_data, array);
+            env->CallVoidMethod(owner, on_audio_data, array, static_cast<jlong>(pts_ms));
             env->DeleteLocalRef(array);
         }
         detach_env(attached);
@@ -237,12 +336,24 @@ static bool perform_seek(MediaContext *media, int64_t position_ms) {
     return false;
 }
 
-static void consume_pending_seek(BasePlayer *player, MediaContext *media) {
+/** 消费一次待处理的 seek，返回是否发生过定位 */
+static bool consume_pending_seek(BasePlayer *player, MediaContext *media) {
     int64_t requested = player->seek_request_ms.exchange(-1);
-    if (requested >= 0 && perform_seek(media, requested)) {
-        player->current_position_ms = requested;
-        player->notifyProgress(true);
+    if (requested < 0) {
+        return false;
     }
+    int64_t serial = player->seek_serial.load();
+    bool success = perform_seek(media, requested);
+    player->current_position_ms = requested;
+    player->clock_rebase_requested = true;
+    player->onSeekConsumed(requested, success);
+    // 无论成功与否都推进完成序号，避免上层进度长期停留在拖动目标上
+    player->seek_done_serial = serial;
+    player->notifyProgress(true);
+    if (!success) {
+        player->notifyError(-3, "Seek failed.");
+    }
+    return true;
 }
 
 static int open_media(const std::string &source, AVMediaType type, MediaContext *ctx) {
@@ -360,6 +471,114 @@ static void copy_to_window_with_rotation(ANativeWindow_Buffer *window_buffer,
     }
 }
 
+/** 读取上层推送的主时钟（音频输出进度），返回 -1 表示主时钟不可用 */
+static int64_t master_clock_now(VideoPlayer *player) {
+    int64_t anchor_us = player->master_clock_time_us.load();
+    if (anchor_us <= 0) {
+        return -1;
+    }
+    int64_t elapsed_us = av_gettime_relative() - anchor_us;
+    if (elapsed_us < 0 || elapsed_us > MASTER_CLOCK_TIMEOUT_US) {
+        return -1;
+    }
+    float speed = clamp_speed(player->playback_speed.load());
+    return player->master_clock_ms.load() +
+           static_cast<int64_t>(elapsed_us * speed / 1000.0);
+}
+
+static void rebase_video_clock(VideoPlayer *player, int64_t pts_ms) {
+    player->video_clock_pts_ms = pts_ms;
+    player->video_clock_time_us = av_gettime_relative();
+}
+
+/**
+ * 按帧 PTS 与主时钟对齐：需要等待时分片休眠，落后过多时返回 false 要求丢弃该帧。
+ * 有音频轨时以音频输出进度为主时钟，否则退化为视频自身时钟（兼容变帧率）。
+ */
+static bool sync_video_frame(VideoPlayer *player, int64_t pts_ms, int *continuous_drops) {
+    if (player->clock_rebase_requested.exchange(false)) {
+        rebase_video_clock(player, pts_ms);
+        *continuous_drops = 0;
+        if (master_clock_now(player) < 0) {
+            // 无主时钟：以当前帧重建视频时钟并立即显示
+            return true;
+        }
+    }
+
+    while (!player->stop_requested.load() && !player->pause_requested.load() &&
+           player->seek_request_ms.load() < 0) {
+        float speed = clamp_speed(player->playback_speed.load());
+        int64_t now_us = av_gettime_relative();
+        int64_t master = master_clock_now(player);
+        int64_t clock;
+        if (master >= 0) {
+            // 主时钟可用时持续校准视频时钟，主时钟失效后可无缝退化
+            clock = master;
+            player->video_clock_pts_ms = master;
+            player->video_clock_time_us = now_us;
+        } else {
+            clock = player->video_clock_pts_ms +
+                    static_cast<int64_t>((now_us - player->video_clock_time_us) * speed / 1000.0);
+            if (std::llabs(pts_ms - clock) > SYNC_RESET_THRESHOLD_MS) {
+                // 时间戳跳变或长时间停滞，重建时钟避免整段丢帧
+                rebase_video_clock(player, pts_ms);
+                clock = pts_ms;
+            }
+        }
+
+        int64_t diff_ms = pts_ms - clock;
+        if (diff_ms < -SYNC_DROP_THRESHOLD_MS) {
+            if (*continuous_drops < MAX_CONTINUOUS_DROP_FRAMES) {
+                (*continuous_drops)++;
+                return false;
+            }
+            break;
+        }
+        if (diff_ms <= 0) {
+            break;
+        }
+        if (diff_ms > SYNC_MAX_WAIT_MS) {
+            rebase_video_clock(player, pts_ms);
+            break;
+        }
+        int64_t sleep_us = static_cast<int64_t>(diff_ms * 1000.0 / speed);
+        if (sleep_us > SYNC_SLEEP_SLICE_US) {
+            sleep_us = SYNC_SLEEP_SLICE_US;
+        }
+        std::this_thread::sleep_for(std::chrono::microseconds(sleep_us));
+    }
+
+    *continuous_drops = 0;
+    return true;
+}
+
+/** 把 RGBA 数据投递到当前窗口，窗口可能已被替换或销毁 */
+static void render_video_frame(VideoPlayer *player, const uint8_t *src_data, int src_linesize,
+                               int src_width, int src_height, int rotation) {
+    std::lock_guard<std::mutex> lock(player->window_mutex);
+    ANativeWindow *window = player->window;
+    if (window == nullptr) {
+        return;
+    }
+    if (player->window_dirty) {
+        ANativeWindow_setBuffersGeometry(window, player->display_width, player->display_height,
+                                         WINDOW_FORMAT_RGBA_8888);
+        player->window_dirty = false;
+    }
+    ANativeWindow_Buffer window_buffer;
+    if (ANativeWindow_lock(window, &window_buffer, nullptr) != 0) {
+        return;
+    }
+    // 几何尺寸尚未生效时直接跳过，避免越界写入
+    if (window_buffer.width >= player->display_width &&
+        window_buffer.height >= player->display_height &&
+        window_buffer.stride >= player->display_width) {
+        copy_to_window_with_rotation(&window_buffer, src_data, src_linesize,
+                                     src_width, src_height, rotation);
+    }
+    ANativeWindow_unlockAndPost(window);
+}
+
 static void run_video(VideoPlayer *player) {
     MediaContext media;
     int ret = open_media(player->source, AVMEDIA_TYPE_VIDEO, &media);
@@ -371,18 +590,13 @@ static void run_video(VideoPlayer *player) {
     player->duration_ms = read_duration_ms(media.format, media.stream_index);
     consume_pending_seek(player, &media);
 
-    bool attached = false;
-    JNIEnv *env = attach_env(&attached);
-    ANativeWindow *window = nullptr;
-    if (env != nullptr && player->surface != nullptr) {
-        window = ANativeWindow_fromSurface(env, player->surface);
-    }
-    detach_env(attached);
-
-    if (window == nullptr) {
-        player->notifyError(-1, "Surface is null.");
-        player->running = false;
-        return;
+    {
+        std::lock_guard<std::mutex> lock(player->window_mutex);
+        if (player->window == nullptr) {
+            player->notifyError(-1, "Surface is unavailable.");
+            player->running = false;
+            return;
+        }
     }
 
     AVFrame *frame = av_frame_alloc();
@@ -393,7 +607,6 @@ static void run_video(VideoPlayer *player) {
         av_frame_free(&frame);
         av_frame_free(&rgba_frame);
         av_packet_free(&packet);
-        ANativeWindow_release(window);
         player->running = false;
         return;
     }
@@ -416,28 +629,59 @@ static void run_video(VideoPlayer *player) {
         av_frame_free(&frame);
         av_frame_free(&rgba_frame);
         av_packet_free(&packet);
-        ANativeWindow_release(window);
         player->running = false;
         return;
     }
 
-    ANativeWindow_setBuffersGeometry(window, display_width, display_height, WINDOW_FORMAT_RGBA_8888);
+    {
+        std::lock_guard<std::mutex> lock(player->window_mutex);
+        player->display_width = display_width;
+        player->display_height = display_height;
+        player->window_dirty = true;
+    }
     player->notifyVideoSize(display_width, display_height);
 
     AVRational frame_rate = av_guess_frame_rate(media.format, stream, nullptr);
-    int64_t frame_delay_us = 40000;
+    // 帧率仅用于缺失 PTS 时估算时间戳，不再作为播放时钟
+    int64_t estimated_frame_ms = 40;
     if (frame_rate.num > 0 && frame_rate.den > 0) {
-        frame_delay_us = static_cast<int64_t>(1000000.0 * frame_rate.den / frame_rate.num);
+        estimated_frame_ms = static_cast<int64_t>(1000.0 * frame_rate.den / frame_rate.num);
+    }
+    if (estimated_frame_ms <= 0) {
+        estimated_frame_ms = 1;
     }
 
     player->notifyPrepared();
     player->notifyProgress(true);
 
-    while (!player->stop_requested.load() && av_read_frame(media.format, packet) >= 0) {
-        player->waitIfPaused();
-        consume_pending_seek(player, &media);
-        if (player->stop_requested.load()) {
-            av_packet_unref(packet);
+    int continuous_drops = 0;
+    int64_t last_pts_ms = -1;
+    // 暂停期间发生 seek 时，解码到目标位置附近刷新一帧画面后重新挂起
+    bool step_after_seek = false;
+    int64_t step_target_ms = 0;
+    int step_skipped = 0;
+
+    while (!player->stop_requested.load()) {
+        if (!step_after_seek) {
+            player->waitForResumeOrSeek();
+            if (player->stop_requested.load()) {
+                break;
+            }
+        }
+        bool paused_now = player->pause_requested.load();
+        if (consume_pending_seek(player, &media)) {
+            continuous_drops = 0;
+            last_pts_ms = -1;
+            if (paused_now) {
+                step_after_seek = true;
+                step_target_ms = player->current_position_ms.load();
+                step_skipped = 0;
+            }
+        } else if (paused_now && !step_after_seek) {
+            continue;
+        }
+
+        if (av_read_frame(media.format, packet) < 0) {
             break;
         }
         if (packet->stream_index != media.stream_index) {
@@ -461,25 +705,39 @@ static void run_video(VideoPlayer *player) {
                 break;
             }
 
-            sws_scale(sws, frame->data, frame->linesize, 0, height,
-                      rgba_frame->data, rgba_frame->linesize);
-            player->current_position_ms = frame_position_ms(frame, stream);
-            player->notifyProgress();
+            int64_t pts_ms = frame_position_ms(frame, stream);
+            if (pts_ms <= 0 && last_pts_ms >= 0) {
+                // 部分帧缺少 PTS，按估算帧间隔递推，保证时钟单调
+                pts_ms = last_pts_ms + estimated_frame_ms;
+            }
 
-            ANativeWindow_Buffer window_buffer;
-            if (ANativeWindow_lock(window, &window_buffer, nullptr) == 0) {
-                copy_to_window_with_rotation(&window_buffer, rgba_frame->data[0],
-                                             rgba_frame->linesize[0], width, height, rotation);
-                ANativeWindow_unlockAndPost(window);
+            bool render;
+            if (step_after_seek) {
+                // 只需要目标位置附近的一帧，之前的帧全部丢弃（受最大丢帧数保护）
+                render = pts_ms >= step_target_ms || step_skipped >= MAX_SEEK_SKIP_FRAMES;
+                if (!render) {
+                    step_skipped++;
+                }
+            } else {
+                render = sync_video_frame(player, pts_ms, &continuous_drops);
+            }
+
+            last_pts_ms = pts_ms;
+            if (render) {
+                sws_scale(sws, frame->data, frame->linesize, 0, height,
+                          rgba_frame->data, rgba_frame->linesize);
+                player->current_position_ms = pts_ms;
+                player->notifyProgress();
+                render_video_frame(player, rgba_frame->data[0], rgba_frame->linesize[0],
+                                   width, height, rotation);
             }
             av_frame_unref(frame);
-            float speed = player->playback_speed.load();
-            if (speed <= 0.0f) {
-                speed = 1.0f;
-            }
-            auto delay = static_cast<int64_t>(frame_delay_us / speed);
-            if (delay > 0) {
-                std::this_thread::sleep_for(std::chrono::microseconds(delay));
+
+            if (step_after_seek && render) {
+                step_after_seek = false;
+                rebase_video_clock(player, pts_ms);
+                player->clock_rebase_requested = true;
+                break;
             }
         }
     }
@@ -488,7 +746,6 @@ static void run_video(VideoPlayer *player) {
     av_frame_free(&frame);
     av_frame_free(&rgba_frame);
     av_packet_free(&packet);
-    ANativeWindow_release(window);
 
     if (!player->stop_requested.load()) {
         player->notifyCompletion();
@@ -500,6 +757,10 @@ static void run_audio(AudioPlayer *player) {
     MediaContext media;
     int ret = open_media(player->source, AVMEDIA_TYPE_AUDIO, &media);
     if (ret < 0) {
+        if (ret == AVERROR_STREAM_NOT_FOUND || ret == AVERROR_DECODER_NOT_FOUND) {
+            // 媒体没有可解码的音频轨：先标记不可用，上层据此按视频 PTS 播放
+            player->notifyAudioUnavailable();
+        }
         player->notifyError(ret, ff_error(ret));
         player->running = false;
         return;
@@ -561,11 +822,18 @@ static void run_audio(AudioPlayer *player) {
     player->notifyAudioFormat(out_sample_rate, out_channels);
     player->notifyProgress(true);
 
-    while (!player->stop_requested.load() && av_read_frame(media.format, packet) >= 0) {
-        player->waitIfPaused();
-        consume_pending_seek(player, &media);
+    while (!player->stop_requested.load()) {
+        player->waitForResumeOrSeek();
         if (player->stop_requested.load()) {
-            av_packet_unref(packet);
+            break;
+        }
+        consume_pending_seek(player, &media);
+        if (player->pause_requested.load()) {
+            // 仍处于暂停状态（seek 已消费），回到等待，避免向暂停的 AudioTrack 灌数据
+            continue;
+        }
+
+        if (av_read_frame(media.format, packet) < 0) {
             break;
         }
         if (packet->stream_index != media.stream_index) {
@@ -588,8 +856,17 @@ static void run_audio(AudioPlayer *player) {
                 player->notifyError(ret, ff_error(ret));
                 break;
             }
-            player->current_position_ms = frame_position_ms(frame, media.format->streams[media.stream_index]);
+            int64_t frame_pts_ms =
+                    frame_position_ms(frame, media.format->streams[media.stream_index]);
+            player->current_position_ms = frame_pts_ms;
             player->notifyProgress();
+
+            // 重采样缓存中的样本属于更早的输入，输出块的起始时间需要扣除该延时
+            int64_t swr_delay_ms = swr_get_delay(swr, 1000);
+            int64_t out_pts_ms = frame_pts_ms - swr_delay_ms;
+            if (out_pts_ms < 0) {
+                out_pts_ms = 0;
+            }
 
             int dst_samples = av_rescale_rnd(
                     swr_get_delay(swr, media.codec->sample_rate) + frame->nb_samples,
@@ -614,7 +891,7 @@ static void run_audio(AudioPlayer *player) {
                                         frame->nb_samples);
             if (converted > 0) {
                 int bytes = converted * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
-                player->notifyAudioData(buffer.data(), bytes);
+                player->notifyAudioData(buffer.data(), bytes, out_pts_ms);
             } else if (converted < 0) {
                 player->notifyError(converted, ff_error(converted));
             }
@@ -638,13 +915,20 @@ static void stop_player(T *player) {
     if (player == nullptr) {
         return;
     }
-    player->stop_requested = true;
-    player->pause_requested = false;
-    player->cv.notify_all();
+    {
+        std::lock_guard<std::mutex> lock(player->mutex);
+        player->stop_requested = true;
+        player->pause_requested = false;
+        player->cv.notify_all();
+    }
     if (player->worker.joinable()) {
         player->worker.join();
     }
     player->running = false;
+    // 线程已退出，未消费的 seek 不应让上层一直处于「定位中」
+    player->seek_request_ms = -1;
+    player->seek_done_serial = player->seek_serial.load();
+    player->onStopped();
 }
 
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
@@ -675,20 +959,24 @@ Java_com_common_player_FfmpegVideoPlayer_nativeSetDataSource(JNIEnv *env, jclass
     env->ReleaseStringUTFChars(source, chars);
     player->current_position_ms = 0;
     player->duration_ms = 0;
-    player->seek_request_ms = -1;
     player->last_progress_callback_ms = -1;
+    player->resetSeekState();
+    player->onStopped();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_common_player_FfmpegVideoPlayer_nativeSetSurface(JNIEnv *env, jclass, jlong handle,
                                                               jobject surface) {
     auto *player = reinterpret_cast<VideoPlayer *>(handle);
-    if (player->surface != nullptr) {
-        env->DeleteGlobalRef(player->surface);
-        player->surface = nullptr;
+    // 播放过程中 Surface 可能被销毁重建，这里直接替换渲染窗口
+    std::lock_guard<std::mutex> lock(player->window_mutex);
+    if (player->window != nullptr) {
+        ANativeWindow_release(player->window);
+        player->window = nullptr;
     }
     if (surface != nullptr) {
-        player->surface = env->NewGlobalRef(surface);
+        player->window = ANativeWindow_fromSurface(env, surface);
+        player->window_dirty = true;
     }
 }
 
@@ -711,7 +999,10 @@ Java_com_common_player_FfmpegVideoPlayer_nativePause(JNIEnv *, jclass, jlong han
 extern "C" JNIEXPORT void JNICALL
 Java_com_common_player_FfmpegVideoPlayer_nativeResume(JNIEnv *, jclass, jlong handle) {
     auto *player = reinterpret_cast<VideoPlayer *>(handle);
+    std::lock_guard<std::mutex> lock(player->mutex);
     player->pause_requested = false;
+    // 暂停期间时钟不推进，恢复时需要重新建立锚点
+    player->clock_rebase_requested = true;
     player->cv.notify_all();
 }
 
@@ -720,6 +1011,21 @@ Java_com_common_player_FfmpegVideoPlayer_nativeSetPlaybackSpeed(JNIEnv *, jclass
                                                                     jfloat speed) {
     auto *player = reinterpret_cast<VideoPlayer *>(handle);
     player->playback_speed = speed > 0.0f ? speed : 1.0f;
+    player->clock_rebase_requested = true;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_common_player_FfmpegVideoPlayer_nativeSetMasterClock(JNIEnv *, jclass, jlong handle,
+                                                                  jlong position_ms) {
+    auto *player = reinterpret_cast<VideoPlayer *>(handle);
+    player->master_clock_ms = position_ms >= 0 ? position_ms : 0;
+    player->master_clock_time_us = av_gettime_relative();
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_common_player_FfmpegVideoPlayer_nativeIsSeeking(JNIEnv *, jclass, jlong handle) {
+    return reinterpret_cast<VideoPlayer *>(handle)->isSeeking()
+           ? JNI_TRUE : JNI_FALSE;
 }
 
 extern "C" JNIEXPORT jlong JNICALL
@@ -737,8 +1043,7 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_common_player_FfmpegVideoPlayer_nativeSeekTo(JNIEnv *, jclass, jlong handle,
                                                           jlong position_ms) {
     auto *player = reinterpret_cast<VideoPlayer *>(handle);
-    player->seek_request_ms = position_ms >= 0 ? position_ms : 0;
-    player->current_position_ms = position_ms >= 0 ? position_ms : 0;
+    player->requestSeek(position_ms >= 0 ? position_ms : 0);
     player->notifyProgress(true);
 }
 
@@ -751,8 +1056,12 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_common_player_FfmpegVideoPlayer_nativeRelease(JNIEnv *env, jclass, jlong handle) {
     auto *player = reinterpret_cast<VideoPlayer *>(handle);
     stop_player(player);
-    if (player->surface != nullptr) {
-        env->DeleteGlobalRef(player->surface);
+    {
+        std::lock_guard<std::mutex> lock(player->window_mutex);
+        if (player->window != nullptr) {
+            ANativeWindow_release(player->window);
+            player->window = nullptr;
+        }
     }
     env->DeleteGlobalRef(player->owner);
     delete player;
@@ -764,7 +1073,9 @@ Java_com_common_player_FfmpegAudioPlayer_nativeCreate(JNIEnv *env, jobject thiz)
     player->owner = env->NewGlobalRef(thiz);
     jclass cls = env->GetObjectClass(thiz);
     player->on_audio_format = env->GetMethodID(cls, "onNativeAudioFormat", "(II)V");
-    player->on_audio_data = env->GetMethodID(cls, "onNativeAudioData", "([B)V");
+    player->on_audio_data = env->GetMethodID(cls, "onNativeAudioData", "([BJ)V");
+    player->on_audio_flush = env->GetMethodID(cls, "onNativeAudioFlush", "(J)V");
+    player->on_audio_unavailable = env->GetMethodID(cls, "onNativeAudioUnavailable", "()V");
     player->on_completion = env->GetMethodID(cls, "onNativeCompletion", "()V");
     player->on_error = env->GetMethodID(cls, "onNativeError", "(ILjava/lang/String;)V");
     player->on_progress = env->GetMethodID(cls, "onNativeProgress", "(JJ)V");
@@ -780,8 +1091,8 @@ Java_com_common_player_FfmpegAudioPlayer_nativeSetDataSource(JNIEnv *env, jclass
     env->ReleaseStringUTFChars(source, chars);
     player->current_position_ms = 0;
     player->duration_ms = 0;
-    player->seek_request_ms = -1;
     player->last_progress_callback_ms = -1;
+    player->resetSeekState();
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -803,6 +1114,7 @@ Java_com_common_player_FfmpegAudioPlayer_nativePause(JNIEnv *, jclass, jlong han
 extern "C" JNIEXPORT void JNICALL
 Java_com_common_player_FfmpegAudioPlayer_nativeResume(JNIEnv *, jclass, jlong handle) {
     auto *player = reinterpret_cast<AudioPlayer *>(handle);
+    std::lock_guard<std::mutex> lock(player->mutex);
     player->pause_requested = false;
     player->cv.notify_all();
 }
@@ -829,9 +1141,13 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_common_player_FfmpegAudioPlayer_nativeSeekTo(JNIEnv *, jclass, jlong handle,
                                                           jlong position_ms) {
     auto *player = reinterpret_cast<AudioPlayer *>(handle);
-    player->seek_request_ms = position_ms >= 0 ? position_ms : 0;
-    player->current_position_ms = position_ms >= 0 ? position_ms : 0;
+    player->requestSeek(position_ms >= 0 ? position_ms : 0);
     player->notifyProgress(true);
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_common_player_FfmpegAudioPlayer_nativeIsSeeking(JNIEnv *, jclass, jlong handle) {
+    return reinterpret_cast<AudioPlayer *>(handle)->isSeeking() ? JNI_TRUE : JNI_FALSE;
 }
 
 extern "C" JNIEXPORT void JNICALL

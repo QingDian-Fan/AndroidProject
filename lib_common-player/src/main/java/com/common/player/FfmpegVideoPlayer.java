@@ -81,6 +81,19 @@ public final class FfmpegVideoPlayer {
         nativeSeekTo(requireHandle(), Math.max(0L, positionMs));
     }
 
+    /**
+     * 推送播放主时钟（通常为音频实际输出进度），视频帧按其 PTS 与该时钟对齐显示或丢弃。
+     * 超过 1 秒未推送时 native 侧自动退化为视频自身 PTS 时钟。
+     */
+    public void setMasterClock(long positionMs) {
+        nativeSetMasterClock(requireHandle(), Math.max(0L, positionMs));
+    }
+
+    /** 解码器是否仍在处理最近一次 seek 请求 */
+    public boolean isSeeking() {
+        return nativeHandle != 0 && nativeIsSeeking(nativeHandle);
+    }
+
     public void switchQuality(String pathOrUrl) {
         long positionMs = getCurrentPosition();
         stop();
@@ -185,6 +198,10 @@ public final class FfmpegVideoPlayer {
     private static native long nativeGetDuration(long handle);
 
     private static native void nativeSeekTo(long handle, long positionMs);
+
+    private static native void nativeSetMasterClock(long handle, long positionMs);
+
+    private static native boolean nativeIsSeeking(long handle);
 
     private static native void nativeStop(long handle);
 

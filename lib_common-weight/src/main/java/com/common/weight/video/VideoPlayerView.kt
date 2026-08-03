@@ -90,6 +90,9 @@ class VideoPlayerView @JvmOverloads constructor(
     /** 当前播放进度 */
     private var currentProgress: Int = 0
 
+    /** 是否正在拖动进度条：拖动期间只展示目标时间，不被后台刷新覆盖 */
+    private var isDraggingProgress: Boolean = false
+
     /** 刷新间隔 */
     private val REFRESH_TIME: Int = 1000
 
@@ -253,6 +256,8 @@ class VideoPlayerView @JvmOverloads constructor(
             }
             STATUS_PLAYING -> {
                 pbLoading.visibility = GONE
+                // 先移除已有任务，避免多次进入播放态后叠加多个刷新循环
+                removeCallbacks(mRefreshRunnable)
                 postDelayed(mRefreshRunnable, (REFRESH_TIME / 2).toLong())
             }
         }
@@ -267,6 +272,10 @@ class VideoPlayerView @JvmOverloads constructor(
     }
 
     fun resume() {
+        // 播放结束后不再自动重新开始，避免前后台切换造成重复播放
+        if (player.isEnded) {
+            return
+        }
         start(false)
     }
 
@@ -304,6 +313,14 @@ class VideoPlayerView @JvmOverloads constructor(
         override fun onEnded() {
             // 播放完毕：按钮置为暂停（可播放）状态，并展示控制面板便于点击重播
             viewControl.pause()
+            removeCallbacks(mRefreshRunnable)
+            // 进度停在总时长，避免停留在最后一帧的时间戳上
+            val duration = safeDuration()
+            if (duration > 0 && !isDraggingProgress) {
+                sbPlayerViewProgress.max = duration.toInt()
+                sbPlayerViewProgress.progress = duration.toInt()
+                tvPlayerViewPlayTime.text = conversionTime(duration)
+            }
             post(mShowControllerRunnable)
             onCompletion?.invoke()
         }
@@ -728,11 +745,14 @@ class VideoPlayerView @JvmOverloads constructor(
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
+        // 拖动期间暂停刷新，进度条与时间只跟随手指
+        isDraggingProgress = true
         removeCallbacks(mRefreshRunnable)
         removeCallbacks(mHideControllerRunnable)
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
+        isDraggingProgress = false
         postDelayed(mRefreshRunnable, REFRESH_TIME.toLong())
         postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
         // 设置选择的播放进度
@@ -746,26 +766,39 @@ class VideoPlayerView @JvmOverloads constructor(
     private val mRefreshRunnable: Runnable = object : Runnable {
 
         override fun run() {
-            val progress = player.currentPosition
+            postDelayed(this, REFRESH_TIME.toLong())
+            if (isDraggingProgress) {
+                // 拖动期间只展示目标时间，不被主时钟覆盖
+                return
+            }
+            val duration = safeDuration()
+            if (duration > 0 && sbPlayerViewProgress.max != duration.toInt()) {
+                // 时长可能在首帧之后才拿到，这里同步刷新总时长与进度条量程
+                sbPlayerViewProgress.max = duration.toInt()
+                tvPlayerViewTotalTime.text = conversionTime(duration)
+            }
+            val progress = clampProgress(player.currentPosition)
             tvPlayerViewPlayTime.text = conversionTime(progress)
             sbPlayerViewProgress.progress = progress.toInt()
-            sbPlayerViewProgress.secondaryProgress = player.bufferedPosition.toInt()
-            postDelayed(this, REFRESH_TIME.toLong())
-
+            sbPlayerViewProgress.secondaryProgress = clampProgress(player.bufferedPosition).toInt()
         }
     }
 
+    /** 播放位置限制在 [0, 总时长] 内，避免进度条越界 */
+    private fun clampProgress(position: Long): Long {
+        val duration = safeDuration()
+        val safePosition = max(position, 0L)
+        return if (duration > 0) min(safePosition, duration) else safePosition
+    }
+
     /**
-     * 设置视频播放进度
+     * 设置视频播放进度，保持拖动前的播放/暂停状态
      */
     private fun setProgress(progress: Int) {
-        var finalProgress: Int = progress
-        if (finalProgress > safeDuration()) {
-            finalProgress = safeDuration().toInt()
-        }
+        val finalProgress: Int = clampProgress(progress.toLong()).toInt()
         player.seekTo(finalProgress.toLong())
         sbPlayerViewProgress.progress = finalProgress
-        if (!player.isPlaying) start(false)
+        tvPlayerViewPlayTime.text = conversionTime(finalProgress.toLong())
     }
 
     private fun applyScaleType(videoWidth: Int, videoHeight: Int) {

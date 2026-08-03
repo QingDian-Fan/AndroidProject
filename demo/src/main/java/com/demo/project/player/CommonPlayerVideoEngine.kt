@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
+import android.os.SystemClock
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
@@ -20,6 +21,15 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
 
     private companion object {
         private const val TAG = "CommonPlayerVideoEngine"
+
+        /** 主时钟采样与推送间隔 */
+        private const val CLOCK_INTERVAL_MS = 100L
+
+        /** 定位保护超时：超过该时长仍未收到解码器落点，则回到真实时钟 */
+        private const val SEEK_TIMEOUT_MS = 5000L
+
+        /** 视频解码结束后等待音频播完的最长时间，防止音频异常时无法结束 */
+        private const val AUDIO_DRAIN_TIMEOUT_MS = 3000L
     }
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -69,6 +79,36 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     @Volatile
     private var cachedPosition = 0L
 
+    /** 视频解码线程是否已结束 */
+    @Volatile
+    private var videoDecodeFinished = false
+
+    @Volatile
+    private var videoFinishedUptimeMs = 0L
+
+    /** 播放结束是否已上报，避免主时钟轮询重复触发 */
+    @Volatile
+    private var completionNotified = false
+
+    /** 媒体是否存在可解码的音频轨 */
+    @Volatile
+    private var audioAvailable = true
+
+    /** 拖动保护：>=0 表示正在等待解码器落点，此期间对外只暴露目标位置 */
+    @Volatile
+    private var seekTargetMs = -1L
+
+    @Volatile
+    private var seekStartUptimeMs = 0L
+
+    /** 播放器未运行时的定位目标，下次启动后应用 */
+    @Volatile
+    private var pendingSeekMs = -1L
+
+    /** 主时钟轮询是否在运行 */
+    @Volatile
+    private var clockRunning = false
+
     private var listener: VideoPlayerEngine.Listener? = null
     private var surfaceView: SurfaceView? = null
     private var surfaceCallback: SurfaceHolder.Callback? = null
@@ -82,7 +122,6 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     private val videoListener = object : PlayerListener {
         override fun onPrepared() {
             cachedDuration = readVideoDuration()
-            cachedPosition = readVideoPosition()
             postToMain {
                 if (released) return@postToMain
                 started = true
@@ -93,21 +132,16 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         }
 
         override fun onCompletion() {
-            postToMain {
-                if (released) return@postToMain
-                pendingPlay = false
-                started = false
-                paused = false
-                ended = true
-                needsStopBeforeRestart = true
-                postPlayerAction { audioPlayer?.stop() }
-                listener?.onEnded()
-            }
+            // 视频解码结束不代表播放结束，还需等待音频输出播完，避免残留声音
+            videoFinishedUptimeMs = SystemClock.uptimeMillis()
+            videoDecodeFinished = true
+            postPlayerAction { finishPlaybackIfDrained() }
         }
 
         override fun onProgress(positionMs: Long, durationMs: Long) {
-            cachedPosition = positionMs.coerceAtLeast(0L)
-            cachedDuration = durationMs.coerceAtLeast(0L)
+            if (durationMs > 0L) {
+                cachedDuration = durationMs
+            }
         }
 
         override fun onVideoSizeChanged(width: Int, height: Int) {
@@ -131,16 +165,41 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         }
 
         override fun onProgress(positionMs: Long, durationMs: Long) {
-            if (cachedPosition <= 0L) {
-                cachedPosition = positionMs.coerceAtLeast(0L)
-            }
-            if (cachedDuration <= 0L) {
-                cachedDuration = durationMs.coerceAtLeast(0L)
+            if (cachedDuration <= 0L && durationMs > 0L) {
+                cachedDuration = durationMs
             }
         }
 
+        override fun onCompletion() {
+            postPlayerAction { finishPlaybackIfDrained() }
+        }
+
+        override fun onAudioUnavailable() {
+            // 无音频轨：改用视频 PTS 作为播放时钟，不影响视频播放
+            audioAvailable = false
+        }
+
         override fun onError(code: Int, message: String?) {
+            if (!audioAvailable) {
+                // 缺少音频轨已单独处理，不作为播放失败上报
+                return
+            }
             postPlayerError(RuntimeException("FFmpeg audio player error($code): ${message.orEmpty()}"))
+        }
+    }
+
+    /** 主时钟轮询：统一进度来源，并把音频输出进度推送给视频渲染线程 */
+    private val clockRunnable = object : Runnable {
+        override fun run() {
+            if (released || !clockRunning) {
+                return
+            }
+            runCatching(::updateClock).onFailure { error ->
+                com.common.utils.LogUtil.e(TAG, "update clock failed", error)
+            }
+            if (clockRunning && !released) {
+                playerHandler.postDelayed(this, CLOCK_INTERVAL_MS)
+            }
         }
     }
 
@@ -182,7 +241,19 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             override fun surfaceDestroyed(holder: SurfaceHolder) {
                 surfaceReady = false
                 surface = null
-                postPlayerAction { videoPlayer?.setSurface(null) }
+                // Surface 销毁时音视频成对暂停，等待重建后再恢复，避免后台残留声音
+                val resumeAfterRebuild = started && !paused && !ended
+                if (resumeAfterRebuild) {
+                    paused = true
+                    pendingPlay = true
+                }
+                postPlayerAction {
+                    if (resumeAfterRebuild) {
+                        videoPlayer?.pause()
+                        audioPlayer?.pause()
+                    }
+                    videoPlayer?.setSurface(null)
+                }
             }
         }.also { callback ->
             surfaceView.holder.addCallback(callback)
@@ -204,6 +275,8 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         needsStopBeforeRestart = false
         cachedDuration = 0L
         cachedPosition = 0L
+        resetPlaybackState()
+        stopClock()
         postPlayerAction {
             stopPlayers()
             ensurePlayers()
@@ -236,6 +309,7 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
                 videoPlayer?.resume()
                 audioPlayer?.resume()
             }
+            startClock()
             return
         }
 
@@ -243,6 +317,15 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         started = true
         paused = false
         ended = false
+        resetPlaybackState()
+        val resumeAt = pendingSeekMs
+        pendingSeekMs = -1L
+        if (resumeAt > 0L) {
+            // 重启后解码器需要重新定位，这段时间内对外保持目标位置
+            cachedPosition = resumeAt
+            seekTargetMs = resumeAt
+            seekStartUptimeMs = SystemClock.uptimeMillis()
+        }
         postPlayerAction {
             if (needsStopBeforeRestart) {
                 stopPlayers()
@@ -250,8 +333,14 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             }
             ensurePlayers()
             configurePlayers()
+            if (resumeAt > 0L) {
+                // setDataSource 会清空 native 的定位请求，重启后需要重新下发
+                videoPlayer?.seekTo(resumeAt)
+                audioPlayer?.seekTo(resumeAt)
+            }
             startPlayers()
         }
+        startClock()
     }
 
     override fun pause() {
@@ -267,10 +356,28 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     }
 
     override fun seekTo(positionMs: Long) {
-        cachedPosition = positionMs.coerceAtLeast(0L)
+        val duration = cachedDuration
+        var target = positionMs.coerceAtLeast(0L)
+        if (duration > 0L) {
+            target = target.coerceAtMost(duration)
+        }
+        cachedPosition = target
+        if (ended && (duration <= 0L || target < duration)) {
+            // 结束后回拖：重新回到可播放状态，避免被当成重播而丢弃目标位置
+            ended = false
+        }
+        if (started && !ended) {
+            seekTargetMs = target
+            seekStartUptimeMs = SystemClock.uptimeMillis()
+            pendingSeekMs = -1L
+        } else {
+            // 播放器未运行，记录目标位置，等待下一次 play() 时应用
+            seekTargetMs = -1L
+            pendingSeekMs = target
+        }
         postPlayerAction {
-            videoPlayer?.seekTo(positionMs)
-            audioPlayer?.seekTo(positionMs)
+            videoPlayer?.seekTo(target)
+            audioPlayer?.seekTo(target)
         }
     }
 
@@ -280,6 +387,7 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         started = false
         paused = false
         ended = false
+        stopClock()
         surfaceView?.holder?.let { holder ->
             surfaceCallback?.let(holder::removeCallback)
         }
@@ -315,6 +423,111 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         }
         if (pendingPlay) {
             play()
+        }
+    }
+
+    private fun resetPlaybackState() {
+        videoDecodeFinished = false
+        completionNotified = false
+        audioAvailable = true
+        seekTargetMs = -1L
+    }
+
+    private fun startClock() {
+        if (released || clockRunning) {
+            return
+        }
+        clockRunning = true
+        playerHandler.removeCallbacks(clockRunnable)
+        playerHandler.post(clockRunnable)
+    }
+
+    private fun stopClock() {
+        clockRunning = false
+        playerHandler.removeCallbacks(clockRunnable)
+    }
+
+    /**
+     * 统一播放时钟：有音频轨时以音频实际输出进度为准，否则使用视频 PTS；
+     * 拖动定位未完成前只暴露目标位置，避免进度回跳。
+     */
+    private fun updateClock() {
+        if (released) {
+            return
+        }
+        val video = videoPlayer ?: return
+        val audio = audioPlayer
+        val hasAudioOutput = audio != null && audioAvailable && audio.isOutputActive
+
+        if (cachedDuration <= 0L) {
+            val duration = runCatching { video.duration }.getOrDefault(0L)
+            if (duration > 0L) {
+                cachedDuration = duration
+            }
+        }
+        val duration = cachedDuration
+
+        val target = seekTargetMs
+        if (target >= 0L) {
+            val seeking = runCatching { video.isSeeking }.getOrDefault(false) ||
+                    (hasAudioOutput && runCatching { audio!!.isSeeking }.getOrDefault(false))
+            val expired = SystemClock.uptimeMillis() - seekStartUptimeMs > SEEK_TIMEOUT_MS
+            if (seeking && !expired) {
+                cachedPosition = clampPosition(target, duration)
+                runCatching { video.setMasterClock(cachedPosition) }
+                return
+            }
+            seekTargetMs = -1L
+        }
+
+        val position = if (hasAudioOutput) {
+            runCatching { audio!!.currentPosition }.getOrDefault(cachedPosition)
+        } else {
+            runCatching { video.currentPosition }.getOrDefault(cachedPosition)
+        }
+        cachedPosition = clampPosition(position, duration)
+        if (hasAudioOutput) {
+            runCatching { video.setMasterClock(cachedPosition) }
+        }
+        finishPlaybackIfDrained()
+    }
+
+    private fun clampPosition(position: Long, duration: Long): Long {
+        val safePosition = position.coerceAtLeast(0L)
+        return if (duration > 0L) safePosition.coerceAtMost(duration) else safePosition
+    }
+
+    /** 视频解码结束且音频已播完时才判定播放完成 */
+    private fun finishPlaybackIfDrained() {
+        if (released || completionNotified || !videoDecodeFinished) {
+            return
+        }
+        val audio = audioPlayer
+        val audioDrained = audio == null || !audioAvailable || !audio.isOutputActive ||
+                audio.isPlaybackFinished
+        if (!audioDrained &&
+            SystemClock.uptimeMillis() - videoFinishedUptimeMs <= AUDIO_DRAIN_TIMEOUT_MS
+        ) {
+            return
+        }
+        completionNotified = true
+        clockRunning = false
+        playerHandler.removeCallbacks(clockRunnable)
+        if (cachedDuration > 0L) {
+            cachedPosition = cachedDuration
+        }
+        seekTargetMs = -1L
+        pendingSeekMs = -1L
+        stopPlayers()
+        abandonAudioFocus()
+        postToMain {
+            if (released) return@postToMain
+            pendingPlay = false
+            started = false
+            paused = false
+            ended = true
+            needsStopBeforeRestart = true
+            listener?.onEnded()
         }
     }
 
@@ -360,11 +573,6 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             .coerceAtLeast(0L)
     }
 
-    private fun readVideoPosition(): Long {
-        return runCatching { videoPlayer?.currentPosition ?: cachedPosition }
-            .getOrDefault(cachedPosition)
-            .coerceAtLeast(0L)
-    }
 
     private fun postPlayerAction(action: () -> Unit) {
         if (released) {
@@ -385,6 +593,13 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         paused = false
         ended = false
         needsStopBeforeRestart = true
+        seekTargetMs = -1L
+        stopClock()
+        // 播放失败时成对停止音视频，避免后台残留声音
+        playerHandler.post {
+            runCatching { stopPlayers() }
+            abandonAudioFocus()
+        }
         postToMain {
             if (!released) {
                 listener?.onError(error)

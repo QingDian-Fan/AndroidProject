@@ -10,12 +10,35 @@ import android.os.Build;
 public final class FfmpegAudioPlayer {
     private static final String TAG = "FfmpegAudioPlayer";
 
+    /** AudioTrack 缓冲区写满时的重试间隔（毫秒） */
+    private static final long WRITE_RETRY_INTERVAL_MS = 10L;
+
     private long nativeHandle;
     private String dataSource;
     private PlayerListener listener;
-    private AudioTrack audioTrack;
+    private volatile AudioTrack audioTrack;
     private float playbackSpeed = 1.0f;
     private boolean audioErrorNotified;
+
+    /** 停止中标记：用于打断写入循环，避免 native 线程 join 时死锁 */
+    private volatile boolean stopping;
+    /** native 解码线程是否已结束 */
+    private volatile boolean decodeFinished;
+    /** 是否存在可解码的音频轨 */
+    private volatile boolean audioAvailable = true;
+    /** 是否有 seek 请求尚未被解码线程消费 */
+    private volatile boolean awaitingSeekFlush;
+
+    /** 输出时钟状态，由 native 音频线程写入、播放线程读取 */
+    private final Object clockLock = new Object();
+    private int outputSampleRate;
+    private int outputFrameBytes;
+    private long anchorPositionMs;
+    private long anchorFrame;
+    private long writtenFrames;
+    private long lastHeadPosition;
+    private long headWrapBase;
+    private long seekTargetMs = -1L;
 
     public FfmpegAudioPlayer() {
         FfmpegPlayer.loadLibraries();
@@ -25,6 +48,13 @@ public final class FfmpegAudioPlayer {
     public void setDataSource(String pathOrUrl) {
         dataSource = pathOrUrl;
         audioErrorNotified = false;
+        audioAvailable = true;
+        decodeFinished = false;
+        awaitingSeekFlush = false;
+        synchronized (clockLock) {
+            seekTargetMs = -1L;
+            resetOutputClockLocked(0L);
+        }
         nativeSetDataSource(requireHandle(), pathOrUrl);
     }
 
@@ -36,6 +66,8 @@ public final class FfmpegAudioPlayer {
         if (dataSource == null || dataSource.isEmpty()) {
             throw new IllegalStateException("Data source is empty.");
         }
+        stopping = false;
+        decodeFinished = false;
         nativeStart(requireHandle());
     }
 
@@ -43,14 +75,20 @@ public final class FfmpegAudioPlayer {
         nativePause(requireHandle());
         AudioTrack track = audioTrack;
         if (track != null) {
-            track.pause();
+            try {
+                track.pause();
+            } catch (IllegalStateException ignored) {
+            }
         }
     }
 
     public void resume() {
         AudioTrack track = audioTrack;
         if (track != null) {
-            track.play();
+            try {
+                track.play();
+            } catch (IllegalStateException ignored) {
+            }
         }
         nativeResume(requireHandle());
     }
@@ -64,8 +102,75 @@ public final class FfmpegAudioPlayer {
         nativeSetPlaybackSpeed(requireHandle(), speed);
     }
 
+    /**
+     * 当前播放位置：优先返回 AudioTrack 实际输出进度（可作为音视频同步主时钟），
+     * 尚未建立输出时退化为解码位置。
+     */
     public long getCurrentPosition() {
+        long outputPosition = getOutputPositionMs();
+        if (outputPosition >= 0L) {
+            return outputPosition;
+        }
         return nativeGetCurrentPosition(requireHandle());
+    }
+
+    /**
+     * AudioTrack 实际输出进度（毫秒），返回负数表示输出尚未建立。
+     * 该值基于播放头位置换算，因此与真实听到的声音一致，不受解码缓冲影响。
+     */
+    public long getOutputPositionMs() {
+        AudioTrack track = audioTrack;
+        if (track == null) {
+            return -1L;
+        }
+        synchronized (clockLock) {
+            if (awaitingSeekFlush && seekTargetMs >= 0L) {
+                // 定位尚未生效，先返回目标位置，避免进度回跳
+                return seekTargetMs;
+            }
+            if (outputSampleRate <= 0) {
+                return -1L;
+            }
+            long head = readHeadPositionLocked(track);
+            if (head < 0L) {
+                return -1L;
+            }
+            long position = anchorPositionMs + (head - anchorFrame) * 1000L / outputSampleRate;
+            return Math.max(0L, position);
+        }
+    }
+
+    /** 是否已经建立 AudioTrack 输出（即媒体确实带有可播放的音频） */
+    public boolean isOutputActive() {
+        return audioTrack != null;
+    }
+
+    /** 媒体中是否存在可解码的音频轨 */
+    public boolean isAudioAvailable() {
+        return audioAvailable;
+    }
+
+    /** 是否仍在处理最近一次 seek 请求 */
+    public boolean isSeeking() {
+        if (awaitingSeekFlush) {
+            return true;
+        }
+        return nativeHandle != 0 && nativeIsSeeking(nativeHandle);
+    }
+
+    /** 解码结束且 AudioTrack 中的数据已全部播放完毕 */
+    public boolean isPlaybackFinished() {
+        if (!decodeFinished) {
+            return false;
+        }
+        AudioTrack track = audioTrack;
+        if (track == null) {
+            return true;
+        }
+        synchronized (clockLock) {
+            long head = readHeadPositionLocked(track);
+            return head < 0L || head >= writtenFrames;
+        }
     }
 
     public long getDuration() {
@@ -73,17 +178,30 @@ public final class FfmpegAudioPlayer {
     }
 
     public void seekTo(long positionMs) {
-        nativeSeekTo(requireHandle(), Math.max(0L, positionMs));
+        long target = Math.max(0L, positionMs);
+        decodeFinished = false;
+        synchronized (clockLock) {
+            seekTargetMs = target;
+        }
+        awaitingSeekFlush = true;
+        nativeSeekTo(requireHandle(), target);
     }
 
     public void stop() {
+        stopping = true;
         if (nativeHandle != 0) {
             nativeStop(nativeHandle);
         }
         releaseAudioTrack();
+        awaitingSeekFlush = false;
+        synchronized (clockLock) {
+            seekTargetMs = -1L;
+            resetOutputClockLocked(0L);
+        }
     }
 
     public void release() {
+        stopping = true;
         if (nativeHandle != 0) {
             nativeRelease(nativeHandle);
             nativeHandle = 0;
@@ -160,6 +278,13 @@ public final class FfmpegAudioPlayer {
         }
         applyPlaybackSpeed();
 
+        synchronized (clockLock) {
+            outputSampleRate = sampleRate;
+            outputFrameBytes = channels * 2;
+            // 新建的 AudioTrack 播放头从 0 开始，锚点位置保留（可能来自 seek）
+            resetTrackFramesLocked();
+        }
+
         PlayerListener current = listener;
         if (current != null) {
             current.onPrepared();
@@ -167,23 +292,88 @@ public final class FfmpegAudioPlayer {
     }
 
     @SuppressWarnings("unused")
-    private void onNativeAudioData(byte[] pcm) {
+    private void onNativeAudioData(byte[] pcm, long ptsMs) {
+        if (pcm.length == 0) {
+            return;
+        }
+        synchronized (clockLock) {
+            if (outputFrameBytes <= 0) {
+                return;
+            }
+            // 以本块 PCM 的起始时间作为输出时钟锚点，写入前记录，保证播放头换算正确
+            anchorPositionMs = Math.max(0L, ptsMs);
+            anchorFrame = writtenFrames;
+        }
+
+        int offset = 0;
+        while (offset < pcm.length && !stopping && !awaitingSeekFlush) {
+            AudioTrack track = audioTrack;
+            if (track == null) {
+                return;
+            }
+            int written;
+            try {
+                written = track.write(pcm, offset, pcm.length - offset, AudioTrack.WRITE_NON_BLOCKING);
+            } catch (IllegalStateException e) {
+                return;
+            }
+            if (written < 0) {
+                notifyAudioError(written, "AudioTrack write failed.");
+                return;
+            }
+            if (written == 0) {
+                // 缓冲区已满或处于暂停状态，稍后重试，保持解码节奏与播放一致
+                try {
+                    Thread.sleep(WRITE_RETRY_INTERVAL_MS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+                continue;
+            }
+            offset += written;
+            synchronized (clockLock) {
+                if (outputFrameBytes > 0) {
+                    writtenFrames += written / outputFrameBytes;
+                }
+            }
+        }
+    }
+
+    /** 解码器完成定位：丢弃 AudioTrack 中的旧数据并把输出时钟重置到落点 */
+    @SuppressWarnings("unused")
+    private void onNativeAudioFlush(long positionMs) {
         AudioTrack track = audioTrack;
-        if (track != null && pcm.length > 0) {
-            int result;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                result = track.write(pcm, 0, pcm.length, AudioTrack.WRITE_BLOCKING);
-            } else {
-                result = track.write(pcm, 0, pcm.length);
+        if (track != null) {
+            try {
+                boolean playing = track.getPlayState() == AudioTrack.PLAYSTATE_PLAYING;
+                track.pause();
+                track.flush();
+                if (playing) {
+                    track.play();
+                }
+            } catch (IllegalStateException ignored) {
             }
-            if (result < 0) {
-                notifyAudioError(result, "AudioTrack write failed.");
-            }
+        }
+        synchronized (clockLock) {
+            resetOutputClockLocked(Math.max(0L, positionMs));
+            seekTargetMs = -1L;
+        }
+        awaitingSeekFlush = false;
+    }
+
+    @SuppressWarnings("unused")
+    private void onNativeAudioUnavailable() {
+        audioAvailable = false;
+        PlayerListener current = listener;
+        if (current != null) {
+            current.onAudioUnavailable();
         }
     }
 
     @SuppressWarnings("unused")
     private void onNativeCompletion() {
+        decodeFinished = true;
         PlayerListener current = listener;
         if (current != null) {
             current.onCompletion();
@@ -244,6 +434,11 @@ public final class FfmpegAudioPlayer {
     private void releaseAudioTrack() {
         AudioTrack track = audioTrack;
         audioTrack = null;
+        synchronized (clockLock) {
+            outputSampleRate = 0;
+            outputFrameBytes = 0;
+            resetTrackFramesLocked();
+        }
         if (track != null) {
             try {
                 track.stop();
@@ -251,6 +446,36 @@ public final class FfmpegAudioPlayer {
             }
             track.release();
         }
+    }
+
+    /** 把输出时钟锚点重置到指定位置（新建输出或定位完成时调用） */
+    private void resetOutputClockLocked(long positionMs) {
+        anchorPositionMs = positionMs;
+        resetTrackFramesLocked();
+    }
+
+    /** AudioTrack 被新建或 flush 后播放头归零，帧计数需要同步复位 */
+    private void resetTrackFramesLocked() {
+        anchorFrame = 0L;
+        writtenFrames = 0L;
+        lastHeadPosition = 0L;
+        headWrapBase = 0L;
+    }
+
+    /** 读取播放头位置并处理 32 位回绕，返回负数表示读取失败 */
+    private long readHeadPositionLocked(AudioTrack track) {
+        long head;
+        try {
+            head = (track.getPlaybackHeadPosition() & 0xFFFFFFFFL) + headWrapBase;
+        } catch (IllegalStateException e) {
+            return -1L;
+        }
+        if (head < lastHeadPosition) {
+            headWrapBase += 1L << 32;
+            head += 1L << 32;
+        }
+        lastHeadPosition = head;
+        return head;
     }
 
     private native long nativeCreate();
@@ -270,6 +495,8 @@ public final class FfmpegAudioPlayer {
     private static native long nativeGetDuration(long handle);
 
     private static native void nativeSeekTo(long handle, long positionMs);
+
+    private static native boolean nativeIsSeeking(long handle);
 
     private static native void nativeStop(long handle);
 

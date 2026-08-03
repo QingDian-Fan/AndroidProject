@@ -14,6 +14,10 @@ public interface PlayerListener {
     default void onVideoSizeChanged(int width, int height) {
     }
 
+    /** 媒体中不存在可解码的音频轨（仅音频播放器触发），随后仍会回调 {@link #onError(int, String)} */
+    default void onAudioUnavailable() {
+    }
+
     default void onError(int code, String message) {
     }
 }

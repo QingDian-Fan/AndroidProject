@@ -2,86 +2,32 @@
 
 ## 需求背景
 
-`VideoPlayerActivity` 在播放视频时，会注入 `CommonPlayerVideoEngine`，该引擎分别启动 `FfmpegVideoPlayer` 和 `FfmpegAudioPlayer`。当前视频渲染按估算帧率延时推进，音频则通过 `AudioTrack` 独立播放，二者没有统一的播放时钟。
+### P1 高
 
-因此在长视频、变帧率视频、性能波动、倍速播放或拖动进度后，可能出现：
+- 严重等级：P1
+- 文件路径：[ffmpeg_player_jni.cpp](/Users/dian/Projects/AndroidStudioProjects/GitHubProjects/AndroidProject/lib_common-player/src/main/cpp/ffmpeg_player_jni.cpp:540)
+- 代码位置：`sync_video_frame()`，540–542 行
+- 问题描述：当视频帧 PTS 比音频主时钟超前超过 1 秒时，代码重建视频时钟并直接返回渲染该帧，而不是继续等待主时钟追上。
+- 触发条件：合法变帧率视频存在超过 1 秒的相邻帧间隔（如静帧、低帧率片段或时间轴间隙），且音频仍在正常播放。
+- 实际影响：未来画面会提前最多接近该 PTS 间隔显示，音画偏差可远超验收要求的 100ms，违反变帧率与 PTS 同步要求。
+- 修复建议：主时钟有效时，不应以 `SYNC_MAX_WAIT_MS` 为由提前显示未来帧；保持分片等待并响应暂停/seek/stop。仅在主时钟失效或已确认时间轴重置时重建视频时钟。
 
-- 视频画面与实际声音逐渐不同步。
-- 进度条和当前视频画面不对应。
-- 拖动后进度条先跳转，画面或声音随后回退、错位。
-- 播放结束时视频或音频存在残留。
+- 严重等级：P1
+- 文件路径：[FfmpegAudioPlayer.java](/Users/dian/Projects/AndroidStudioProjects/GitHubProjects/AndroidProject/lib_common-player/src/main/java/com/common/player/FfmpegAudioPlayer.java:235)
+- 代码位置：235 行、396–406 行
+- 问题描述：`AudioTrack` 缓冲区未按目标倍速放大；`setPlaybackParams()` 因缓冲区不足失败时异常被静默吞掉，但 native 视频仍切换到新倍速。
+- 触发条件：设备的 `minBufferSize` 大于约 250ms 内容长度时设为 `2.0x`（或更低阈值下的 `1.5x`），配置的缓冲区小于倍速所需的 `speed × minBufferSize`。
+- 实际影响：音频可能维持原倍速，而视频按新倍速播放，造成持续且明显的音画不同步，无法满足 1.5x/2.0x 验收。Android 文档也明确指出流式 `AudioTrack` 在高倍速下需要足够大的缓冲区。[AudioTrack API](https://developer.android.com/reference/android/media/AudioTrack#setPlaybackParams(android.media.PlaybackParams))
+- 修复建议：创建 `AudioTrack` 时按支持的最大倍速配置缓冲区（至少 `ceil(speed * minBufferSize)`），并在 `setPlaybackParams()` 失败时上报错误或阻止视频侧切速，不能静默继续。
 
-## 功能要求
+### P2 中
 
-### 1. 建立统一播放时钟与音画同步策略
+- 严重等级：P2
+- 文件路径：[CommonPlayerVideoEngine.kt](/Users/dian/Projects/AndroidStudioProjects/GitHubProjects/AndroidProject/demo/src/main/java/com/demo/project/player/CommonPlayerVideoEngine.kt:508)
+- 代码位置：`finishPlaybackIfDrained()`，508–521 行
+- 问题描述：视频解码完成后，音频尚未播放完仅等待 3 秒即无条件 `stopPlayers()`。
+- 触发条件：有效媒体的音轨比视频轨长超过 3 秒。
+- 实际影响：尾部音频被截断，不符合“以音视频实际结束状态判定完成”的要求。
+- 修复建议：仅在确认音频输出无进展或发生错误时使用超时兜底；正常输出中的音频应等待 `isPlaybackFinished()`。
 
-- 对包含音频轨的视频，以实际音频输出进度为主时钟；视频帧按其 PTS 与主时钟进行展示、等待或丢帧。
-- 对无音频轨的视频，以视频 PTS 为播放进度依据。
-- 不得仅以固定帧率延时作为视频播放时钟；需兼容变帧率视频。
-- 支持正常播放、暂停恢复、倍速和网络/解码短暂波动场景，避免音画差值持续累积。
-- 音画差值超过阈值时，应自动校正视频显示节奏，不允许通过重复跳音频来追帧。
-
-### 2. 统一进度、拖动与播放状态
-
-- `VideoPlayerEngine.currentPosition`、页面当前播放时间、进度条位置必须使用同一主时钟。
-- 播放中进度条应平稳递增，不应出现明显倒退、超出总时长或长期停滞。
-- 用户拖动进度条时：
-    - 拖动期间仅展示目标时间，不受后台刷新覆盖。
-    - 松手后视频与音频必须同时 seek 到同一目标位置。
-    - 解码器 seek 完成后，以实际落点刷新页面；允许因关键帧产生小范围偏差，但不得恢复到拖动前位置。
-    - 保持拖动前的播放/暂停状态；暂停时拖动后不得自动播放。
-- 播放完成的判断以主时钟和音视频实际结束状态为准，避免视频结束后仍有音频继续播放。
-
-### 3. 完善生命周期与异常处理
-
-- 页面 `onPause`、`onResume`、退出、Surface 销毁和播放器释放时，音频与视频必须成对暂停、恢复、停止或释放。
-- 播放失败、音频轨缺失、seek 失败、Surface 不可用时，应停止无效播放并通过现有错误回调通知 UI，不得导致页面崩溃或后台残留声音。
-- 倍速设置必须同时作用于音频和视频；至少验证 `0.5x`、`1.0x`、`1.5x`、`2.0x`。
-- 不改变现有外部 `ACTION_VIEW`、内部 URL 打开方式及音频文件识别逻辑。
-
-## 允许修改范围
-
-- `demo/src/main/java/com/demo/project/player/CommonPlayerVideoEngine.kt`
-    - 音视频协调、主时钟选择、播放状态及 seek 状态管理。
-
-- `lib_common-player/src/main/java/com/common/player/`
-    - `FfmpegAudioPlayer`、`FfmpegVideoPlayer` 的真实播放位置、音频输出状态与 JNI 回调支持。
-
-- `lib_common-player/src/main/cpp/ffmpeg_player_jni.cpp`
-    - FFmpeg 音视频 PTS、seek、视频帧调度与同步逻辑。
-
-- `lib_common-weight/src/main/java/com/common/weight/video/VideoPlayerView.kt`
-    - 进度条刷新、拖动期间状态保护、完成状态展示。
-
-- 与上述修改直接相关的单元测试或仪器测试文件。
-
-## 禁止修改范围
-
-- 不修改 Gradle、SDK、ABI、依赖版本、签名、发布或上传配置。
-- 不新增第三方播放器或以 ExoPlayer 替换 FFmpeg 视频播放实现。
-- 不修改 `VideoPlayerActivity` 的外部唤起协议、Manifest 的 `ACTION_VIEW` 配置及 URL 路由语义。
-- 不修改无关的音频播放页、WebView、扫描、分享、登录等模块。
-- 不覆盖当前工作区已有的旋转显示、默认播放地址等未提交改动。
-- 不记录或输出媒体 URL、用户文件路径、Cookie、鉴权信息等敏感内容。
-
-## 验收标准
-
-### 1. 音画同步
-
-- 在 `arm64-v8a` 或 `armeabi-v7a` 真机上，播放含 AAC 音频的常规 MP4、长视频及变帧率视频时，稳定播放阶段音画偏差不超过 `100ms`，且不随播放时长持续扩大。
-- 倍速播放下声音与画面保持同步，无明显跳音、重复帧或持续卡顿。
-- 无音频轨视频能够正常播放，进度与画面对应。
-
-### 2. 进度与拖动
-
-- 当前时间、进度条和画面位置一致；进度不倒退、不超过总时长。
-- 在开始、中间、接近结尾位置拖动后，音频、视频和进度条均落在同一目标附近。
-- 暂停后拖动不自动播放；播放中拖动后继续播放。
-- 结束后进度停在总时长，点击重播从 `0` 开始且音画同步。
-
-### 3. 生命周期与回归
-
-- 前后台切换、锁屏恢复、退出页面、Surface 重建后，无后台残留声音、崩溃或重复播放。
-- 原有横屏视频、旋转元数据视频、内部 URL 及外部 `ACTION_VIEW` 打开流程可正常使用。
-- 执行 `:demo:assembleDebug` 通过；如修改 native 代码，需在匹配 ABI 真机完成上述验证。
 
