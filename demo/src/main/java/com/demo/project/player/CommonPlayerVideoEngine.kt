@@ -118,7 +118,11 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     private var surfaceCallback: SurfaceHolder.Callback? = null
     private var surface: Surface? = null
     private var dataSource: String? = null
+
+    /** 目标倍速：主线程请求切换，播放线程在音频拒绝时回退，需保证可见性 */
+    @Volatile
     private var playbackSpeed: Float = 1f
+
     private var needsStopBeforeRestart = false
     private var videoPlayer: FfmpegVideoPlayer? = null
     private var audioPlayer: FfmpegAudioPlayer? = null
@@ -291,11 +295,21 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     }
 
     override fun setPlaybackSpeed(speed: Float) {
+        val previousSpeed = playbackSpeed
         playbackSpeed = speed
         postPlayerAction {
             ensurePlayers()
+            val audio = audioPlayer
+            // 必须先确认音频能按目标倍速输出，再切换视频：
+            // 若音频回退而视频已切速，两侧倍速不一致会造成持续音画不同步
+            val audioApplied = audio == null || !audioAvailable || audio.setPlaybackSpeed(speed)
+            if (!audioApplied) {
+                playbackSpeed = previousSpeed
+                videoPlayer?.setPlaybackSpeed(previousSpeed)
+                postSpeedChangeError(speed, previousSpeed)
+                return@postPlayerAction
+            }
             videoPlayer?.setPlaybackSpeed(speed)
-            audioPlayer?.setPlaybackSpeed(speed)
         }
     }
 
@@ -545,9 +559,17 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         val audio = audioPlayer
         val audioDrained = audio == null || !audioAvailable || !audio.isOutputActive ||
                 runCatching { audio.isPlaybackFinished }.getOrDefault(true)
-        if (!audioDrained && !isAudioOutputStalled(audio)) {
-            // 音频输出仍在推进（音轨可能长于视频轨），等待其真正播完，不截断尾音
-            return
+        if (!audioDrained) {
+            if (paused || !surfaceReady) {
+                // 预期内的暂停（用户暂停、页面 onPause、音频焦点丢失、Surface 等待重建）
+                // 不是输出停滞。重置计时，恢复播放后重新开始判定，避免截断尾音。
+                audioDrainProgressUptimeMs = SystemClock.uptimeMillis()
+                return
+            }
+            if (!isAudioOutputStalled(audio)) {
+                // 音频输出仍在推进（音轨可能长于视频轨），等待其真正播完，不截断尾音
+                return
+            }
         }
         completionNotified = true
         clockRunning = false
@@ -585,14 +607,24 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     private fun configurePlayers() {
         val source = dataSource ?: return
         val video = videoPlayer ?: return
-        video.setDataSource(source)
-        video.setPlaybackSpeed(playbackSpeed)
-        surface?.let(video::setSurface)
 
-        audioPlayer?.run {
-            setDataSource(source)
-            setPlaybackSpeed(playbackSpeed)
+        // 与 setPlaybackSpeed() 保持一致：先确认音频倍速，再下发到视频
+        val audio = audioPlayer
+        var speed = playbackSpeed
+        if (audio != null) {
+            audio.setDataSource(source)
+            if (!audio.setPlaybackSpeed(speed)) {
+                val requestedSpeed = speed
+                // 以音频实际生效的倍速为准，保证视频不会单独按目标倍速渲染
+                speed = audio.playbackSpeed
+                playbackSpeed = speed
+                postSpeedChangeError(requestedSpeed, speed)
+            }
         }
+
+        video.setDataSource(source)
+        video.setPlaybackSpeed(speed)
+        surface?.let(video::setSurface)
     }
 
     private fun startPlayers() {
@@ -622,6 +654,22 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
                 return@post
             }
             runCatching(action).onFailure(::postPlayerError)
+        }
+    }
+
+    /**
+     * 上报倍速切换失败。音视频已一并保持在原倍速，播放可以继续，
+     * 因此只通知 UI 而不走 [postPlayerError] 的停止流程。
+     */
+    private fun postSpeedChangeError(requestedSpeed: Float, keptSpeed: Float) {
+        val error = IllegalStateException(
+            "Audio track rejected playback speed $requestedSpeed, keep $keptSpeed"
+        )
+        com.common.utils.LogUtil.e(TAG, "set playback speed failed", error)
+        postToMain {
+            if (!released) {
+                listener?.onError(error)
+            }
         }
     }
 

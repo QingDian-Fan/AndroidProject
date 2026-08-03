@@ -99,7 +99,13 @@ public final class FfmpegAudioPlayer {
         nativeResume(requireHandle());
     }
 
-    public void setPlaybackSpeed(float speed) {
+    /**
+     * 设置音频倍速。
+     *
+     * @return 是否切换成功；返回 false 表示 AudioTrack 拒绝该倍速且已回退到原倍速，
+     * 调用方必须据此保持视频侧原倍速，否则会造成持续音画不同步
+     */
+    public boolean setPlaybackSpeed(float speed) {
         if (speed <= 0f) {
             throw new IllegalArgumentException("Playback speed must be greater than 0.");
         }
@@ -112,9 +118,10 @@ public final class FfmpegAudioPlayer {
             applyPlaybackSpeed();
             com.common.utils.LogUtil.e(TAG,
                     "AudioTrack rejected playback speed " + speed + ", keep " + previousSpeed);
-            return;
+            return false;
         }
         nativeSetPlaybackSpeed(requireHandle(), speed);
+        return true;
     }
 
     /** 实际生效的倍速：AudioTrack 拒绝切速时与请求值不同 */
