@@ -13,6 +13,12 @@ public final class FfmpegAudioPlayer {
     /** AudioTrack 缓冲区写满时的重试间隔（毫秒） */
     private static final long WRITE_RETRY_INTERVAL_MS = 10L;
 
+    /** 缓冲区按该倍速预留，保证 0.5x~2.0x 倍速切换不会因缓冲区不足失败 */
+    private static final float MAX_SUPPORTED_PLAYBACK_SPEED = 2.0f;
+
+    /** 缓冲区期望容纳的墙钟时长（毫秒） */
+    private static final long BUFFER_DURATION_MS = 500L;
+
     private long nativeHandle;
     private String dataSource;
     private PlayerListener listener;
@@ -97,9 +103,23 @@ public final class FfmpegAudioPlayer {
         if (speed <= 0f) {
             throw new IllegalArgumentException("Playback speed must be greater than 0.");
         }
+        float previousSpeed = playbackSpeed;
         playbackSpeed = speed;
-        applyPlaybackSpeed();
+        if (!applyPlaybackSpeed()) {
+            // AudioTrack 拒绝该倍速（通常是缓冲区不足）。此时必须回退，
+            // 否则解码侧按新倍速推进而实际输出仍是旧倍速，会造成持续音画不同步。
+            playbackSpeed = previousSpeed;
+            applyPlaybackSpeed();
+            com.common.utils.LogUtil.e(TAG,
+                    "AudioTrack rejected playback speed " + speed + ", keep " + previousSpeed);
+            return;
+        }
         nativeSetPlaybackSpeed(requireHandle(), speed);
+    }
+
+    /** 实际生效的倍速：AudioTrack 拒绝切速时与请求值不同 */
+    public float getPlaybackSpeed() {
+        return playbackSpeed;
     }
 
     /**
@@ -232,7 +252,7 @@ public final class FfmpegAudioPlayer {
             notifyAudioError(-1001, "Invalid AudioTrack buffer size: " + minBufferSize);
             return;
         }
-        int bufferSize = Math.max(minBufferSize, sampleRate * channels * 2 / 2);
+        int bufferSize = calculateBufferSize(minBufferSize, sampleRate, channels);
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -276,7 +296,12 @@ public final class FfmpegAudioPlayer {
             releaseAudioTrack();
             return;
         }
-        applyPlaybackSpeed();
+        if (!applyPlaybackSpeed()) {
+            // 音频无法按目标倍速播放，而 native 视频已按该倍速渲染，继续播放必然音画不同步
+            notifyAudioError(-1005, "Apply audio playback speed failed: " + playbackSpeed);
+            releaseAudioTrack();
+            return;
+        }
 
         synchronized (clockLock) {
             outputSampleRate = sampleRate;
@@ -393,17 +418,46 @@ public final class FfmpegAudioPlayer {
         }
     }
 
-    private void applyPlaybackSpeed() {
+    /**
+     * 把当前倍速下发给 AudioTrack。
+     *
+     * @return 是否已按目标倍速生效；输出尚未建立时视为成功（建轨时会重新下发）
+     */
+    private boolean applyPlaybackSpeed() {
         AudioTrack track = audioTrack;
         if (track == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return;
+            return true;
         }
         try {
             PlaybackParams params = track.getPlaybackParams();
             params.setSpeed(playbackSpeed);
             track.setPlaybackParams(params);
-        } catch (IllegalArgumentException | IllegalStateException ignored) {
+            return true;
+        } catch (IllegalArgumentException | IllegalStateException | UnsupportedOperationException e) {
+            com.common.utils.LogUtil.e(TAG,
+                    "setPlaybackParams(" + playbackSpeed + ") failed: " + e.getMessage());
+            return false;
         }
+    }
+
+    /**
+     * 计算 AudioTrack 缓冲区大小。
+     *
+     * 流式 AudioTrack 在倍速播放时消耗客户端数据的速度是 speed 倍，缓冲区必须按最大支持倍速放大，
+     * 否则 {@link AudioTrack#setPlaybackParams} 会因缓冲区不足抛异常导致无法切速。
+     */
+    private int calculateBufferSize(int minBufferSize, int sampleRate, int channels) {
+        float speed = Math.max(MAX_SUPPORTED_PLAYBACK_SPEED, playbackSpeed);
+        int frameBytes = channels * 2;
+        // 下限：倍速放大后的系统最小缓冲区
+        long required = (long) Math.ceil((double) minBufferSize * speed);
+        // 期望：按目标倍速仍能缓冲 BUFFER_DURATION_MS 的墙钟时长
+        long preferred = (long) Math.ceil(
+                (double) sampleRate * frameBytes * speed * BUFFER_DURATION_MS / 1000.0);
+        long bufferSize = Math.max(required, preferred);
+        // 对齐到帧边界，避免出现半帧数据
+        bufferSize = (bufferSize + frameBytes - 1) / frameBytes * frameBytes;
+        return (int) Math.min(bufferSize, Integer.MAX_VALUE - frameBytes);
     }
 
     private void setTrackVolume(AudioTrack track) {

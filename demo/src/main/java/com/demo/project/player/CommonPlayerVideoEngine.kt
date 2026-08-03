@@ -28,8 +28,8 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         /** 定位保护超时：超过该时长仍未收到解码器落点，则回到真实时钟 */
         private const val SEEK_TIMEOUT_MS = 5000L
 
-        /** 视频解码结束后等待音频播完的最长时间，防止音频异常时无法结束 */
-        private const val AUDIO_DRAIN_TIMEOUT_MS = 3000L
+        /** 音频输出停滞多久后判定异常，用于播放结束的兜底（正常推进的音频不受此限制） */
+        private const val AUDIO_DRAIN_STALL_TIMEOUT_MS = 3000L
     }
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -83,8 +83,12 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     @Volatile
     private var videoDecodeFinished = false
 
+    /** 音频排空检测：最近一次观察到的输出位置及其时间戳 */
     @Volatile
-    private var videoFinishedUptimeMs = 0L
+    private var audioDrainPositionMs = -1L
+
+    @Volatile
+    private var audioDrainProgressUptimeMs = 0L
 
     /** 播放结束是否已上报，避免主时钟轮询重复触发 */
     @Volatile
@@ -133,7 +137,8 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
 
         override fun onCompletion() {
             // 视频解码结束不代表播放结束，还需等待音频输出播完，避免残留声音
-            videoFinishedUptimeMs = SystemClock.uptimeMillis()
+            audioDrainPositionMs = -1L
+            audioDrainProgressUptimeMs = SystemClock.uptimeMillis()
             videoDecodeFinished = true
             postPlayerAction { finishPlaybackIfDrained() }
         }
@@ -431,6 +436,8 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         completionNotified = false
         audioAvailable = true
         seekTargetMs = -1L
+        audioDrainPositionMs = -1L
+        audioDrainProgressUptimeMs = 0L
     }
 
     private fun startClock() {
@@ -480,14 +487,23 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             seekTargetMs = -1L
         }
 
-        val position = if (hasAudioOutput) {
+        // 音频播完后其输出位置不再推进，必须撤下主时钟，
+        // 否则音轨短于视轨时视频会一直等待一个静止的主时钟
+        val audioClockUsable = hasAudioOutput &&
+                !runCatching { audio!!.isPlaybackFinished }.getOrDefault(true)
+
+        val position = if (audioClockUsable) {
             runCatching { audio!!.currentPosition }.getOrDefault(cachedPosition)
         } else {
             runCatching { video.currentPosition }.getOrDefault(cachedPosition)
         }
-        cachedPosition = clampPosition(position, duration)
-        if (hasAudioOutput) {
+        val next = clampPosition(position, duration)
+        // 视频已解码完但音频更长时，时钟从音频切回视频 PTS 会导致进度倒退，尾段保持单调
+        cachedPosition = if (videoDecodeFinished) maxOf(next, cachedPosition) else next
+        if (audioClockUsable) {
             runCatching { video.setMasterClock(cachedPosition) }
+        } else if (hasAudioOutput) {
+            runCatching { video.clearMasterClock() }
         }
         finishPlaybackIfDrained()
     }
@@ -497,6 +513,30 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         return if (duration > 0L) safePosition.coerceAtMost(duration) else safePosition
     }
 
+    /**
+     * 判断音频输出是否已停滞。只有确认输出长时间没有任何推进（设备异常、写入失败等）
+     * 才允许超时兜底结束播放，正常推进的音频必须等到实际播完。
+     */
+    private fun isAudioOutputStalled(audio: FfmpegAudioPlayer?): Boolean {
+        if (audio == null) {
+            return true
+        }
+        val position = runCatching { audio.outputPositionMs }.getOrDefault(-1L)
+        val now = SystemClock.uptimeMillis()
+        if (position < 0L) {
+            // 输出位置不可读，无法确认是否推进，沿用上一次的停滞计时
+            if (audioDrainProgressUptimeMs <= 0L) {
+                audioDrainProgressUptimeMs = now
+            }
+        } else if (position > audioDrainPositionMs) {
+            audioDrainPositionMs = position
+            audioDrainProgressUptimeMs = now
+        } else if (audioDrainProgressUptimeMs <= 0L) {
+            audioDrainProgressUptimeMs = now
+        }
+        return now - audioDrainProgressUptimeMs > AUDIO_DRAIN_STALL_TIMEOUT_MS
+    }
+
     /** 视频解码结束且音频已播完时才判定播放完成 */
     private fun finishPlaybackIfDrained() {
         if (released || completionNotified || !videoDecodeFinished) {
@@ -504,10 +544,9 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         }
         val audio = audioPlayer
         val audioDrained = audio == null || !audioAvailable || !audio.isOutputActive ||
-                audio.isPlaybackFinished
-        if (!audioDrained &&
-            SystemClock.uptimeMillis() - videoFinishedUptimeMs <= AUDIO_DRAIN_TIMEOUT_MS
-        ) {
+                runCatching { audio.isPlaybackFinished }.getOrDefault(true)
+        if (!audioDrained && !isAudioOutputStalled(audio)) {
+            // 音频输出仍在推进（音轨可能长于视频轨），等待其真正播完，不截断尾音
             return
         }
         completionNotified = true

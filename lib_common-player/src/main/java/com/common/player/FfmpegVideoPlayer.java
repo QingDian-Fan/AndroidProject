@@ -89,6 +89,14 @@ public final class FfmpegVideoPlayer {
         nativeSetMasterClock(requireHandle(), Math.max(0L, positionMs));
     }
 
+    /**
+     * 清除主时钟，视频改用自身 PTS 时钟继续推进。
+     * 音频播放完毕或输出停止后必须调用，否则视频会一直等待不再前进的主时钟。
+     */
+    public void clearMasterClock() {
+        nativeSetMasterClock(requireHandle(), -1L);
+    }
+
     /** 解码器是否仍在处理最近一次 seek 请求 */
     public boolean isSeeking() {
         return nativeHandle != 0 && nativeIsSeeking(nativeHandle);

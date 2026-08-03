@@ -31,8 +31,6 @@ extern "C" {
 
 /** 视频帧落后主时钟超过该值时丢弃，用于追赶音频 */
 static const int64_t SYNC_DROP_THRESHOLD_MS = 80;
-/** 单帧最长等待时间，避免主时钟异常时长时间卡住画面 */
-static const int64_t SYNC_MAX_WAIT_MS = 1000;
 /** 时间戳跳变阈值，超过该值认为播放时钟需要重建 */
 static const int64_t SYNC_RESET_THRESHOLD_MS = 2000;
 /** 主时钟超过该时长未更新视为失效，退化为视频自身时钟 */
@@ -537,10 +535,9 @@ static bool sync_video_frame(VideoPlayer *player, int64_t pts_ms, int *continuou
         if (diff_ms <= 0) {
             break;
         }
-        if (diff_ms > SYNC_MAX_WAIT_MS) {
-            rebase_video_clock(player, pts_ms);
-            break;
-        }
+        // 帧超前时一律继续分片等待：变帧率视频的合法长帧间隔不能提前显示。
+        // 仅在主时钟失效（走上面的 SYNC_RESET_THRESHOLD_MS 分支）或音频播完后
+        // 由上层清除主时钟时，才会退化为视频自身时钟继续推进。
         int64_t sleep_us = static_cast<int64_t>(diff_ms * 1000.0 / speed);
         if (sleep_us > SYNC_SLEEP_SLICE_US) {
             sleep_us = SYNC_SLEEP_SLICE_US;
@@ -1018,7 +1015,14 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_common_player_FfmpegVideoPlayer_nativeSetMasterClock(JNIEnv *, jclass, jlong handle,
                                                                   jlong position_ms) {
     auto *player = reinterpret_cast<VideoPlayer *>(handle);
-    player->master_clock_ms = position_ms >= 0 ? position_ms : 0;
+    if (position_ms < 0) {
+        // 负值表示主时钟不再可用（音频已播完或输出停止），立即退化为视频自身时钟。
+        // video_clock_* 在主时钟有效期间已被持续校准，因此可无缝衔接继续推进。
+        player->master_clock_time_us = 0;
+        player->master_clock_ms = 0;
+        return;
+    }
+    player->master_clock_ms = position_ms;
     player->master_clock_time_us = av_gettime_relative();
 }
 
