@@ -50,3 +50,28 @@ CommonImage.init(customImageEngine)
 ```
 
 `customImageEngine` 只需要实现 `ImageEngine`，上层调用方不需要感知底层是 Glide、Coil 还是其他实现。
+
+模块内置两个引擎，位于 `engine` 目录：
+
+| 引擎 | 说明 |
+| --- | --- |
+| `GlideImageEngine` | 默认引擎，基于 Glide |
+| `CoilImageEngine` | 基于 Coil |
+
+切换到 Coil（建议在 `Application.onCreate()` 中调用一次）：
+
+```kotlin
+CommonImage.init(CoilImageEngine())
+```
+
+### 引擎能力差异
+
+`CoilImageEngine` 受 Coil 自身能力限制，以下配置与 Glide 实现不完全等价：
+
+| 配置 | Glide | Coil |
+| --- | --- | --- |
+| `thumbnail` | 先加载缩略图再加载原图 | 无对应能力，不生效 |
+| `diskCacheStrategy` | 区分 DATA / RESOURCE | 只缓存原始数据，除 `NONE` 外统一启用 |
+| `pause` / `resume` | 全局暂停/恢复请求 | 无对应 API，空实现；请求会在 View detach 时自动取消 |
+
+其余配置（占位图、错误图、圆角、圆形、裁剪、内存缓存开关、渐显、指定尺寸）两个引擎行为一致。
