@@ -130,6 +130,7 @@ dependencies {
     implementation project(':lib-common-media-picker')
     implementation project(':lib_common-scan')
     implementation project(':lib_common-player')
+    implementation project(':lib_common-image')
 
     /*================================音频播放（ExoPlayer/Media3）============================*/
     implementation 'androidx.media3:media3-exoplayer:1.4.1'

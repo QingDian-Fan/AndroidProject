@@ -1,9 +1,6 @@
 package com.demo.project.ui.fragment
 
-import android.app.AlertDialog
 import android.content.Intent
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.KeyEvent
@@ -13,13 +10,13 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
-import com.common.share.dialog.ShareDialog
 import com.common.theme.NightMode
 import com.common.theme.NightModeManager
 import com.common.ui.BaseAppBindFragment
 import com.common.utils.InputMethodUtils
-import com.common.utils.ResourcesUtil
+import com.common.utils.ext.showAllowStateLoss
 import com.common.weight.webview.bean.WebDataEntry
+import com.common.weight.webview.callback.IWebMenuListener
 import com.common.weight.webview.callback.LoadProgressCallBack
 import com.common.weight.webview.callback.WebViewCallBack
 import com.common.weight.webview.storage.CollectWebPageUtil
@@ -27,8 +24,11 @@ import com.common.weight.webview.storage.WebBookMarkUtil
 import com.common.weight.webview.storage.WebHistoryUtil
 import com.demo.project.R
 import com.demo.project.databinding.FragmentH5ContainerBinding
+import com.demo.project.ui.dialog.WebMenuDialog
+import com.demo.project.ui.dialog.WebShareDialog
 import com.demo.project.web.WebViewDarkModeHelper
 import com.demo.project.web.WebViewDarkModeHelper.Mode
+import androidx.core.net.toUri
 
 class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), WebViewCallBack {
 
@@ -110,7 +110,74 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
                 CollectWebPageUtil.removeCollectWebPage(webEntry)
             }
         }
-        binding.ivMenu.setOnClickListener { showWebMenu() }
+        binding.ivMenu.setOnClickListener {
+            val dialog = WebMenuDialog.getDialog()
+            dialog.setListener(object : IWebMenuListener {
+                override fun onHome() {
+                    var step = 0
+                    while (binding.webView.canGoBackOrForward(step - 1)) step--
+                    binding.webView.goBackOrForward(step)
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onTop() {
+                    binding.webView.goTop()
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onRefresh() {
+                    binding.webView.reload()
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onClose() {
+                    activity?.finish()
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onCollect() {
+                    if (binding.webView.title?.isNotEmpty() == true && binding.webView.url?.isNotEmpty() == true) {
+                        val webEntry = WebDataEntry(
+                            binding.webView.title,
+                            binding.webView.url,
+                            System.currentTimeMillis()
+                        )
+                        CollectWebPageUtil.collectWebPage(webEntry)
+                    }
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onMark() {
+                    if (binding.webView.title?.isNotEmpty() == true && binding.webView.url?.isNotEmpty() == true) {
+                        val webEntry = WebDataEntry(
+                            binding.webView.title,
+                            binding.webView.url,
+                            System.currentTimeMillis()
+                        )
+                        WebBookMarkUtil.markWebPage(webEntry)
+                    }
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onShare() {
+                    binding.webView.getShareData { url, covers, title, desc ->
+                        WebShareDialog.getDialog(
+                            url,
+                            covers.toMutableList(),
+                            title,
+                            desc
+                        ).showAllowStateLoss(childFragmentManager, "")
+                    }
+                    dialog.dismissAllowingStateLoss()
+                }
+
+                override fun onSetting() {
+                    showToast("功能开发中")
+                    dialog.dismissAllowingStateLoss()
+                }
+            })
+            dialog.showAllowStateLoss(childFragmentManager, "")
+        }
         binding.ivBack.setOnClickListener {
             if (binding.webView.canGoBack()) {
                 binding.webView.goBack()
@@ -126,7 +193,7 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
         binding.ivInto.setOnClickListener {
             val url = binding.etTitle.text.toString().trim()
             if (url.isNotEmpty()) {
-                val uri = Uri.parse(url)
+                val uri = url.toUri()
                 if (uri.scheme == "http" || uri.scheme == "https") {
                     binding.webView.loadUrl(url)
                 }
@@ -149,63 +216,6 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
             } else {
                 InputMethodUtils.hide(binding.etTitle)
             }
-        }
-    }
-
-    private fun showWebMenu() {
-        val actions = arrayOf(
-            getString(R.string.web_menu_home),
-            getString(R.string.web_menu_top),
-            getString(R.string.web_menu_refresh),
-            getString(R.string.web_menu_close),
-            getString(R.string.web_menu_collect),
-            getString(R.string.web_menu_bookmark),
-            getString(R.string.web_menu_share),
-            getString(R.string.web_menu_settings)
-        )
-        AlertDialog.Builder(requireContext())
-            .setItems(actions) { dialog, which ->
-                when (which) {
-                    0 -> goHome()
-                    1 -> binding.webView.goTop()
-                    2 -> binding.webView.reload()
-                    3 -> activity?.finish()
-                    4 -> currentWebEntry()?.let { CollectWebPageUtil.collectWebPage(it) }
-                    5 -> currentWebEntry()?.let { WebBookMarkUtil.markWebPage(it) }
-                    6 -> showShareDialog()
-                    7 -> showToast(R.string.web_settings_not_ready)
-                }
-                dialog.dismiss()
-            }
-            .show()
-    }
-
-    private fun goHome() {
-        var step = 0
-        while (binding.webView.canGoBackOrForward(step - 1)) {
-            step--
-        }
-        if (step != 0) {
-            binding.webView.goBackOrForward(step)
-        }
-    }
-
-    private fun showShareDialog() {
-        binding.webView.getShareData { url, covers, title, desc ->
-            val shareUrl = url.ifEmpty { currentUrlString }
-            val shareTitle = title.ifEmpty {
-                currentTitleString.ifEmpty { ResourcesUtil.getString(R.string.app_name) }
-            }
-            val shareDesc = desc.ifEmpty { shareUrl }
-            val dialog = ShareDialog()
-            val coverUrl = covers.firstOrNull().orEmpty()
-            if (coverUrl.isNotEmpty()) {
-                dialog.setLinkData(true, shareUrl, coverUrl, shareTitle, shareDesc)
-            } else {
-                val bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
-                dialog.setLinkData(true, bitmap, shareUrl, shareTitle, shareDesc)
-            }
-            dialog.show(childFragmentManager, "")
         }
     }
 
@@ -263,7 +273,7 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
 
     override fun overrideUrlLoading(view: WebView?, url: WebResourceRequest?): Boolean {
         val targetUrl = url?.url?.toString().orEmpty()
-        val uri = Uri.parse(targetUrl)
+        val uri = targetUrl.toUri()
         return if (uri.scheme == "http" || uri.scheme == "https") {
             currentUrlString = targetUrl
             view?.loadUrl(targetUrl)

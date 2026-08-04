@@ -60,4 +60,5 @@
     <string name="audio_state_paused">已暂停</string>
     <string name="audio_state_completed">播放完成</string>
     <string name="audio_state_error">播放出错：%1$s</string>
+    <string name="img_is_save">图片已保存</string>
 </resources>

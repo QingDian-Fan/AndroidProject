@@ -14,4 +14,5 @@
     <color name="audio_text_primary">#FF1A1D26</color>
     <color name="audio_text_secondary">#FF8A8F9C</color>
     <color name="audio_track_bg">#FFE3E7F0</color>
+    <color name="transparent">#00000000</color>
 </resources>
