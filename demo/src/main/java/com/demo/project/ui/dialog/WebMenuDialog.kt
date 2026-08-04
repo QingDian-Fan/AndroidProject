@@ -1,6 +1,5 @@
 package com.demo.project.ui.dialog
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -8,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDialogFragment
+import androidx.core.content.ContextCompat
 import com.common.weight.webview.callback.IWebMenuListener
 import com.demo.project.R
 import com.demo.project.databinding.DialogWebMenuBinding
@@ -79,7 +79,10 @@ class WebMenuDialog : AppCompatDialogFragment() {
         dialog?.let {
             it.setCanceledOnTouchOutside(true)
             it.window?.run {
-                navigationBarColor = Color.WHITE
+                // 与弹窗面板同色，随日夜间模式切换，避免夜间模式下底部导航栏仍为白色
+                // bg_common 定义在 lib_common-theme，非传递 R 类下需全限定引用
+                navigationBarColor =
+                    ContextCompat.getColor(context, com.common.theme.R.color.bg_common)
 
                 addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 

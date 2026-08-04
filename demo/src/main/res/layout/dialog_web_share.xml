@@ -15,7 +15,7 @@
             android:layout_width="@dimen/dp_300"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:background="@android:color/white"
+            android:background="@color/bg_common"
             android:elevation="@dimen/dp_6"
             android:orientation="vertical">
 
@@ -41,10 +41,10 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="文章标题文章标题文章标题文章标题..."
-                    android:textColor="#000000"
+                    android:textColor="@color/text_color"
                     android:textSize="@dimen/dp_15"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    tools:text="文章标题文章标题文章标题文章标题..." />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -59,16 +59,16 @@
                         android:layout_weight="1"
                         android:ellipsize="end"
                         android:maxLines="3"
-                        android:text="文章摘要文章摘要文章摘文章摘要文章摘文章摘要文章摘要文章摘要文章摘要文章摘要..."
-                        android:textColor="#333333"
-                        android:textSize="@dimen/dp_13" />
+                        android:textColor="@color/text_sub_color"
+                        android:textSize="@dimen/dp_13"
+                        tools:text="文章摘要文章摘要文章摘文章摘要文章摘文章摘要文章摘要文章摘要文章摘要文章摘要..." />
 
                     <!-- 黑色小方块（模拟缩略图） -->
                     <com.common.weight.ActionIconView
                         android:id="@+id/iv_code"
                         android:layout_width="@dimen/dp_56"
                         android:layout_height="@dimen/dp_56"
-                        android:background="#000000" />
+                        android:background="@color/bg_common" />
                 </LinearLayout>
 
 
@@ -91,8 +91,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:text="由AndroidProject平台生成"
-                        android:textColor="#666666"
+                        android:text="@string/web_share_source"
+                        android:textColor="@color/text_light_color"
                         android:textSize="@dimen/dp_12" />
                 </LinearLayout>
 
@@ -128,8 +128,8 @@
             android:layout_height="@dimen/dp_48"
             android:layout_weight="1"
             android:background="@drawable/btn_white_round"
-            android:text="保存相册"
-            android:textColor="#424242" />
+            android:text="@string/web_share_save_album"
+            android:textColor="@color/text_color" />
 
         <Space
             android:layout_width="@dimen/dp_16"
@@ -141,8 +141,8 @@
             android:layout_height="@dimen/dp_48"
             android:layout_weight="1"
             android:background="@drawable/btn_blue_round"
-            android:text="立即分享"
-            android:textColor="#ffffff" />
+            android:text="@string/web_share_now"
+            android:textColor="@color/white" />
     </LinearLayout>
 
 </RelativeLayout>

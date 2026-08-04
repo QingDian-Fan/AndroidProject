@@ -29,6 +29,7 @@ import com.demo.project.ui.dialog.WebShareDialog
 import com.demo.project.web.WebViewDarkModeHelper
 import com.demo.project.web.WebViewDarkModeHelper.Mode
 import androidx.core.net.toUri
+import com.common.utils.ResourcesUtil
 
 class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), WebViewCallBack {
 
@@ -172,7 +173,7 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
                 }
 
                 override fun onSetting() {
-                    showToast("功能开发中")
+                    showToast(ResourcesUtil.getString(R.string.web_settings_not_ready))
                     dialog.dismissAllowingStateLoss()
                 }
             })

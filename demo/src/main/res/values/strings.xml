@@ -61,4 +61,13 @@
     <string name="audio_state_completed">播放完成</string>
     <string name="audio_state_error">播放出错：%1$s</string>
     <string name="img_is_save">图片已保存</string>
+    <!-- 网页菜单弹窗 -->
+    <string name="web_menu_host_tip">网页由wanandroid.com提供</string>
+    <string name="web_menu_share_square">分享到广场</string>
+    <string name="web_menu_interrupt">网页拦截</string>
+    <!-- 网页分享弹窗 -->
+    <string name="web_share_source">由AndroidProject平台生成</string>
+    <string name="web_share_save_album">保存相册</string>
+    <string name="web_share_now">立即分享</string>
+    <string name="web_share_chooser_title">分享图片</string>
 </resources>

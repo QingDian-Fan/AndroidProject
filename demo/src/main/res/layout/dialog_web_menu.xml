@@ -17,7 +17,7 @@
         android:layout_marginBottom="@dimen/dp_10"
         android:alpha="0.3"
         android:gravity="center"
-        android:text="网页由wanandroid.com提供"
+        android:text="@string/web_menu_host_tip"
         android:textColor="@color/text_sub_color"
         android:textSize="@dimen/dp_12"
         android:visibility="visible" />
@@ -51,7 +51,7 @@
                 android:layout_marginTop="@dimen/dp_8"
                 android:gravity="center"
                 android:singleLine="true"
-                android:text="回到首页"
+                android:text="@string/web_menu_home"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/dp_12" />
 
@@ -82,7 +82,7 @@
                 android:layout_marginTop="8dp"
                 android:gravity="center"
                 android:singleLine="true"
-                android:text="分享到广场"
+                android:text="@string/web_menu_share_square"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/dp_12" />
 
@@ -114,7 +114,7 @@
                 android:layout_marginTop="@dimen/dp_8"
                 android:gravity="center"
                 android:singleLine="true"
-                android:text="收藏"
+                android:text="@string/web_menu_collect"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/dp_12" />
 
@@ -145,7 +145,7 @@
                 android:layout_marginTop="@dimen/dp_8"
                 android:gravity="center"
                 android:singleLine="true"
-                android:text="书签"
+                android:text="@string/web_menu_bookmark"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/dp_12" />
 
@@ -182,7 +182,7 @@
                 android:layout_marginTop="8dp"
                 android:gravity="center"
                 android:singleLine="true"
-                android:text="刷新"
+                android:text="@string/web_menu_refresh"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/dp_12" />
 
@@ -214,7 +214,7 @@
                 android:layout_marginTop="@dimen/dp_8"
                 android:gravity="center"
                 android:singleLine="true"
-                android:text="回到顶部"
+                android:text="@string/web_menu_top"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/dp_12" />
 
@@ -246,7 +246,7 @@
                 android:layout_marginTop="@dimen/dp_8"
                 android:gravity="center"
                 android:singleLine="true"
-                android:text="网页拦截"
+                android:text="@string/web_menu_interrupt"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/dp_12" />
 
@@ -277,7 +277,7 @@
                 android:layout_marginTop="@dimen/dp_8"
                 android:gravity="center"
                 android:singleLine="true"
-                android:text="退出"
+                android:text="@string/web_menu_close"
                 android:textColor="@color/text_color"
                 android:textSize="@dimen/dp_12" />
 

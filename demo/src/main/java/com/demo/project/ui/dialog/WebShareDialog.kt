@@ -2,7 +2,6 @@ package com.demo.project.ui.dialog
 
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
@@ -11,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDialogFragment
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -148,7 +148,10 @@ class WebShareDialog : AppCompatDialogFragment() {
         dialog?.let {
             it.setCanceledOnTouchOutside(true)
             it.window?.run {
-                navigationBarColor = Color.WHITE
+                // 与弹窗底部区域同色，随日夜间模式切换，避免夜间模式下底部导航栏仍为白色
+                // bg_common 定义在 lib_common-theme，非传递 R 类下需全限定引用
+                navigationBarColor =
+                    ContextCompat.getColor(context, com.common.theme.R.color.bg_common)
 
                 addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 
@@ -191,7 +194,7 @@ class WebShareDialog : AppCompatDialogFragment() {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // 临时授权
 
             // 触发系统分享菜单
-            startActivity(Intent.createChooser(intent, "分享图片"))
+            startActivity(Intent.createChooser(intent, getString(R.string.web_share_chooser_title)))
         }
 
     }
