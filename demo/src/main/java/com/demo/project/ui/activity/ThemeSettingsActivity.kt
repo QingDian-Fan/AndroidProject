@@ -87,14 +87,14 @@ class ThemeSettingsActivity : AppCompatActivity() {
     private fun NightMode.toThemeRadioId(): Int {
         return when (this) {
             NightMode.FOLLOW_SYSTEM -> R.id.rb_theme_follow_system
-            NightMode.DAY -> R.id.rb_theme_day
+            NightMode.LIGHT -> R.id.rb_theme_day
             NightMode.NIGHT -> R.id.rb_theme_night
         }
     }
 
     private fun Int.toNightMode(): NightMode {
         return when (this) {
-            R.id.rb_theme_day -> NightMode.DAY
+            R.id.rb_theme_day -> NightMode.LIGHT
             R.id.rb_theme_night -> NightMode.NIGHT
             else -> NightMode.FOLLOW_SYSTEM
         }

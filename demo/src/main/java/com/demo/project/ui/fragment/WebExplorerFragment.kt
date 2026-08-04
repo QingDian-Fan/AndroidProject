@@ -14,6 +14,8 @@ import android.webkit.WebView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import com.common.share.dialog.ShareDialog
+import com.common.theme.NightMode
+import com.common.theme.NightModeManager
 import com.common.ui.BaseAppBindFragment
 import com.common.utils.InputMethodUtils
 import com.common.utils.ResourcesUtil
@@ -25,6 +27,8 @@ import com.common.weight.webview.storage.WebBookMarkUtil
 import com.common.weight.webview.storage.WebHistoryUtil
 import com.demo.project.R
 import com.demo.project.databinding.FragmentH5ContainerBinding
+import com.demo.project.web.WebViewDarkModeHelper
+import com.demo.project.web.WebViewDarkModeHelper.Mode
 
 class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), WebViewCallBack {
 
@@ -44,6 +48,23 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
     override fun getLayoutId(): Int = R.layout.fragment_h5_container
 
     override fun initialize(savedInstanceState: Bundle?) {
+        when(NightModeManager.currentMode){
+            NightMode.FOLLOW_SYSTEM->{
+                activity?.let {
+                    WebViewDarkModeHelper.apply(it,binding.webView,Mode.FOLLOW_SYSTEM)
+                }
+            }
+            NightMode.LIGHT->{
+                activity?.let {
+                    WebViewDarkModeHelper.apply(it,binding.webView,Mode.LIGHT)
+                }
+            }
+            NightMode.NIGHT->{
+                activity?.let {
+                    WebViewDarkModeHelper.apply(it,binding.webView,Mode.NIGHT)
+                }
+            }
+        }
         parentFragmentManager.setFragmentResultListener(KEY_URL_DATA, viewLifecycleOwner) { _, bundle ->
             initView()
             initData(bundle.getString(EXTRA_URL).orEmpty().ifBlank { DEFAULT_URL })

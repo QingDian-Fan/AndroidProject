@@ -1,4 +1,4 @@
-package com.demo.project.utils
+package com.demo.project.web
 
 import android.content.Context
 import android.content.res.Configuration
@@ -25,7 +25,7 @@ object WebViewDarkModeHelper {
         LIGHT,
 
         /** 强制夜间 */
-        DARK
+        NIGHT
     }
 
     /**
@@ -39,13 +39,13 @@ object WebViewDarkModeHelper {
         // 设置全局 AppCompatDelegate 模式
         when (mode) {
             Mode.LIGHT -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            Mode.DARK -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            Mode.NIGHT -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             Mode.FOLLOW_SYSTEM -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
 
         // 当前是否暗色模式
         val isDarkMode = when (mode) {
-            Mode.DARK -> true
+            Mode.NIGHT -> true
             Mode.LIGHT -> false
             Mode.FOLLOW_SYSTEM -> {
                 val uiMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK

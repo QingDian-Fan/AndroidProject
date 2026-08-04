@@ -7,11 +7,15 @@ import android.text.TextUtils
 import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import com.common.theme.NightMode
+import com.common.theme.NightModeManager
 import com.common.ui.BaseAppBindFragment
 import com.common.weight.webview.callback.LoadProgressCallBack
 import com.common.weight.webview.callback.WebViewCallBack
 import com.demo.project.R
 import com.demo.project.databinding.FragmentWebBinding
+import com.demo.project.web.WebViewDarkModeHelper
+import com.demo.project.web.WebViewDarkModeHelper.Mode
 
 class WebFragment : BaseAppBindFragment<FragmentWebBinding>(), WebViewCallBack {
 
@@ -39,7 +43,25 @@ class WebFragment : BaseAppBindFragment<FragmentWebBinding>(), WebViewCallBack {
 
     override fun getLayoutId(): Int = R.layout.fragment_web
 
-    override fun initialize(savedInstanceState: Bundle?) = Unit
+    override fun initialize(savedInstanceState: Bundle?)  {
+        when(NightModeManager.currentMode){
+            NightMode.FOLLOW_SYSTEM->{
+                activity?.let {
+                    WebViewDarkModeHelper.apply(it,binding.webView,Mode.FOLLOW_SYSTEM)
+                }
+            }
+            NightMode.LIGHT->{
+                activity?.let {
+                    WebViewDarkModeHelper.apply(it,binding.webView,Mode.LIGHT)
+                }
+            }
+            NightMode.NIGHT->{
+                activity?.let {
+                    WebViewDarkModeHelper.apply(it,binding.webView,Mode.NIGHT)
+                }
+            }
+        }
+    }
 
     override fun lazyInit() {
         binding.webView.initWebClient(this)
