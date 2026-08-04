@@ -821,8 +821,8 @@ class CommonTitleBar @JvmOverloads constructor(
     }
 
     companion object {
-        private const val MATCH_PARENT = ViewGroup.LayoutParams.MATCH_PARENT
-        private const val WRAP_CONTENT = ViewGroup.LayoutParams.WRAP_CONTENT
+        private const val MATCH_PARENT = LayoutParams.MATCH_PARENT
+        private const val WRAP_CONTENT = LayoutParams.WRAP_CONTENT
 
         private const val TYPE_LEFT_NONE = 0
         private const val TYPE_LEFT_TEXTVIEW = 1
