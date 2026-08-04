@@ -34,6 +34,7 @@
     <string name="toast_login_success">Login successful: %1$s</string>
     <string name="toast_register_success">Registration successful</string>
     <string name="toast_network_unavailable">Network unavailable</string>
+    <string name="toast_press_again_to_exit">Press again to exit the app</string>
     <string name="toast_selection_cancelled">Cancelled</string>
     <string name="toast_camera_permission_denied">Please enable camera permission in Settings to use this feature.</string>
     <string name="dialog_input_hint">Enter content</string>

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
+import android.os.SystemClock
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityOptionsCompat
@@ -24,6 +25,8 @@ import com.demo.project.vm.MainViewModel
 
 class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
     companion object {
+        private const val EXIT_INTERVAL_MS = 2_000L
+
         @JvmStatic
         fun start(mContext: Context) {
             val intent = Intent()
@@ -38,6 +41,7 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
 
     override fun getLayoutId(): Int = R.layout.activity_main
     val mSelectList = ArrayList<String>()
+    private var lastBackPressedAt: Long? = null
 
     override fun initialize(savedInstanceState: Bundle?) {
         getTitleBarView()?.setCenterText(getString(R.string.home_page_title))
@@ -98,6 +102,19 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
         }
 
     }
+
+    override fun handleBackPress(): Boolean {
+        val now = SystemClock.elapsedRealtime()
+        val previousBackPressedAt = lastBackPressedAt
+        if (previousBackPressedAt != null && now - previousBackPressedAt <= EXIT_INTERVAL_MS) {
+            finish()
+            return true
+        }
+        lastBackPressedAt = now
+        showToast(R.string.toast_press_again_to_exit)
+        return true
+    }
+
     private val startActivityLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->

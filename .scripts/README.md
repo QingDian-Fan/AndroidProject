@@ -1,8 +1,6 @@
-## 需求：修复 FFmpeg 视频播放器音画不同步与进度不准问题
+## 需求：ThemeSettingsActivity沉浸式状态栏
 
 ## 需求背景
 
-HomeActivity处理“再按一下，退出app”的逻辑，在2秒内点击两次返回键才退出app，点击第一次toast："再按一次退出应用"
-
-
+ThemeSettingsActivity的状态栏现在颜色不对，帮我实现沉浸式状态栏
 
