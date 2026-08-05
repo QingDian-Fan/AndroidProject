@@ -66,61 +66,6 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         })
     }
 
-    @Suppress("DEPRECATION")
-    private fun openAlbum() {
-        cameraScan.setAnalyzeImage(false)
-        ivAlbum.isEnabled = false
-        runCatching {
-            startActivityForResult(selectIntent(), REQUEST_SELECT_IMAGE)
-        }.onFailure {
-            showAlbumError(R.string.scan_album_image_unavailable)
-        }
-    }
-
-    @Deprecated("Deprecated in Android SDK, retained for PictureSelector compatibility")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != REQUEST_SELECT_IMAGE) return
-
-        val uri = result(resultCode, data)
-        if (uri == null) {
-            resumeCameraScan()
-        } else {
-            decodeAlbumQRCode(uri)
-        }
-    }
-
-    private fun decodeAlbumQRCode(uri: Uri) {
-        albumExecutor.execute {
-            val bitmap = runCatching { decodeSampledBitmap(uri) }.getOrNull()
-            if (bitmap == null) {
-                mainHandler.post { showAlbumError(R.string.scan_album_image_unavailable) }
-                return@execute
-            }
-
-            val resultPoints = ArrayList<Mat>()
-            val results = runCatching {
-                WeChatQRCodeDetector.detectAndDecode(bitmap, resultPoints).orEmpty()
-            }.getOrElse { emptyList() }
-            val centers = resultPoints.mapNotNull { mat ->
-                runCatching {
-                    val centerX = (0 until 4).sumOf { mat[it, 0][0].toInt() } / 4
-                    val centerY = (0 until 4).sumOf { mat[it, 1][0].toInt() } / 4
-                    Point(centerX, centerY)
-                }.getOrNull()
-            }
-            resultPoints.forEach { it.release() }
-
-            mainHandler.post {
-                if (isFinishing || isDestroyed) {
-                    bitmap.recycle()
-                    return@post
-                }
-                handleAlbumResult(bitmap, results, centers)
-            }
-        }
-    }
-
     private fun handleAlbumResult(bitmap: Bitmap, results: List<String>, centers: List<Point>) {
         when {
             results.isEmpty() -> {
@@ -259,6 +204,62 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         return R.layout.activity_wechat_qrcode
     }
 
+
+    @Suppress("DEPRECATION")
+    private fun openAlbum() {
+        cameraScan.setAnalyzeImage(false)
+        ivAlbum.isEnabled = false
+        runCatching {
+            startActivityForResult(selectIntent(), REQUEST_SELECT_IMAGE)
+        }.onFailure {
+            showAlbumError(R.string.scan_album_image_unavailable)
+        }
+    }
+
+    @Deprecated("Deprecated in Android SDK, retained for PictureSelector compatibility")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != REQUEST_SELECT_IMAGE) return
+
+        val uri = result(resultCode, data)
+        if (uri == null) {
+            resumeCameraScan()
+        } else {
+            decodeAlbumQRCode(uri)
+        }
+    }
+
+    private fun decodeAlbumQRCode(uri: Uri) {
+        albumExecutor.execute {
+            val bitmap = runCatching { decodeSampledBitmap(uri) }.getOrNull()
+            if (bitmap == null) {
+                mainHandler.post { showAlbumError(R.string.scan_album_image_unavailable) }
+                return@execute
+            }
+
+            val resultPoints = ArrayList<Mat>()
+            val results = runCatching {
+                WeChatQRCodeDetector.detectAndDecode(bitmap, resultPoints).orEmpty()
+            }.getOrElse { emptyList() }
+            val centers = resultPoints.mapNotNull { mat ->
+                runCatching {
+                    val centerX = (0 until 4).sumOf { mat[it, 0][0].toInt() } / 4
+                    val centerY = (0 until 4).sumOf { mat[it, 1][0].toInt() } / 4
+                    Point(centerX, centerY)
+                }.getOrNull()
+            }
+            resultPoints.forEach { it.release() }
+
+            mainHandler.post {
+                if (isFinishing || isDestroyed) {
+                    bitmap.recycle()
+                    return@post
+                }
+                handleAlbumResult(bitmap, results, centers)
+            }
+        }
+    }
+
     private fun selectIntent(): Intent {
         return Intent(Intent.ACTION_PICK).apply {
             setDataAndType(MediaStore.Images.Media.INTERNAL_CONTENT_URI, "image/*")
@@ -267,7 +268,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
 
     fun result(resultCode: Int, data: Intent?): Uri? {
-        if (resultCode != Activity.RESULT_OK) return null
+        if (resultCode != RESULT_OK) return null
         if (null == data) return null
         if (null == data.data) return null
         return data.data
