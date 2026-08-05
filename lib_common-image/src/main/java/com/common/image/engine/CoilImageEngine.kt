@@ -9,7 +9,6 @@ import coil.load
 import coil.request.CachePolicy
 import coil.size.Scale
 import coil.transform.CircleCropTransformation
-import coil.transform.RoundedCornersTransformation
 import com.common.image.ImageDiskCacheStrategy
 import com.common.image.ImageEngine
 import com.common.image.ImageOptions
@@ -130,8 +129,10 @@ class CoilImageEngine : ImageEngine {
     private fun CoilImageRequest.Builder.applyTransformations(options: ImageOptions) {
         when {
             options.circleCrop -> transformations(CircleCropTransformation())
+            // 不能直接用 Coil 的 RoundedCornersTransformation：它内部固定按 Scale.FILL 居中裁剪，
+            // FIT_CENTER / CENTER_INSIDE 组合圆角时会裁掉图片，与 Glide 引擎不一致
             options.radiusPx > 0 -> transformations(
-                RoundedCornersTransformation(options.radiusPx.toFloat())
+                CoilRoundedCornersTransformation(options.radiusPx, options.scaleType)
             )
         }
     }

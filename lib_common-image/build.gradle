@@ -40,4 +40,6 @@ dependencies {
     // Coil 引擎依赖，与 Glide 并存，由 CommonImage.init(...) 决定实际使用哪一个
     implementation 'io.coil-kt:coil:2.7.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0'
+
+    testImplementation 'junit:junit:4.13.2'
 }
