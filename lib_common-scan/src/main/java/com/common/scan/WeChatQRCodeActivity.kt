@@ -12,6 +12,7 @@ import com.common.scan.camera.util.PointUtils
 import com.common.scan.wechat.WeChatCameraScanActivity
 import com.common.scan.wechat.analyze.WeChatScanningAnalyzer
 import com.common.scan.R
+import com.common.scan.view.ActionIconView
 
 /**
  * 微信二维码扫描实现示例
@@ -23,13 +24,19 @@ import com.common.scan.R
 class WeChatQRCodeActivity : WeChatCameraScanActivity() {
 
     private lateinit var ivResult: ImageView
+    private lateinit var ivClose: ActionIconView
+    private lateinit var ivAlbum: ActionIconView
 
     override fun initUI() {
         super.initUI()
         ivResult = findViewById(R.id.ivResult)
+        ivClose = findViewById(R.id.iv_close)
+        ivAlbum = findViewById(R.id.iv_album)
+        ivClose.setOnClickListener { onBackPressed() }
+        ivAlbum.setOnClickListener {
 
-
-        onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true){
+        }
+        onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 // 如果是结果点显示时，用户点击了返回键，则认为是取消选择当前结果，重新开始扫码
                 if (viewfinderView.isShowPoints) {

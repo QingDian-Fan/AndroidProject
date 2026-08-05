@@ -1,30 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
+
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
+
     <ImageView
         android:id="@+id/ivResult"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
+
     <com.common.scan.view.ViewfinderView
         android:id="@+id/viewfinderView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:vvViewfinderStyle="popular"
-        app:vvLaserStyle="image"
+        app:vvLaserDrawable="@drawable/ic_laser_line"
         app:vvLaserDrawableRatio="0.8"
-        app:vvLaserDrawable="@drawable/ic_laser_line"/>
-    <ImageView
-        android:id="@+id/ivFlashlight"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="@dimen/camera_scan_flashlight_margin_top"
-        android:contentDescription="@null"
-        android:src="@drawable/camera_scan_flashlight_selector" />
+        app:vvLaserStyle="image"
+        app:vvViewfinderStyle="popular" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.common.scan.view.ActionIconView
+            android:id="@+id/iv_close"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="45dp"
+            android:background="@drawable/bg_button_radius_max"
+            android:gravity="center"
+            android:padding="5dp"
+            android:src="@mipmap/icon_code_close" />
+
+
+        <com.common.scan.view.ActionIconView
+            android:id="@+id/iv_album"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginEnd="50dp"
+            android:layout_marginBottom="70dp"
+            android:background="@drawable/bg_button_radius_max"
+            android:gravity="center"
+            android:padding="5dp"
+            android:src="@mipmap/icon_code_album" />
+
+
+        <com.common.scan.view.ActionIconView
+            android:id="@+id/ivFlashlight"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="50dp"
+            android:layout_marginBottom="70dp"
+            android:background="@drawable/bg_button_radius_max"
+            android:gravity="center"
+            android:padding="5dp"
+            android:src="@drawable/bg_flashlight"
+            android:tint="@color/white" />
+
+    </RelativeLayout>
+
+
 </FrameLayout>
