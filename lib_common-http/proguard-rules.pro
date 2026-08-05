@@ -26,6 +26,17 @@
 -keepclassmembers class com.common.http.HttpError { *; }
 
 #--------------------------------------------
+# Cookie 持久化（Java 序列化）
+#--------------------------------------------
+# 依据：PersistentCookieStore.encodeCookie() / decodeCookie() 用 ObjectOutputStream
+# 序列化 OkHttpCookies。okhttp3.Cookie 本身不实现 Serializable，因此 OkHttpCookies
+# 依赖私有 writeObject()/readObject() 钩子手工读写字段——这两个方法只被 JDK 序列化机制
+# 反射调用，R8 视为不可达并裁剪，之后会退化为默认序列化并抛 NotSerializableException，
+# 异常被吞掉后 Cookie 无法落盘，进程重启即丢失登录态。
+# 同时保留类名可稳定跨版本的默认 serialVersionUID，避免历史持久化数据反序列化失败。
+-keep class com.common.http.cookie.OkHttpCookies { *; }
+
+#--------------------------------------------
 # Room
 #--------------------------------------------
 # Room 在运行期用 "数据库类名 + _Impl" 反射实例化生成实现类，

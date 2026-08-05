@@ -52,8 +52,10 @@
 #   getRequireLoginList()  -> 当前工程无 @RequireLogin 标注，返回空列表
 # 依据：lib_processor/RequireLoginProcessor.java 的 createXxxFun()、
 #      lib_common-auth/hook/LoginHookUtil.java 的 isGeneratedLogin()
--keepnames class com.demo.project.auth.LoginState
--keepclassmembers class com.demo.project.auth.LoginState {
+# LoginState 只被上述字符串引用，没有任何字节码引用点：-keepnames 只阻止改名不阻止裁剪，
+# -keepclassmembers 也只在类已被保留时生效，两者组合仍会让整个类被 R8 裁剪。
+# 必须用 -keep 声明该类与反射入口方法为根，使其保持可达。
+-keep class com.demo.project.auth.LoginState {
     public static boolean isLogin();
 }
 
@@ -72,7 +74,8 @@
     public static ** valueOf(java.lang.String);
     <fields>;
 }
-
+-keepnames class com.common.media.picker.ImageSelectActivity$Companion
+-keepnames class com.common.media.picker.MediaType
 #--------------------------------------------
 # 集成兜底
 #--------------------------------------------
