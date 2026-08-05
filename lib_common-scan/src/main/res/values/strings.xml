@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">lib_common-scan</string>
+    <string name="scan_album_image_unavailable">无法读取所选图片</string>
+    <string name="scan_album_qr_not_found">未识别到二维码</string>
 </resources>
