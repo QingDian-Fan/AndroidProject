@@ -58,7 +58,6 @@ class ProjectApplication: BaseApplication() {
     }
 
     private fun init() {
-        //throw NoMoneyException()
         mContext = this
         instance = this
     }

@@ -4,4 +4,9 @@
     <string name="release_base_url" translatable="false">https://www.wanandroid.com/</string>
     <string name="debug_base_url" translatable="false">http://mobile.bwstudent.com/</string>
     <string name="language">zh-CN</string>
+    <string name="text_connect_error">服务器连接失败</string>
+    <string name="text_connect_timeout">网络请求超时</string>
+    <string name="text_bad_network">网络请求出错</string>
+    <string name="text_parse_error">数据解析失败</string>
+    <string name="text_unknow_error">未知错误</string>
 </resources>

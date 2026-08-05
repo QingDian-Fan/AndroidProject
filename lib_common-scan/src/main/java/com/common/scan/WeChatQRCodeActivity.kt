@@ -50,9 +50,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
         ivClose = findViewById(R.id.iv_close)
         ivAlbum = findViewById(R.id.iv_album)
         ivClose.setOnClickListener { onBackPressedDispatcher.onBackPressed()}
-        ivAlbum.setOnClickListener {
-            openAlbum()
-        }
+        ivAlbum.setOnClickListener { openAlbum() }
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 // 如果是结果点显示时，用户点击了返回键，则认为是取消选择当前结果，重新开始扫码
@@ -238,9 +236,7 @@ class WeChatQRCodeActivity : WeChatCameraScanActivity() {
             }
 
             val resultPoints = ArrayList<Mat>()
-            val results = runCatching {
-                WeChatQRCodeDetector.detectAndDecode(bitmap, resultPoints).orEmpty()
-            }.getOrElse { emptyList() }
+            val results = runCatching { WeChatQRCodeDetector.detectAndDecode(bitmap, resultPoints).orEmpty() }.getOrElse { emptyList() }
             val centers = resultPoints.mapNotNull { mat ->
                 runCatching {
                     val centerX = (0 until 4).sumOf { mat[it, 0][0].toInt() } / 4

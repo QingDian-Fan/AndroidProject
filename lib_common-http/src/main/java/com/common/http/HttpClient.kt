@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ParseException
 import android.view.Gravity
 import android.webkit.MimeTypeMap
+import com.common.utils.ResourcesUtil
 import com.common.utils.moshi.MoshiUtil
 import com.common.utils.ToastUtil
 import com.common.utils.Utils
@@ -316,17 +317,17 @@ open class HttpClient : HttpClientBase() {
             is ConnectException,
             is UnknownHostException -> HttpError(
                 errorCode = HttpError.CONNECT_ERROR,
-                errorMsg = "服务器连接失败",
+                errorMsg = ResourcesUtil.getString(R.string.text_connect_error),
                 cause = cause
             )
             is InterruptedIOException -> HttpError(
                 errorCode = HttpError.CONNECT_TIMEOUT,
-                errorMsg = "网络请求超时",
+                errorMsg = ResourcesUtil.getString(R.string.text_connect_timeout),
                 cause = cause
             )
             is HttpException -> HttpError(
                 errorCode = HttpError.BAD_NETWORK,
-                errorMsg = "网络请求出错",
+                errorMsg = ResourcesUtil.getString(R.string.text_bad_network),
                 cause = cause
             )
             is JsonParseException,
@@ -334,7 +335,7 @@ open class HttpClient : HttpClientBase() {
             is ParseException,
             is ClassCastException -> HttpError(
                 errorCode = HttpError.PARSE_ERROR,
-                errorMsg = "数据解析失败",
+                errorMsg = ResourcesUtil.getString(R.string.text_parse_error),
                 cause = cause
             )
             is CancellationException -> HttpError(
@@ -344,7 +345,7 @@ open class HttpClient : HttpClientBase() {
             )
             else -> HttpError(
                 errorCode = HttpError.UNKNOW_ERROR,
-                errorMsg = cause.message?.takeIf { it.isNotBlank() } ?: "未知错误",
+                errorMsg = cause.message?.takeIf { it.isNotBlank() } ?: ResourcesUtil.getString(R.string.text_unknow_error),
                 cause = cause
             )
         }
