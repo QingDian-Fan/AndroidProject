@@ -67,7 +67,7 @@ dependencies {
     implementation project(":lib_common-aop")
 
     // AspectJ 运行时：本模块使用 @CheckPermissions，调用点织入后运行时需要 aspectjrt
-    implementation 'org.aspectj:aspectjrt:1.9.6'
+    implementation 'org.aspectj:aspectjrt:1.9.23'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

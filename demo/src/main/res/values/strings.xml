@@ -70,4 +70,6 @@
     <string name="web_share_save_album">保存相册</string>
     <string name="web_share_now">立即分享</string>
     <string name="web_share_chooser_title">分享图片</string>
+    <string name="share_cancel">分享取消</string>
+    <string name="share_denied">分享失败</string>
 </resources>

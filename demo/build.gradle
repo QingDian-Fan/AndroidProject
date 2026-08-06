@@ -118,6 +118,9 @@ dependencies {
     implementation 'com.squareup.moshi:moshi-kotlin:1.12.0'
     /*================================数据解析==============================================*/
 
+    implementation 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:6.6.4'
+
+
     implementation project(':lib_common-theme')
     implementation project(':lib_common-utils')
     implementation project(':lib_common-auth')
@@ -125,7 +128,7 @@ dependencies {
     implementation project(':lib_common-ui')
     implementation project(':lib_common-http')
     implementation project(':lib_common-aop')
-    implementation 'org.aspectj:aspectjrt:1.9.6'
+    implementation 'org.aspectj:aspectjrt:1.9.23'
     implementation project(':lib_common-share')
     implementation project(':lib-common-media-picker')
     implementation project(':lib_common-scan')
