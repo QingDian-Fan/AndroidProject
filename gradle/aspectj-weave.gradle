@@ -12,6 +12,7 @@ buildscript {
 import org.aspectj.bridge.IMessage
 import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
+import org.gradle.api.GradleException
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.tasks.compile.JavaCompile
 
@@ -71,20 +72,36 @@ def weaveAspectJ = { String sourceDir, String outputDir, String classpath, Strin
     ])
     new Main().run(args as String[], handler)
 
+    // 先完整遍历一遍，保证 weave info / warning 全部落到日志（供 Release 验证织入结果），
+    // 再统一判定是否存在致命消息。
+    List<IMessage> fatalMessages = []
     for (IMessage message : handler.getMessages(null, true)) {
         switch (message.getKind()) {
             case IMessage.ABORT:
             case IMessage.ERROR:
             case IMessage.FAIL:
                 project.logger.error "AspectJ Error: " + message.message, message.thrown
+                fatalMessages.add(message)
                 break
             case IMessage.WARNING:
                 project.logger.warn "AspectJ Warning: " + message.message, message.thrown
+                break
+            case IMessage.WEAVEINFO:
+                // -showWeaveInfo 产生的织入明细：用于证明 Release 使用的是织入后的 class
+                project.logger.info "AspectJ Weave: " + message.message
                 break
             case IMessage.INFO:
                 project.logger.info "AspectJ Info: " + message.message, message.thrown
                 break
         }
+    }
+
+    // 织入失败必须终止构建：否则 Gradle 会带着未织入 / 部分织入的 class 继续执行 R8，
+    // @SingleClick、@CheckNet、@CheckPermissions 等切面会在 Release 包中静默失效。
+    if (!fatalMessages.isEmpty()) {
+        String detail = fatalMessages.collect { IMessage it -> it.message }.join("\n  - ")
+        throw new GradleException(
+                "AspectJ weaving failed for '${sourceDir}' with ${fatalMessages.size()} error(s):\n  - ${detail}")
     }
 }
 

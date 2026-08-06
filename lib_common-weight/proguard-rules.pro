@@ -44,6 +44,12 @@
 -keep interface com.common.weight.video.VideoPlayerEngine { *; }
 -keep interface com.common.weight.video.VideoPlayerEngineFactory { *; }
 
-# 说明：Media3/ExoPlayer 的 AAR 自带 consumer rules，不在此重复保留其类；
-# 仅抑制其对可选解码/分片模块的编译期引用告警。
--dontwarn androidx.media3.**
+# 说明：Media3/ExoPlayer 的 AAR 自带 consumer rules（media3-exoplayer / ui / extractor /
+# datasource / common 各自的 proguard.txt 均已合并进 Release 配置），其中已经包含：
+#   - 可选解码扩展（vp9 / av1 / ffmpeg / opus / flac / midi）的 -dontnote + -keepclassmembers，
+#     这些扩展由 DefaultRenderersFactory 用 Class.forName 字符串加载，R8 不会因此报缺失类；
+#   - -dontwarn org.checkerframework.**、kotlin.annotations.jvm.**、javax.annotation.**。
+# 因此原先的 "-dontwarn androidx.media3.**" 已移除：它以整个 Media3 命名空间作为过滤器，
+# 并不对应任何确定的可选组件，反而会掩盖 Media3 版本冲突导致的真实缺失类。
+# 如果 Release 构建确实报告 androidx.media3 下的缺失类，应从 AGP 生成的
+# demo/build/outputs/mapping/release/missing_rules.txt 中取精确到类的规则补充到此处。
