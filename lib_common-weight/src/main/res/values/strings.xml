@@ -18,6 +18,13 @@
     <string name="video_speed_temporary_tip">当前3倍速度播放中</string>
     <string name="video_orientation_to_landscape">切换横屏</string>
     <string name="video_orientation_to_portrait">切换竖屏</string>
+    <string name="video_error_retry">重试</string>
+    <string name="video_error_network">网络异常，请检查网络后重试</string>
+    <string name="video_error_data_source">视频地址无效或无法访问</string>
+    <string name="video_error_decoder">该视频格式暂不支持播放</string>
+    <string name="video_error_surface">播放画面初始化失败，请重试</string>
+    <string name="video_error_audio_output">音频输出异常，请重试</string>
+    <string name="video_error_unknown">播放失败，请重试</string>
     <string name="fold_text_collapse">[收起]</string>
     <string name="fold_text_expand">[查看全部]</string>
 

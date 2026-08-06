@@ -30,6 +30,8 @@ public final class FfmpegAudioPlayer {
     private PlayerListener listener;
     private volatile AudioTrack audioTrack;
     private float playbackSpeed = 1.0f;
+    /** 输出音量比例，音频焦点 ducking 期间会被压低 */
+    private volatile float outputVolume = 1.0f;
     private boolean audioErrorNotified;
 
     /** 停止中标记：用于打断写入循环，避免 native 线程 join 时死锁 */
@@ -133,6 +135,16 @@ public final class FfmpegAudioPlayer {
     /** 实际生效的倍速：AudioTrack 拒绝切速时与请求值不同 */
     public float getPlaybackSpeed() {
         return playbackSpeed;
+    }
+
+    /**
+     * 设置输出音量比例（0~1）。用于音频焦点 {@code AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK}
+     * 期间压低音量，恢复焦点后还原为 1。音量在建轨时也会重新下发。
+     */
+    public void setVolume(float volume) {
+        float safeVolume = Math.max(0f, Math.min(volume, 1f));
+        outputVolume = safeVolume;
+        applyTrackVolume(audioTrack);
     }
 
     /**
@@ -302,7 +314,7 @@ public final class FfmpegAudioPlayer {
             return;
         }
         try {
-            setTrackVolume(audioTrack);
+            applyTrackVolume(audioTrack);
             audioTrack.play();
         } catch (RuntimeException e) {
             notifyAudioError(-1004, "Start AudioTrack failed: " + e.getMessage());
@@ -473,13 +485,17 @@ public final class FfmpegAudioPlayer {
         return (int) Math.min(bufferSize, Integer.MAX_VALUE - frameBytes);
     }
 
-    private void setTrackVolume(AudioTrack track) {
+    private void applyTrackVolume(AudioTrack track) {
+        if (track == null) {
+            return;
+        }
+        float volume = AudioTrack.getMaxVolume() * outputVolume;
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                track.setVolume(AudioTrack.getMaxVolume());
+                track.setVolume(volume);
             } else {
                 //noinspection deprecation
-                track.setStereoVolume(AudioTrack.getMaxVolume(), AudioTrack.getMaxVolume());
+                track.setStereoVolume(volume, volume);
             }
         } catch (RuntimeException ignored) {
         }

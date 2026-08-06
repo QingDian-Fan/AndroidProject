@@ -15,7 +15,9 @@ import android.view.SurfaceView
 import com.common.player.FfmpegAudioPlayer
 import com.common.player.FfmpegVideoPlayer
 import com.common.player.PlayerListener
+import com.common.weight.video.VideoPlaybackException
 import com.common.weight.video.VideoPlayerEngine
+import com.common.weight.video.VideoPlayerErrorType
 
 class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
 
@@ -30,12 +32,64 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
 
         /** 音频输出停滞多久后判定异常，用于播放结束的兜底（正常推进的音频不受此限制） */
         private const val AUDIO_DRAIN_STALL_TIMEOUT_MS = 3000L
+
+        /** 短暂失去音频焦点且允许降低音量时使用的输出音量比例 */
+        private const val DUCK_VOLUME = 0.2f
+
+        // 与 ffmpeg_player_jni.cpp / FfmpegAudioPlayer 约定的错误码，用于区分错误类型
+        /** native 侧 Surface 不可用 */
+        private const val NATIVE_ERROR_SURFACE_UNAVAILABLE = -1
+
+        /** 网络打开、探测或读取被中断/超时 */
+        private const val NATIVE_ERROR_IO_ABORTED = -1100
+
+        /** 数据源打开失败 */
+        private const val NATIVE_ERROR_OPEN_FAILED = -1101
+
+        /** AudioTrack 相关错误码区间（-1005 ~ -1001） */
+        private const val NATIVE_ERROR_AUDIO_TRACK_FIRST = -1001
+        private const val NATIVE_ERROR_AUDIO_TRACK_LAST = -1005
     }
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private val playerThread = HandlerThread("CommonPlayerVideoEngine").apply { start() }
     private val playerHandler = Handler(playerThread.looper)
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    /**
+     * 音频焦点变化统一处理。
+     * 永久丢失：暂停并放弃焦点，不自动恢复；
+     * 临时丢失：暂停并记录，重新获得焦点后仅在用户仍期望播放时恢复；
+     * 可降低音量：不暂停，压低 AudioTrack 音量；
+     * 重新获得：恢复音量，必要时恢复播放。
+     */
+    private val audioFocusListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                pausedByFocusLoss = false
+                pause()
+                abandonAudioFocus()
+            }
+
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                // 只有本来正在播放才需要在恢复焦点后续播，用户主动暂停的状态必须保留
+                pausedByFocusLoss = isPlaying
+                pause()
+            }
+
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                applyAudioDucking(true)
+            }
+
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                applyAudioDucking(false)
+                if (pausedByFocusLoss) {
+                    pausedByFocusLoss = false
+                    play()
+                }
+            }
+        }
+    }
+
     private val audioFocusRequest: AudioFocusRequest? =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
@@ -45,15 +99,19 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
                         .setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
                         .build()
                 )
-                .setOnAudioFocusChangeListener { focusChange ->
-                    if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-                        pause()
-                    }
-                }
+                .setOnAudioFocusChangeListener(audioFocusListener)
                 .build()
         } else {
             null
         }
+
+    /** 是否因临时失去音频焦点而暂停：重新获得焦点后据此决定是否续播 */
+    @Volatile
+    private var pausedByFocusLoss = false
+
+    /** 是否已持有音频焦点，避免重复申请与重复放弃 */
+    @Volatile
+    private var audioFocusGranted = false
 
     @Volatile
     private var released = false
@@ -167,7 +225,7 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         }
 
         override fun onError(code: Int, message: String?) {
-            postPlayerError(RuntimeException("FFmpeg video player error($code): ${message.orEmpty()}"))
+            postPlayerError(nativeError(code, message, VideoPlayerErrorType.DECODER))
         }
     }
 
@@ -200,7 +258,7 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
                 // 缺少音频轨已单独处理，不作为播放失败上报
                 return
             }
-            postPlayerError(RuntimeException("FFmpeg audio player error($code): ${message.orEmpty()}"))
+            postPlayerError(nativeError(code, message, VideoPlayerErrorType.AUDIO_OUTPUT))
         }
     }
 
@@ -317,7 +375,7 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
                 appliedSpeed = fallbackSpeed
                 playbackSpeed = fallbackSpeed
                 videoPlayer?.setPlaybackSpeed(fallbackSpeed)
-                postSpeedChangeError(speed, fallbackSpeed)
+                logSpeedChangeFailure(speed, fallbackSpeed)
                 postSpeedChanged(fallbackSpeed, false)
                 return@postPlayerAction
             }
@@ -453,9 +511,12 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     private fun bindSurfaceIfReady(holder: SurfaceHolder) {
         val holderSurface = holder.surface
         val valid = holderSurface != null && holderSurface.isValid
+        // surfaceCreated 与 surfaceChanged 会对同一个 Surface 重复回调，
+        // 已经绑定过的相同 Surface 直接跳过，避免重复下发与重复触发起播
+        val alreadyBound = valid && surfaceReady && surface === holderSurface
         surfaceReady = valid
         surface = if (valid) holderSurface else null
-        if (!valid) {
+        if (!valid || alreadyBound) {
             return
         }
         postPlayerAction {
@@ -640,7 +701,7 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
                 // 以音频实际生效的倍速为准，保证视频不会单独按目标倍速渲染
                 speed = audio.playbackSpeed
                 playbackSpeed = speed
-                postSpeedChangeError(requestedSpeed, speed)
+                logSpeedChangeFailure(requestedSpeed, speed)
                 postSpeedChanged(speed, false)
             }
         }
@@ -652,7 +713,16 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     }
 
     private fun startPlayers() {
-        requestAudioFocus()
+        // 申请失败时不得开始有声播放，直接按可重试的音频输出错误上报
+        if (audioAvailable && !requestAudioFocus()) {
+            postPlayerError(
+                VideoPlaybackException(
+                    VideoPlayerErrorType.AUDIO_OUTPUT,
+                    "Audio focus request was denied."
+                )
+            )
+            return
+        }
         videoPlayer?.start()
         audioPlayer?.start()
     }
@@ -694,19 +764,40 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     }
 
     /**
-     * 上报倍速切换失败。音视频已一并保持在原倍速，播放可以继续，
-     * 因此只通知 UI 而不走 [postPlayerError] 的停止流程。
+     * 记录倍速切换失败。音视频已一并保持在原倍速，播放可以继续，属于**可恢复警告**：
+     * 只写日志并由 [postSpeedChanged] 通知 UI，绝不调用通用 onError，
+     * 否则页面会被误判为播放失败而进入错误态。
      */
-    private fun postSpeedChangeError(requestedSpeed: Float, keptSpeed: Float) {
-        val error = IllegalStateException(
-            "Audio track rejected playback speed $requestedSpeed, keep $keptSpeed"
+    private fun logSpeedChangeFailure(requestedSpeed: Float, keptSpeed: Float) {
+        com.common.utils.LogUtil.e(
+            TAG,
+            "AudioTrack rejected playback speed $requestedSpeed, keep $keptSpeed"
         )
-        com.common.utils.LogUtil.e(TAG, "set playback speed failed", error)
-        postToMain {
-            if (!released) {
-                listener?.onError(error)
-            }
+    }
+
+    /**
+     * 把 native 错误码归类为可区分的错误类型。
+     * 只携带错误码与 native 文案，不拼接媒体地址，避免把带鉴权参数的 URL 写进日志与提示。
+     */
+    private fun nativeError(
+        code: Int,
+        message: String?,
+        fallbackType: VideoPlayerErrorType,
+    ): VideoPlaybackException {
+        val type = when (code) {
+            // native 侧 Surface 不可用
+            NATIVE_ERROR_SURFACE_UNAVAILABLE -> VideoPlayerErrorType.SURFACE
+            // 网络打开/探测/读取被中断或超时
+            NATIVE_ERROR_IO_ABORTED -> VideoPlayerErrorType.NETWORK
+            // 数据源打开失败（地址无效、无权限、格式无法解析）
+            NATIVE_ERROR_OPEN_FAILED -> VideoPlayerErrorType.DATA_SOURCE
+            // AudioTrack 创建/启动/切速/写入失败（-1001 ~ -1005）
+            in NATIVE_ERROR_AUDIO_TRACK_LAST..NATIVE_ERROR_AUDIO_TRACK_FIRST ->
+                VideoPlayerErrorType.AUDIO_OUTPUT
+
+            else -> fallbackType
         }
+        return VideoPlaybackException(type, "native error($code): ${message.orEmpty()}")
     }
 
     private fun postPlayerError(error: Throwable) {
@@ -730,26 +821,48 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         }
     }
 
-    private fun requestAudioFocus() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    /**
+     * 申请音频焦点，返回是否申请成功。
+     * 申请失败时调用方不得开始有声播放，否则会和正在占用焦点的应用抢声音。
+     */
+    private fun requestAudioFocus(): Boolean {
+        if (audioFocusGranted) {
+            return true
+        }
+        val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             audioFocusRequest?.let(audioManager::requestAudioFocus)
+                ?: AudioManager.AUDIOFOCUS_REQUEST_FAILED
         } else {
+            // Android 8 以下同样要传入有效监听器，否则收不到焦点丢失事件
             @Suppress("DEPRECATION")
             audioManager.requestAudioFocus(
-                null,
+                audioFocusListener,
                 AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN
             )
         }
+        audioFocusGranted = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        return audioFocusGranted
     }
 
     private fun abandonAudioFocus() {
+        if (!audioFocusGranted) {
+            return
+        }
+        audioFocusGranted = false
+        pausedByFocusLoss = false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             audioFocusRequest?.let(audioManager::abandonAudioFocusRequest)
         } else {
             @Suppress("DEPRECATION")
-            audioManager.abandonAudioFocus(null)
+            audioManager.abandonAudioFocus(audioFocusListener)
         }
+    }
+
+    /** 短暂失去焦点且允许降低音量时压低输出，恢复焦点后还原 */
+    private fun applyAudioDucking(ducking: Boolean) {
+        val volume = if (ducking) DUCK_VOLUME else 1f
+        postPlayerAction { audioPlayer?.setVolume(volume) }
     }
 
     private fun postToMain(action: () -> Unit) {

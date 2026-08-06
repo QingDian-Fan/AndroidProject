@@ -27,6 +27,11 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
     companion object {
         private const val EXIT_INTERVAL_MS = 2_000L
 
+        /** 演示用的公开测试视频地址，不含任何鉴权参数，仅用于本演示入口 */
+        private const val DEMO_VIDEO_URL =
+            "https://oss.qinxuestudy.com/fangtian-education/homework/2026/06/18/" +
+                    "2052631338333810690_1781780255897/VID_20260520_153925.mp4"
+
         @JvmStatic
         fun start(mContext: Context) {
             val intent = Intent()
@@ -63,7 +68,8 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
             DebugActivity.start(this@HomeActivity)
         }
         binding.btnVideoActivity.setOnClickListener {
-            VideoPlayerActivity.start(this@HomeActivity)
+            // 演示入口显式传入测试地址；正式入口不再对空地址做静默兜底
+            VideoPlayerActivity.start(this@HomeActivity, DEMO_VIDEO_URL)
         }
         binding.btnAudioActivity.setOnClickListener {
             AudioPlayerActivity.start(this@HomeActivity, engineType =  AudioEngineType.FFMPEG)

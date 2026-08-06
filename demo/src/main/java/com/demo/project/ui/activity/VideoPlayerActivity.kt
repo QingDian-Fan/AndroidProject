@@ -1,14 +1,17 @@
 package com.demo.project.ui.activity
 
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
 import android.view.WindowManager
 import com.common.ui.BaseAppBindActivity
+import com.common.utils.LogUtil
 import com.common.utils.StatusBarUtil
 import com.common.utils.ToastUtil
 import com.common.weight.video.VideoScaleType
@@ -19,6 +22,8 @@ import com.demo.project.utils.ext.gone
 
 class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
     companion object {
+        private const val TAG = "VideoPlayerActivity"
+
         const val KEY_VIDEO_URL_STRING="KEY_VIDEO_URL_STRING"
 
         /** 退化判断：常见音频文件后缀（mimeType 不可用时使用） */
@@ -91,12 +96,28 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
         }
         targetOrientation = currentOrientation
 
-        if (!isAudio) {
+        // 正式入口不做静默兜底：地址为空直接提示并结束，测试地址只保留在演示入口
+        if (mediaUri.isNullOrBlank()) {
+            ToastUtil.showToast(this, getString(R.string.toast_video_url_invalid))
+            finish()
+            return
+        }
+        // content:// 需要 ContentResolver 授权读取，FFmpeg 无法直接打开，
+        // 且必须先确认授权仍然有效，否则同样按地址无效处理
+        val contentUri = isContentUri(mediaUri)
+        if (contentUri && !canOpenContentUri(mediaUri)) {
+            ToastUtil.showToast(this, getString(R.string.toast_video_url_invalid))
+            finish()
+            return
+        }
+
+        // 引擎注入必须早于 initData() 与 setVideoPath()。
+        // content:// 路由到 ExoPlayer（内部使用 ContentResolver），其余视频使用 FFmpeg 引擎。
+        if (!isAudio && !contentUri) {
             binding.videoView.setPlayerEngineFactory { context -> CommonPlayerVideoEngine(context.applicationContext) }
         }
         binding.videoView.initData()
-        val playUrl = mediaUri ?: "https://oss.qinxuestudy.com/fangtian-education/homework/2026/06/18/2052631338333810690_1781780255897/VID_20260520_153925.mp4"
-        binding.videoView.setVideoPath(playUrl)
+        binding.videoView.setVideoPath(mediaUri)
         binding.videoView.setScaleType(VideoScaleType.RATIO_FILL_SIZE)
         binding.videoView.setSpeed(1f)
         binding.videoView.start()
@@ -181,18 +202,41 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
     /**
      * 判断当前媒体是否为音频：优先用 intent 携带的 mimeType，其次用 ContentResolver 解析的类型，
      * 最后退化到按文件扩展名判断。
+     *
+     * 查询 ContentProvider 可能因授权失效抛 [SecurityException]，也可能因 Provider 不存在抛
+     * 其他异常，这里统一按「类型未知」处理并继续走扩展名判断，不能让页面直接崩溃。
      */
     private fun isAudioMedia(uri: String?): Boolean {
         intent.type?.let {
             if (it.startsWith("audio/")) return true
             if (it.startsWith("video/")) return false
         }
-        intent.data?.let { contentResolver.getType(it) }?.let {
+        intent.data?.let { data ->
+            runCatching { contentResolver.getType(data) }.getOrNull()
+        }?.let {
             if (it.startsWith("audio/")) return true
             if (it.startsWith("video/")) return false
         }
         val path = uri?.substringBefore('?')?.lowercase() ?: return false
         return AUDIO_EXTENSIONS.any { path.endsWith(it) }
+    }
+
+    private fun isContentUri(uri: String): Boolean =
+        ContentResolver.SCHEME_CONTENT.equals(Uri.parse(uri).scheme, ignoreCase = true)
+
+    /**
+     * 打开一次 content:// 描述符以确认授权仍然有效且文件存在。
+     * 立即关闭，播放期间由 ExoPlayer 自行通过 ContentResolver 重新打开并持有描述符。
+     *
+     * 授权失效（[SecurityException]）、文件不存在（[FileNotFoundException]）以及
+     * Provider 抛出的其他异常都视为不可播放。
+     */
+    private fun canOpenContentUri(uri: String): Boolean = runCatching {
+        contentResolver.openFileDescriptor(Uri.parse(uri), "r")?.use { true } ?: false
+    }.getOrElse { error ->
+        // 不打印完整地址，避免把带鉴权参数的 URI 写进日志
+        LogUtil.e(TAG, "open content uri failed: ${error.javaClass.simpleName}")
+        false
     }
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
@@ -202,9 +246,10 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
 
     override fun onPause() {
         super.onPause()
-        // 必须在 pause() 之前采样：只有“进入后台前确实在播放”才允许回到前台后续播，
-        // 用户主动点击暂停时该值为 false，返回前台必须保持暂停
-        shouldResumeOnForeground = binding.videoView.isPlaying()
+        // 必须在 pause() 之前采样，且必须取「用户期望的播放状态」而不是瞬时 isPlaying：
+        // 缓冲中或 Surface 尚未创建时 isPlaying 为 false，但用户仍期望继续播放。
+        // 用户主动点击暂停时该值为 false，返回前台必须保持暂停。
+        shouldResumeOnForeground = binding.videoView.isPlayIntended()
         binding.videoView.pause()
     }
 

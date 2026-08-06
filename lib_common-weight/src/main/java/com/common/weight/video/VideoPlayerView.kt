@@ -90,6 +90,9 @@ class VideoPlayerView @JvmOverloads constructor(
     private val ivPlayerViewOrientation: AppCompatImageView by lazy { findViewById(R.id.iv_player_view_orientation) }
     private val speedPanel: LinearLayout by lazy { findViewById(R.id.ll_player_view_speed_panel) }
     private val tvSpeedTip: AppCompatTextView by lazy { findViewById(R.id.tv_player_view_speed_tip) }
+    private val errorLayout: LinearLayout by lazy { findViewById(R.id.ll_player_view_error) }
+    private val tvError: AppCompatTextView by lazy { findViewById(R.id.tv_player_view_error) }
+    private val tvRetry: AppCompatTextView by lazy { findViewById(R.id.tv_player_view_retry) }
     private val messageLayout: CardView by lazy { findViewById(R.id.cv_player_view_message) }
     private val ivMessage: AppCompatImageView by lazy { findViewById(R.id.iv_message) }
     private val tvMessage: AppCompatTextView by lazy { findViewById(R.id.tv_message) }
@@ -152,10 +155,14 @@ class VideoPlayerView @JvmOverloads constructor(
     /** 提示对话框隐藏间隔 */
     private val DIALOG_TIME: Int = 500
 
-    private val STATUS_LOADING = 1
-    private val STATUS_PLAYING = 2
+    /** 播放器状态的单一来源 */
+    private var playerState: VideoPlayerState = VideoPlayerState.IDLE
 
-    private var VIDEO_STATUS = STATUS_LOADING
+    /**
+     * 用户期望的播放状态。缓冲中、等待 Surface 创建期间引擎的 isPlaying 为 false，
+     * 但用户仍然期望继续播放，宿主必须据此判断回到前台后是否恢复，不能依赖瞬时 isPlaying。
+     */
+    private var desiredPlaying: Boolean = false
 
     private var scaleType: VideoScaleType = VideoScaleType.RATIO_FILL_SIZE
 
@@ -216,6 +223,7 @@ class VideoPlayerView @JvmOverloads constructor(
         viewControl.setOnClickListener(this)
         tvPlayerViewSpeed.setOnClickListener(this)
         ivPlayerViewOrientation.setOnClickListener(this)
+        tvRetry.setOnClickListener(this)
         sbPlayerViewProgress.setOnSeekBarChangeListener(this)
         // Surface 销毁属于临时倍速的结束场景，这里独立监听，不干扰引擎自身的 Surface 处理
         surfaceView.holder.addCallback(surfaceHolderCallback)
@@ -292,8 +300,16 @@ class VideoPlayerView @JvmOverloads constructor(
         tvTitle.text = title
     }
 
+    /**
+     * 切换缩放模式。视频尺寸与容器尺寸已知时立即重算 Surface 布局；
+     * 重复设置相同模式直接返回，避免无意义的布局请求。
+     */
     fun setScaleType(scaleType: VideoScaleType) {
+        if (this.scaleType == scaleType) {
+            return
+        }
         this.scaleType = scaleType
+        applyScaleType(videoWidth, videoHeight)
     }
 
     /** 设置宿主窗口，用于亮度手势调节（默认会自动从 Activity 解析） */
@@ -478,7 +494,7 @@ class VideoPlayerView @JvmOverloads constructor(
     private fun canStartTemporarySpeed(): Boolean {
         val engine = playerEngine ?: return false
         return !isLock && !isDraggingProgress && touchOrientation == -1 &&
-                VIDEO_STATUS == STATUS_PLAYING && engine.isPlaying && !engine.isEnded
+                playerState == VideoPlayerState.READY && engine.isPlaying && !engine.isEnded
     }
 
     private fun startTemporarySpeed() {
@@ -510,24 +526,72 @@ class VideoPlayerView @JvmOverloads constructor(
     }
 
     fun setVideoPath(urlString: String) {
+        // 同一地址重复下发会让引擎重新探测并重置全部状态，这里直接跳过
+        if (videoPath == urlString && isPrepare && playerState != VideoPlayerState.ERROR) {
+            return
+        }
         videoPath = urlString
         isPrepare = false
+        hideError()
+        setState(VideoPlayerState.IDLE)
         player.setDataSource(urlString)
     }
 
     fun start(isStart: Boolean = true) {
+        if (playerState == VideoPlayerState.RELEASED) {
+            return
+        }
+        hideError()
+        // 用户意图先于引擎实际状态记录：缓冲、等待 Surface 期间 isPlaying 仍为 false
+        desiredPlaying = true
         if (isStart) {
-            setState(STATUS_LOADING)
+            setState(VideoPlayerState.BUFFERING)
             player.prepare()
+        } else if (playerState == VideoPlayerState.PAUSED) {
+            setState(VideoPlayerState.READY)
         }
         player.play()
         viewControl.play()
     }
 
-    private fun setState(state: Int) {
-        VIDEO_STATUS = state
+    /**
+     * 重试当前地址。复用已有引擎实例，不新建播放器，也不叠加刷新任务，
+     * 因此不会出现多个播放器同时输出或多条进度刷新循环。
+     */
+    fun retry() {
+        val path = videoPath
+        if (path.isNullOrEmpty() || playerState == VideoPlayerState.RELEASED) {
+            return
+        }
+        val engine = playerEngine ?: return
+        hideError()
+        isPrepare = false
+        removeCallbacks(mRefreshRunnable)
+        setState(VideoPlayerState.BUFFERING)
+        engine.setDataSource(path)
+        desiredPlaying = true
+        engine.prepare()
+        engine.play()
+        viewControl.play()
+    }
+
+    /** 当前播放器状态，宿主可据此决定页面级行为 */
+    fun currentState(): VideoPlayerState = playerState
+
+    /**
+     * 用户是否期望继续播放。宿主切后台前应采样该值，而不是瞬时 [isPlaying]，
+     * 否则缓冲中或等待 Surface 时会被误判为「未播放」。
+     */
+    fun isPlayIntended(): Boolean = desiredPlaying
+
+    private fun setState(state: VideoPlayerState) {
+        if (playerState == state) {
+            // 幂等：重复的 onReady / onBuffering 回调不应叠加刷新任务或反复重排 UI
+            return
+        }
+        playerState = state
         when (state) {
-            STATUS_LOADING -> {
+            VideoPlayerState.BUFFERING -> {
                 pbLoading.visibility = VISIBLE
                 hideSpeedPanel()
                 topLayout.visibility = GONE
@@ -536,28 +600,79 @@ class VideoPlayerView @JvmOverloads constructor(
                 viewControl.visibility = GONE
                 removeCallbacks(mRefreshRunnable)
             }
-            STATUS_PLAYING -> {
+            VideoPlayerState.READY -> {
                 pbLoading.visibility = GONE
                 // 先移除已有任务，避免多次进入播放态后叠加多个刷新循环
                 removeCallbacks(mRefreshRunnable)
                 postDelayed(mRefreshRunnable, (REFRESH_TIME / 2).toLong())
             }
+            VideoPlayerState.ERROR -> {
+                // 退出加载态并停止一切进行中的临时状态与刷新任务
+                pbLoading.visibility = GONE
+                hideSpeedPanel()
+                endTemporarySpeed()
+                desiredPlaying = false
+                removeCallbacks(mRefreshRunnable)
+                removeCallbacks(mHideControllerRunnable)
+                removeCallbacks(mShowControllerRunnable)
+                // 控制面板动画可能把顶部栏移出屏幕，错误态要保证返回入口可见可点
+                cancelControlPanelAnimators()
+                isControlPanelShow = false
+                topLayout.translationY = 0f
+                topLayout.visibility = VISIBLE
+                bottomLayout.visibility = GONE
+                ivLock.visibility = GONE
+                viewControl.visibility = GONE
+            }
+            VideoPlayerState.RELEASED -> {
+                pbLoading.visibility = GONE
+                removeCallbacks(mRefreshRunnable)
+            }
+            else -> Unit
+        }
+        onStateChanged?.invoke(state)
+    }
+
+    private fun showError(error: VideoPlaybackException) {
+        tvError.setText(errorMessageRes(error.errorType))
+        errorLayout.visibility = VISIBLE
+    }
+
+    private fun hideError() {
+        if (errorLayout.isVisible) {
+            errorLayout.visibility = GONE
         }
     }
 
+    private fun errorMessageRes(type: VideoPlayerErrorType): Int = when (type) {
+        VideoPlayerErrorType.NETWORK -> R.string.video_error_network
+        VideoPlayerErrorType.DATA_SOURCE -> R.string.video_error_data_source
+        VideoPlayerErrorType.DECODER -> R.string.video_error_decoder
+        VideoPlayerErrorType.SURFACE -> R.string.video_error_surface
+        VideoPlayerErrorType.AUDIO_OUTPUT -> R.string.video_error_audio_output
+        VideoPlayerErrorType.UNKNOWN -> R.string.video_error_unknown
+    }
 
     fun pause() {
         // 暂停属于临时倍速的结束场景，必须先恢复常驻倍速
         endTemporarySpeed()
-        if (player.isPlaying) {
-            player.pause()
-            viewControl.pause()
+        desiredPlaying = false
+        // 必须无条件下发：缓冲中、等待 Surface 时 isPlaying 为 false，
+        // 但引擎内部仍保留待播放请求，只有 pause() 能取消它
+        playerEngine?.pause()
+        viewControl.pause()
+        if (playerState == VideoPlayerState.READY) {
+            setState(VideoPlayerState.PAUSED)
         }
     }
 
     fun resume() {
-        // 播放结束后不再自动重新开始，避免前后台切换造成重复播放
-        if (player.isEnded) {
+        // 播放结束或失败后不自动重新开始，避免前后台切换造成重复播放
+        if (playerState == VideoPlayerState.ENDED ||
+            playerState == VideoPlayerState.ERROR ||
+            playerState == VideoPlayerState.RELEASED ||
+            player.isEnded
+        ) {
             return
         }
         start(false)
@@ -569,7 +684,11 @@ class VideoPlayerView @JvmOverloads constructor(
     fun destroy() {
         // 释放引擎前先结束临时倍速，保证同一次长按只恢复一次
         endTemporarySpeed()
+        desiredPlaying = false
+        setState(VideoPlayerState.RELEASED)
         hideSpeedPanel()
+        hideError()
+        cancelControlPanelAnimators()
         surfaceView.holder.removeCallback(surfaceHolderCallback)
         playerEngine?.setListener(null)
         playerEngine?.release()
@@ -589,9 +708,13 @@ class VideoPlayerView @JvmOverloads constructor(
 
     private val playerListener = object : VideoPlayerEngine.Listener {
         override fun onBuffering() {
+            if (playerState == VideoPlayerState.ERROR || playerState == VideoPlayerState.RELEASED) {
+                // 错误态下引擎可能仍有滞后回调，不得把页面拉回加载态
+                return
+            }
             // 重新缓冲时已不在正常播放，临时倍速与其提示必须一并结束
             endTemporarySpeed()
-            setState(STATUS_LOADING)
+            setState(VideoPlayerState.BUFFERING)
         }
 
         override fun onPlaybackSuspended() {
@@ -600,15 +723,24 @@ class VideoPlayerView @JvmOverloads constructor(
         }
 
         override fun onReady() {
+            if (playerState == VideoPlayerState.ERROR || playerState == VideoPlayerState.RELEASED) {
+                return
+            }
             if (!isPrepare) {
                 onPrepared()
             }
-            setState(STATUS_PLAYING)
+            setState(VideoPlayerState.READY)
         }
 
         override fun onEnded() {
+            if (playerState == VideoPlayerState.ENDED || playerState == VideoPlayerState.RELEASED) {
+                // 幂等：引擎可能重复上报结束
+                return
+            }
             // 播放完毕：按钮置为暂停（可播放）状态，并展示控制面板便于点击重播
             endTemporarySpeed()
+            desiredPlaying = false
+            setState(VideoPlayerState.ENDED)
             viewControl.pause()
             removeCallbacks(mRefreshRunnable)
             // 进度停在总时长，避免停留在最后一帧的时间戳上
@@ -623,8 +755,19 @@ class VideoPlayerView @JvmOverloads constructor(
         }
 
         override fun onError(error: Throwable) {
-            endTemporarySpeed()
-            onError?.invoke(error)
+            if (playerState == VideoPlayerState.ERROR || playerState == VideoPlayerState.RELEASED) {
+                // 幂等：同一次失败可能由音视频两侧重复上报
+                return
+            }
+            val playbackError = error as? VideoPlaybackException
+                ?: VideoPlaybackException(
+                    VideoPlayerErrorType.UNKNOWN,
+                    error.message.orEmpty(),
+                    error
+                )
+            setState(VideoPlayerState.ERROR)
+            showError(playbackError)
+            onError?.invoke(playbackError)
         }
 
         override fun onVideoSizeChanged(width: Int, height: Int) {
@@ -668,6 +811,9 @@ class VideoPlayerView @JvmOverloads constructor(
             }
             btnActionBack -> {
                 onActionBack?.invoke()
+            }
+            tvRetry -> {
+                retry()
             }
             tvPlayerViewSpeed -> {
                 removeCallbacks(mHideControllerRunnable)
@@ -738,6 +884,27 @@ class VideoPlayerView @JvmOverloads constructor(
     private val mHideMessageRunnable: Runnable = Runnable { messageLayout.visibility = GONE }
 
 
+    /**
+     * 控制面板动画：快速点击时必须取消上一组，
+     * 否则多个 Animator 会同时改写同一批 View 的位移与透明度。
+     */
+    private val controlPanelAnimators = ArrayList<ValueAnimator>(3)
+
+    private fun cancelControlPanelAnimators() {
+        if (controlPanelAnimators.isEmpty()) {
+            return
+        }
+        // 先取出再取消：cancel() 回调中不会再访问正在遍历的集合
+        val running = ArrayList(controlPanelAnimators)
+        controlPanelAnimators.clear()
+        running.forEach { it.cancel() }
+    }
+
+    private fun startControlPanelAnimator(animator: ValueAnimator) {
+        controlPanelAnimators.add(animator)
+        animator.start()
+    }
+
     private fun hideControlPanel() {
         // 倍速面板依附于控制栏，控制栏收起时一并收起
         hideSpeedPanel()
@@ -745,6 +912,7 @@ class VideoPlayerView @JvmOverloads constructor(
             return
         }
         isControlPanelShow = false
+        cancelControlPanelAnimators()
         val topAnimator: ValueAnimator = ofInt(0, -topLayout.height)
         topAnimator.duration = ANIM_TIME.toLong()
         topAnimator.addUpdateListener {
@@ -757,7 +925,7 @@ class VideoPlayerView @JvmOverloads constructor(
                 topLayout.visibility = VISIBLE
             }
         }
-        topAnimator.start()
+        startControlPanelAnimator(topAnimator)
         val bottomAnimator: ValueAnimator = ofInt(0, bottomLayout.height)
         bottomAnimator.duration = ANIM_TIME.toLong()
         bottomAnimator.addUpdateListener {
@@ -770,7 +938,7 @@ class VideoPlayerView @JvmOverloads constructor(
                 bottomLayout.visibility = VISIBLE
             }
         }
-        bottomAnimator.start()
+        startControlPanelAnimator(bottomAnimator)
         val alphaAnimator: ValueAnimator = ValueAnimator.ofFloat(1f, 0f)
         alphaAnimator.duration = ANIM_TIME.toLong()
         alphaAnimator.addUpdateListener {
@@ -787,14 +955,19 @@ class VideoPlayerView @JvmOverloads constructor(
                 viewControl.visibility = INVISIBLE
             }
         }
-        alphaAnimator.start()
+        startControlPanelAnimator(alphaAnimator)
     }
 
     private fun showControlPanel() {
-        if (isControlPanelShow || VIDEO_STATUS == STATUS_LOADING) {
+        if (isControlPanelShow ||
+            playerState == VideoPlayerState.BUFFERING ||
+            playerState == VideoPlayerState.ERROR ||
+            playerState == VideoPlayerState.RELEASED
+        ) {
             return
         }
         isControlPanelShow = true
+        cancelControlPanelAnimators()
 
         if (topLayout.isGone && !isLock) {
             topLayout.visibility = VISIBLE
@@ -816,7 +989,7 @@ class VideoPlayerView @JvmOverloads constructor(
                 topLayout.visibility = VISIBLE
             }
         }
-        topAnimator.start()
+        startControlPanelAnimator(topAnimator)
         val bottomAnimator: ValueAnimator = ofInt(bottomLayout.height, 0)
         bottomAnimator.duration = ANIM_TIME.toLong()
         bottomAnimator.addUpdateListener {
@@ -829,7 +1002,7 @@ class VideoPlayerView @JvmOverloads constructor(
                 bottomLayout.visibility = VISIBLE
             }
         }
-        bottomAnimator.start()
+        startControlPanelAnimator(bottomAnimator)
         val alphaAnimator: ValueAnimator = ValueAnimator.ofFloat(0f, 1f)
         alphaAnimator.duration = ANIM_TIME.toLong()
         alphaAnimator.addUpdateListener {
@@ -847,7 +1020,7 @@ class VideoPlayerView @JvmOverloads constructor(
             }
 
         }
-        alphaAnimator.start()
+        startControlPanelAnimator(alphaAnimator)
 
     }
 
@@ -1088,14 +1261,22 @@ class VideoPlayerView @JvmOverloads constructor(
     /** 横竖屏切换按钮点击回调，由宿主 Activity 决定实际方向请求 */
     var onOrientationSwitch: (() -> Unit)? = null
 
-    /** 常驻倍速切换失败回调，参数为回退后仍在生效的倍速 */
+    /** 常驻倍速切换失败回调，参数为回退后仍在生效的倍速。属于可恢复警告，不会进入错误态 */
     var onSpeedChangeFailed: ((Float) -> Unit)? = null
+
+    /** 播放器状态变化回调，宿主可据此做页面级处理 */
+    var onStateChanged: ((VideoPlayerState) -> Unit)? = null
+
+    /** 时间格式化的复用缓冲区与格式化器（仅主线程访问） */
+    private val timeBuilder = StringBuilder()
+    private val timeFormatter = Formatter(timeBuilder, Locale.getDefault())
 
     /**
      * 时间转换
      */
     private fun conversionTime(time: Long): String {
-        val formatter = Formatter(Locale.getDefault())
+        // 进度每秒刷新一次，复用 StringBuilder 与 Formatter，避免高频临时对象分配
+        timeBuilder.setLength(0)
         // 总秒数
         val totalSeconds: Long = time / 1000
         // 小时数
@@ -1105,9 +1286,9 @@ class VideoPlayerView @JvmOverloads constructor(
         // 秒数
         val seconds: Long = totalSeconds % 60
         return if (hours > 0) {
-            formatter.format("%d:%02d:%02d", hours, minutes, seconds).toString()
+            timeFormatter.format("%d:%02d:%02d", hours, minutes, seconds).toString()
         } else {
-            formatter.format("%02d:%02d", minutes, seconds).toString()
+            timeFormatter.format("%02d:%02d", minutes, seconds).toString()
         }
     }
 

@@ -42,6 +42,20 @@ static const int MAX_CONTINUOUS_DROP_FRAMES = 15;
 /** 暂停状态下 seek 时，为对齐目标位置最多丢弃的帧数 */
 static const int MAX_SEEK_SKIP_FRAMES = 600;
 
+/** 打开与探测（avformat_open_input / avformat_find_stream_info）的总超时 */
+static const int64_t IO_OPEN_TIMEOUT_US = 15LL * 1000 * 1000;
+/** 单次 av_read_frame 的读取超时 */
+static const int64_t IO_READ_TIMEOUT_US = 20LL * 1000 * 1000;
+/** 底层 socket 的读写超时（传给 FFmpeg 的 rw_timeout/timeout 选项） */
+static const int64_t IO_SOCKET_TIMEOUT_US = 10LL * 1000 * 1000;
+/** 断线重连的最大次数，禁止无限重试 */
+static const int IO_MAX_RECONNECT = 3;
+
+/** 与 Java 侧约定的错误码：网络打开/探测/读取被中断或超时 */
+static const int ERROR_IO_ABORTED = -1100;
+/** 与 Java 侧约定的错误码：数据源打开失败 */
+static const int ERROR_OPEN_FAILED = -1101;
+
 static JavaVM *g_vm = nullptr;
 
 static float clamp_speed(float speed) {
@@ -95,6 +109,13 @@ struct BasePlayer {
     std::atomic<int64_t> seek_done_serial{0};
     /** 需要重建播放时钟（首帧、seek、恢复播放、倍速切换） */
     std::atomic_bool clock_rebase_requested{true};
+    /**
+     * 当前阻塞 I/O 的截止时间（av_gettime_relative 时基），0 表示不限制。
+     * 由 [io_interrupt_cb] 读取，超时后中断 FFmpeg 的打开、探测与读取调用。
+     */
+    std::atomic<int64_t> io_deadline_us{0};
+    /** I/O 是否因超时被中断：用于区分「读到结尾」与「网络卡死」 */
+    std::atomic_bool io_timed_out{false};
 
     virtual ~BasePlayer() = default;
 
@@ -354,19 +375,68 @@ static bool consume_pending_seek(BasePlayer *player, MediaContext *media) {
     return true;
 }
 
-static int open_media(const std::string &source, AVMediaType type, MediaContext *ctx) {
+/**
+ * FFmpeg 阻塞 I/O 的中断回调。
+ * 返回非 0 会让 avformat_open_input / avformat_find_stream_info / av_read_frame /
+ * avformat_close_input 立即返回 AVERROR_EXIT，从而保证页面退出、切换数据源、
+ * 重试与 release() 都能在有限时间内结束，而不是等服务端响应。
+ */
+static int io_interrupt_cb(void *opaque) {
+    auto *player = static_cast<BasePlayer *>(opaque);
+    if (player == nullptr) {
+        return 0;
+    }
+    if (player->stop_requested.load()) {
+        return 1;
+    }
+    int64_t deadline = player->io_deadline_us.load();
+    if (deadline > 0 && av_gettime_relative() > deadline) {
+        player->io_timed_out = true;
+        return 1;
+    }
+    return 0;
+}
+
+/** 设置本次阻塞 I/O 的截止时间；timeout_us <= 0 表示取消限制 */
+static void arm_io_deadline(BasePlayer *player, int64_t timeout_us) {
+    if (player == nullptr) {
+        return;
+    }
+    player->io_deadline_us = timeout_us > 0 ? av_gettime_relative() + timeout_us : 0;
+}
+
+static int open_media(const std::string &source, AVMediaType type, MediaContext *ctx,
+                      BasePlayer *player) {
+    // 必须自行分配 AVFormatContext，才能在 open 之前挂上中断回调，
+    // 否则连接阶段卡住时无法取消。
+    ctx->format = avformat_alloc_context();
+    if (ctx->format == nullptr) {
+        return AVERROR(ENOMEM);
+    }
+    ctx->format->interrupt_callback.callback = io_interrupt_cb;
+    ctx->format->interrupt_callback.opaque = player;
+
     AVDictionary *options = nullptr;
     av_dict_set(&options, "reconnect", "1", 0);
     av_dict_set(&options, "reconnect_streamed", "1", 0);
     av_dict_set(&options, "reconnect_delay_max", "5", 0);
+    // 有界重连，禁止无限重试
+    av_dict_set_int(&options, "reconnect_max_retries", IO_MAX_RECONNECT, 0);
+    // 底层 socket 读写超时（tcp 用 timeout，通用 AVIO 用 rw_timeout），单位微秒
+    av_dict_set_int(&options, "timeout", IO_SOCKET_TIMEOUT_US, 0);
+    av_dict_set_int(&options, "rw_timeout", IO_SOCKET_TIMEOUT_US, 0);
 
+    arm_io_deadline(player, IO_OPEN_TIMEOUT_US);
     int ret = avformat_open_input(&ctx->format, source.c_str(), nullptr, &options);
     av_dict_free(&options);
     if (ret < 0) {
+        arm_io_deadline(player, 0);
         return ret;
     }
 
+    arm_io_deadline(player, IO_OPEN_TIMEOUT_US);
     ret = avformat_find_stream_info(ctx->format, nullptr);
+    arm_io_deadline(player, 0);
     if (ret < 0) {
         return ret;
     }
@@ -578,9 +648,15 @@ static void render_video_frame(VideoPlayer *player, const uint8_t *src_data, int
 
 static void run_video(VideoPlayer *player) {
     MediaContext media;
-    int ret = open_media(player->source, AVMEDIA_TYPE_VIDEO, &media);
+    player->io_timed_out = false;
+    int ret = open_media(player->source, AVMEDIA_TYPE_VIDEO, &media, player);
     if (ret < 0) {
-        player->notifyError(ret, ff_error(ret));
+        if (player->io_timed_out.load()) {
+            player->notifyError(ERROR_IO_ABORTED, "Open media timed out.");
+        } else if (!player->stop_requested.load()) {
+            // 主动停止导致的中断不作为错误上报
+            player->notifyError(ERROR_OPEN_FAILED, ff_error(ret));
+        }
         player->running = false;
         return;
     }
@@ -678,7 +754,10 @@ static void run_video(VideoPlayer *player) {
             continue;
         }
 
-        if (av_read_frame(media.format, packet) < 0) {
+        arm_io_deadline(player, IO_READ_TIMEOUT_US);
+        int read_ret = av_read_frame(media.format, packet);
+        arm_io_deadline(player, 0);
+        if (read_ret < 0) {
             break;
         }
         if (packet->stream_index != media.stream_index) {
@@ -744,21 +823,31 @@ static void run_video(VideoPlayer *player) {
     av_frame_free(&rgba_frame);
     av_packet_free(&packet);
 
-    if (!player->stop_requested.load()) {
+    if (player->io_timed_out.load()) {
+        // 读取被超时中断，不是正常播放结束，否则会被上层当成播放完成
+        player->notifyError(ERROR_IO_ABORTED, "Media read timed out.");
+    } else if (!player->stop_requested.load()) {
         player->notifyCompletion();
     }
+    arm_io_deadline(player, 0);
     player->running = false;
 }
 
 static void run_audio(AudioPlayer *player) {
     MediaContext media;
-    int ret = open_media(player->source, AVMEDIA_TYPE_AUDIO, &media);
+    player->io_timed_out = false;
+    int ret = open_media(player->source, AVMEDIA_TYPE_AUDIO, &media, player);
     if (ret < 0) {
         if (ret == AVERROR_STREAM_NOT_FOUND || ret == AVERROR_DECODER_NOT_FOUND) {
-            // 媒体没有可解码的音频轨：先标记不可用，上层据此按视频 PTS 播放
+            // 媒体没有可解码的音频轨：先标记不可用，上层据此按视频 PTS 播放。
+            // 保持原始错误码，上层据此不把缺少音轨当作播放失败。
             player->notifyAudioUnavailable();
+            player->notifyError(ret, ff_error(ret));
+        } else if (player->io_timed_out.load()) {
+            player->notifyError(ERROR_IO_ABORTED, "Open media timed out.");
+        } else if (!player->stop_requested.load()) {
+            player->notifyError(ERROR_OPEN_FAILED, ff_error(ret));
         }
-        player->notifyError(ret, ff_error(ret));
         player->running = false;
         return;
     }
@@ -830,7 +919,10 @@ static void run_audio(AudioPlayer *player) {
             continue;
         }
 
-        if (av_read_frame(media.format, packet) < 0) {
+        arm_io_deadline(player, IO_READ_TIMEOUT_US);
+        int read_ret = av_read_frame(media.format, packet);
+        arm_io_deadline(player, 0);
+        if (read_ret < 0) {
             break;
         }
         if (packet->stream_index != media.stream_index) {
@@ -901,9 +993,13 @@ static void run_audio(AudioPlayer *player) {
     swr_free(&swr);
     av_channel_layout_uninit(&out_layout);
 
-    if (!player->stop_requested.load()) {
+    if (player->io_timed_out.load()) {
+        // 读取被超时中断，不是正常播放结束
+        player->notifyError(ERROR_IO_ABORTED, "Media read timed out.");
+    } else if (!player->stop_requested.load()) {
         player->notifyCompletion();
     }
+    arm_io_deadline(player, 0);
     player->running = false;
 }
 

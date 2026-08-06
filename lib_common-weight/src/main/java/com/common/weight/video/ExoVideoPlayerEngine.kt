@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.SurfaceView
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
@@ -32,8 +33,11 @@ class ExoVideoPlayerEngine(context: Context) : VideoPlayerEngine {
             }
         }
 
-        override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-            listener?.onError(error)
+        override fun onPlayerError(error: PlaybackException) {
+            // 只上报错误码名称，不拼接媒体地址，避免把带鉴权参数的 URL 写进日志与提示
+            listener?.onError(
+                VideoPlaybackException(mapErrorType(error), error.errorCodeName, error)
+            )
         }
 
         override fun onVideoSizeChanged(videoSize: VideoSize) {
@@ -43,6 +47,36 @@ class ExoVideoPlayerEngine(context: Context) : VideoPlayerEngine {
 
     init {
         player.addListener(playerListener)
+    }
+
+    /** 把 ExoPlayer 的错误码归类为可区分的错误类型，供 UI 选择提示文案 */
+    private fun mapErrorType(error: PlaybackException): VideoPlayerErrorType = when (error.errorCode) {
+        PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+        PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
+        PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,
+        -> VideoPlayerErrorType.NETWORK
+
+        PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND,
+        PlaybackException.ERROR_CODE_IO_NO_PERMISSION,
+        PlaybackException.ERROR_CODE_IO_CLEARTEXT_NOT_PERMITTED,
+        PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED,
+        PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED,
+        PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED,
+        PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED,
+        -> VideoPlayerErrorType.DATA_SOURCE
+
+        PlaybackException.ERROR_CODE_DECODER_INIT_FAILED,
+        PlaybackException.ERROR_CODE_DECODER_QUERY_FAILED,
+        PlaybackException.ERROR_CODE_DECODING_FAILED,
+        PlaybackException.ERROR_CODE_DECODING_FORMAT_EXCEEDS_CAPABILITIES,
+        PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED,
+        -> VideoPlayerErrorType.DECODER
+
+        PlaybackException.ERROR_CODE_AUDIO_TRACK_INIT_FAILED,
+        PlaybackException.ERROR_CODE_AUDIO_TRACK_WRITE_FAILED,
+        -> VideoPlayerErrorType.AUDIO_OUTPUT
+
+        else -> VideoPlayerErrorType.UNKNOWN
     }
 
     override val isPlaying: Boolean
