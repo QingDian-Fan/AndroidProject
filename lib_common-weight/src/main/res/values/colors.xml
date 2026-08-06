@@ -15,6 +15,9 @@
     <color name="colorRed">#D93D57</color>
     <color name="transparent">#00000000</color>
 
+    <!-- 播放器长按倍速提示与倍速面板背景：半透明深色，保证白色文字有足够对比度 -->
+    <color name="video_tip_background">#B3000000</color>
+
 
     <color name="colorPrimary">#12cd7f</color>
     <color name="colorPrimaryDark">#17c870</color>

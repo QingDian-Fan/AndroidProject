@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 倍速档位背景：选中态用高亮描边区分，未选中态保持透明 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/transparent" />
+            <stroke
+                android:width="@dimen/dp_1"
+                android:color="@color/colorPrimary" />
+            <corners android:radius="@dimen/dp_4" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/transparent" />
+            <corners android:radius="@dimen/dp_4" />
+        </shape>
+    </item>
+</selector>

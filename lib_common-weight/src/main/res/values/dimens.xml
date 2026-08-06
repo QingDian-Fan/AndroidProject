@@ -8,4 +8,7 @@
     <dimen name="dp_14">14dp</dimen>
     <dimen name="dp_15">15dp</dimen>
     <dimen name="dp_60">60dp</dimen>
+    <!-- 倍速档位在代码中构建，其内边距同样需要本地 R.dimen -->
+    <dimen name="dp_8">8dp</dimen>
+    <dimen name="dp_16">16dp</dimen>
 </resources>

@@ -13,8 +13,14 @@ public final class FfmpegAudioPlayer {
     /** AudioTrack 缓冲区写满时的重试间隔（毫秒） */
     private static final long WRITE_RETRY_INTERVAL_MS = 10L;
 
-    /** 缓冲区按该倍速预留，保证 0.5x~2.0x 倍速切换不会因缓冲区不足失败 */
-    private static final float MAX_SUPPORTED_PLAYBACK_SPEED = 2.0f;
+    /**
+     * 缓冲区按该倍速预留，保证 0.5x~3.0x 倍速切换不会因缓冲区不足失败。
+     *
+     * 流式 AudioTrack 在 speed 倍速下消耗客户端数据的速度也是 speed 倍，
+     * {@link AudioTrack#setPlaybackParams} 会在缓冲区不足以支撑目标倍速时抛异常。
+     * 因此该常量必须覆盖 UI 允许选择的最高档位（含长按临时 3.0x）。
+     */
+    private static final float MAX_SUPPORTED_PLAYBACK_SPEED = 3.0f;
 
     /** 缓冲区期望容纳的墙钟时长（毫秒） */
     private static final long BUFFER_DURATION_MS = 500L;

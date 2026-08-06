@@ -38,6 +38,7 @@
     <string name="toast_network_unavailable">网络不给力</string>
     <string name="toast_press_again_to_exit">再按一次退出应用</string>
     <string name="toast_selection_cancelled">取消了</string>
+    <string name="toast_video_speed_change_failed">倍速切换失败，已保持原倍速</string>
     <string name="toast_camera_permission_denied">请到设置中打开相机权限，否则无法使用该功能</string>
     <string name="dialog_input_hint">请输入内容</string>
     <string name="dialog_switch_environment">切换环境</string>

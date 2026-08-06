@@ -48,7 +48,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.VideoPlayerActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
             android:exported="true">
 
             <!-- 支持外部 App 通过 ACTION_VIEW 调起播放音频/视频 -->

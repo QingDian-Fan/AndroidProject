@@ -98,7 +98,51 @@
             android:text="10:00"
             android:textColor="@color/white"
             android:textSize="@dimen/dp_14" />
+
+        <!-- 倍速按钮：位于总时长之后、方向按钮之前，文本由代码同步为当前生效的常驻倍速 -->
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_player_view_speed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dp_12"
+            android:clickable="true"
+            android:contentDescription="@string/video_speed_action"
+            android:focusable="true"
+            android:gravity="center"
+            android:minWidth="@dimen/dp_40"
+            android:paddingTop="@dimen/dp_8"
+            android:paddingBottom="@dimen/dp_8"
+            android:textColor="@color/white"
+            android:textSize="@dimen/dp_14"
+            tools:text="1.0x" />
+
+        <!-- 横竖屏切换按钮：控制栏最后一项 -->
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_player_view_orientation"
+            android:layout_width="@dimen/dp_36"
+            android:layout_height="@dimen/dp_36"
+            android:layout_marginStart="@dimen/dp_8"
+            android:clickable="true"
+            android:contentDescription="@string/video_orientation_to_portrait"
+            android:focusable="true"
+            android:padding="@dimen/dp_6"
+            android:src="@drawable/video_orientation_portrait_ic" />
     </LinearLayout>
+
+    <!-- 倍速选择面板：仅六个固定档位，档位内容由代码构建 -->
+    <LinearLayout
+        android:id="@+id/ll_player_view_speed_panel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="@dimen/dp_15"
+        android:layout_marginBottom="@dimen/dp_45"
+        android:background="@drawable/bg_video_speed_panel"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/dp_6"
+        android:paddingBottom="@dimen/dp_6"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_player_view_message"
@@ -139,6 +183,21 @@
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
+    <!-- 长按临时 3 倍速提示：独立于中央手势提示区域，长按期间常驻显示。
+         顶部留出状态栏高度的外边距，避免被系统栏或刘海遮挡。 -->
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_player_view_speed_tip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="@dimen/dp_50"
+        android:background="@drawable/bg_video_speed_tip"
+        android:text="@string/video_speed_temporary_tip"
+        android:textColor="@color/white"
+        android:textSize="@dimen/dp_14"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
     <ProgressBar
         android:id="@+id/pb_loading"
         android:layout_width="wrap_content"

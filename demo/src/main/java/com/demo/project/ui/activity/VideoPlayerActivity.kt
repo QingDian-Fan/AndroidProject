@@ -5,10 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.WindowManager
 import com.common.ui.BaseAppBindActivity
 import com.common.utils.StatusBarUtil
+import com.common.utils.ToastUtil
 import com.common.weight.video.VideoScaleType
 import com.demo.project.R
 import com.demo.project.databinding.ActivityVideoPlayerBinding
@@ -23,6 +25,13 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
         private val AUDIO_EXTENSIONS = listOf(
             ".mp3", ".aac", ".wav", ".flac", ".ogg", ".m4a", ".amr", ".wma", ".opus", ".mid", ".ape"
         )
+
+        /**
+         * 方向切换兜底超时：系统在极端情况下（例如目标方向与当前方向已经一致、
+         * 或窗口未真正发生配置变化）可能不回调 [onConfigurationChanged]，
+         * 超时后按真实方向重新同步状态，避免方向按钮永久卡在“切换中”。
+         */
+        private const val ORIENTATION_SWITCH_TIMEOUT_MS = 1500L
 
         @JvmStatic
         fun start(mContext: Context,urlString: String?=null) {
@@ -39,6 +48,20 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
 
     override fun getLayoutId(): Int = R.layout.activity_video_player
 
+    /** 当前是否为视频（音频不纳入本次横竖屏切换功能） */
+    private var isVideoMedia: Boolean = false
+
+    /** 当前方向，取值为 [Configuration.ORIENTATION_LANDSCAPE] / [Configuration.ORIENTATION_PORTRAIT] */
+    private var currentOrientation: Int = Configuration.ORIENTATION_LANDSCAPE
+
+    /** 手动切换的目标方向；未在切换中时与 [currentOrientation] 一致 */
+    private var targetOrientation: Int = Configuration.ORIENTATION_LANDSCAPE
+
+    /** 是否正在等待系统把配置切换到 [targetOrientation] */
+    private var isSwitchingOrientation: Boolean = false
+
+    private val orientationTimeoutRunnable = Runnable { syncOrientationState(true) }
+
     override fun initialize(savedInstanceState: Bundle?) {
         getTitleBarView()?.visibility = gone
         // 播放期间保持屏幕常亮（页面销毁时随窗口自动清除）
@@ -50,12 +73,20 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
         val mediaUri = resolveMediaUri()
         val isAudio = isAudioMedia(mediaUri)
 
-        // 音频不强制横屏（跟随系统/竖屏），视频维持强制横屏
+        isVideoMedia = !isAudio
+
+        // 音频不强制横屏（跟随系统/竖屏），视频首次进入维持默认横屏
         requestedOrientation = if (isAudio) {
             ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         } else {
             ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
+        currentOrientation = if (isAudio) {
+            resources.configuration.orientation
+        } else {
+            Configuration.ORIENTATION_LANDSCAPE
+        }
+        targetOrientation = currentOrientation
 
         if (!isAudio) {
             binding.videoView.setPlayerEngineFactory { context -> CommonPlayerVideoEngine(context.applicationContext) }
@@ -67,9 +98,68 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
         binding.videoView.setSpeed(1f)
         binding.videoView.start()
 
+        binding.videoView.updateOrientation(currentOrientation == Configuration.ORIENTATION_LANDSCAPE)
+
         binding.videoView.onActionBack = {
             backPress(null)
         }
+        binding.videoView.onOrientationSwitch = {
+            switchOrientation()
+        }
+        binding.videoView.onSpeedChangeFailed = {
+            ToastUtil.showToast(this, getString(R.string.toast_video_speed_change_failed))
+        }
+    }
+
+    /**
+     * 手动切换横竖屏。播放器实例、数据源和播放进度完全复用，
+     * 页面通过 Manifest 的 configChanges 自行处理配置变化，不会重建 Activity。
+     */
+    private fun switchOrientation() {
+        if (!isVideoMedia || isSwitchingOrientation) {
+            // 上一次切换尚未完成时忽略后续点击，避免来回抖动
+            return
+        }
+        val landscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        targetOrientation = if (landscape) {
+            Configuration.ORIENTATION_PORTRAIT
+        } else {
+            Configuration.ORIENTATION_LANDSCAPE
+        }
+        isSwitchingOrientation = true
+        // 固定到具体方向而不是 UNSPECIFIED/SENSOR，避免传感器在切换后立即把画面转回去
+        requestedOrientation = if (landscape) {
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
+        window.decorView.removeCallbacks(orientationTimeoutRunnable)
+        window.decorView.postDelayed(orientationTimeoutRunnable, ORIENTATION_SWITCH_TIMEOUT_MS)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        syncOrientationState(false)
+        // 配置变化会重新显示系统栏，这里恢复沉浸式播放
+        StatusBarUtil.hideSystemBars(this)
+    }
+
+    /**
+     * 以系统实际配置为准同步方向状态。
+     * 只有配置确实变成目标方向后才清除“切换中”标记并更新按钮图标；
+     * [byTimeout] 为 true 时说明系统未按预期回调，按真实方向兜底重置，避免永久卡在切换中。
+     */
+    private fun syncOrientationState(byTimeout: Boolean) {
+        val orientation = resources.configuration.orientation
+        if (isSwitchingOrientation && orientation != targetOrientation && !byTimeout) {
+            // 目标方向尚未生效：忽略这次中间态配置变化，不更新按钮，也不允许反向请求
+            return
+        }
+        window.decorView.removeCallbacks(orientationTimeoutRunnable)
+        isSwitchingOrientation = false
+        currentOrientation = orientation
+        targetOrientation = orientation
+        binding.videoView.updateOrientation(orientation == Configuration.ORIENTATION_LANDSCAPE)
     }
 
     /**
@@ -120,6 +210,7 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
 
     override fun onDestroy() {
         // 释放播放器需在 super.onDestroy() 之前，否则基类会先把 binding 置空导致访问报错
+        window.decorView.removeCallbacks(orientationTimeoutRunnable)
         binding.videoView.destroy()
         super.onDestroy()
     }

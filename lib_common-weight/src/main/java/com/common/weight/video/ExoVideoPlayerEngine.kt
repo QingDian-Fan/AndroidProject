@@ -64,8 +64,15 @@ class ExoVideoPlayerEngine(context: Context) : VideoPlayerEngine {
         player.setMediaItem(MediaItem.fromUri(urlString))
     }
 
+    /**
+     * ExoPlayer 的 Sonic 音频处理器可覆盖 0.75x~3.0x 的全部档位。非法值（<=0）会被
+     * [PlaybackParameters] 拒绝并抛出异常，这里统一捕获后以实际生效倍速回调，
+     * 避免调用方把失败的请求当成已生效。
+     */
     override fun setPlaybackSpeed(speed: Float) {
-        player.playbackParameters = PlaybackParameters(speed)
+        val applied = runCatching { player.playbackParameters = PlaybackParameters(speed) }
+            .isSuccess
+        listener?.onPlaybackSpeedChanged(player.playbackParameters.speed, applied)
     }
 
     override fun prepare() {

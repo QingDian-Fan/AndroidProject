@@ -14,6 +14,10 @@
     <string name="date_picker_month_format">%d 月</string>
     <string name="date_picker_day_format">%d 日</string>
     <string name="video_default_title">速度与激情特别行动</string>
+    <string name="video_speed_action">播放倍速</string>
+    <string name="video_speed_temporary_tip">当前3倍速度播放中</string>
+    <string name="video_orientation_to_landscape">切换横屏</string>
+    <string name="video_orientation_to_portrait">切换竖屏</string>
     <string name="fold_text_collapse">[收起]</string>
     <string name="fold_text_expand">[查看全部]</string>
 

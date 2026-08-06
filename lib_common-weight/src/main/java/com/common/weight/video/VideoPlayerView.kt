@@ -8,6 +8,7 @@ import android.content.ContextWrapper
 import android.media.AudioManager
 import android.provider.Settings
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.*
 import android.view.View.OnClickListener
 import android.widget.FrameLayout
@@ -53,6 +54,21 @@ class VideoPlayerView @JvmOverloads constructor(
 
         @JvmStatic
         var defaultEngineFactory: VideoPlayerEngineFactory = ExoVideoPlayerEngineFactory
+
+        /** UI 允许选择的常驻倍速档位，不接受档位之外的任意倍速 */
+        private val SPEED_OPTIONS = floatArrayOf(0.75f, 1f, 1.25f, 1.5f, 2f, 3f)
+
+        /** 长按临时加速使用的倍速 */
+        private const val TEMPORARY_SPEED = 3f
+
+        /** 倍速比较容差：引擎回调的实际倍速与档位常量之间可能存在浮点最低位误差 */
+        private const val SPEED_EPSILON = 0.001f
+
+        /**
+         * 横向滑动整个播放器宽度对应的进度秒数。
+         * 由原来的 60s 提升为 1.5 倍，相同滑动距离下调整秒数即为原来的 1.5 倍。
+         */
+        private const val SEEK_SECONDS_PER_WIDTH = 90f
     }
 
 
@@ -67,6 +83,10 @@ class VideoPlayerView @JvmOverloads constructor(
     private val tvPlayerViewPlayTime: AppCompatTextView by lazy { findViewById(R.id.tv_player_view_play_time) }
     private val sbPlayerViewProgress: AppCompatSeekBar by lazy { findViewById(R.id.sb_player_view_progress) }
     private val tvPlayerViewTotalTime: AppCompatTextView by lazy { findViewById(R.id.tv_player_view_total_time) }
+    private val tvPlayerViewSpeed: AppCompatTextView by lazy { findViewById(R.id.tv_player_view_speed) }
+    private val ivPlayerViewOrientation: AppCompatImageView by lazy { findViewById(R.id.iv_player_view_orientation) }
+    private val speedPanel: LinearLayout by lazy { findViewById(R.id.ll_player_view_speed_panel) }
+    private val tvSpeedTip: AppCompatTextView by lazy { findViewById(R.id.tv_player_view_speed_tip) }
     private val messageLayout: CardView by lazy { findViewById(R.id.cv_player_view_message) }
     private val ivMessage: AppCompatImageView by lazy { findViewById(R.id.iv_message) }
     private val tvMessage: AppCompatTextView by lazy { findViewById(R.id.tv_message) }
@@ -133,6 +153,40 @@ class VideoPlayerView @JvmOverloads constructor(
 
     private var scaleType: VideoScaleType = VideoScaleType.RATIO_FILL_SIZE
 
+    /** 最近一次回调的视频原始宽高，横竖屏切换后需要据此重新计算 Surface 尺寸 */
+    private var videoWidth: Int = 0
+    private var videoHeight: Int = 0
+
+    /** 当前是否处于横屏，仅用于同步方向按钮图标与无障碍描述 */
+    private var isLandscape: Boolean = true
+
+    /** 长按临时倍速是否生效 */
+    private var temporarySpeedActive: Boolean = false
+
+    /** 长按生效前的常驻倍速，松手后恢复到该值 */
+    private var speedBeforeTemporary: Float = 1f
+
+    /**
+     * 已发出但尚未收到回调的临时倍速请求数。
+     * 松手早于回调到达时，用它丢弃迟到的临时倍速回调，避免误改常驻倍速与按钮文本。
+     */
+    private var pendingTemporarySpeedCallbacks: Int = 0
+
+    /** 本次触摸序列是否已经触发过长按：用于屏蔽随后的点击与手势 */
+    private var longPressConsumed: Boolean = false
+
+    private val surfaceHolderCallback = object : SurfaceHolder.Callback {
+        override fun surfaceCreated(holder: SurfaceHolder) = Unit
+
+        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) =
+            Unit
+
+        override fun surfaceDestroyed(holder: SurfaceHolder) {
+            // 先恢复常驻倍速再交给引擎处理暂停与重建，避免重建后停留在临时倍速
+            endTemporarySpeed()
+        }
+    }
+
 
     init {
         LayoutInflater.from(getContext()).inflate(R.layout.view_video_player, this, true)
@@ -140,7 +194,13 @@ class VideoPlayerView @JvmOverloads constructor(
         btnActionBack.setOnClickListener(this)
         ivLock.setOnClickListener(this)
         viewControl.setOnClickListener(this)
+        tvPlayerViewSpeed.setOnClickListener(this)
+        ivPlayerViewOrientation.setOnClickListener(this)
         sbPlayerViewProgress.setOnSeekBarChangeListener(this)
+        // Surface 销毁属于临时倍速的结束场景，这里独立监听，不干扰引擎自身的 Surface 处理
+        surfaceView.holder.addCallback(surfaceHolderCallback)
+        updateSpeedLabel()
+        applyOrientationIcon(isLandscape)
 
         audioManager = ContextCompat.getSystemService(context, AudioManager::class.java)!!
     }
@@ -223,9 +283,193 @@ class VideoPlayerView @JvmOverloads constructor(
         return null
     }
 
+    /**
+     * 请求常驻倍速。倍速可能由引擎异步应用，按钮文本与选中态在
+     * [VideoPlayerEngine.Listener.onPlaybackSpeedChanged] 回调确认成功后才更新。
+     */
     fun setSpeed(speed: Float) {
-        playbackSpeed = speed
         player.setPlaybackSpeed(speed)
+    }
+
+    /**
+     * 同步宿主的横竖屏状态：更新按钮图标与无障碍描述，
+     * 并按“方向切换”结束长按临时倍速、收起倍速面板。
+     */
+    fun updateOrientation(isLandscape: Boolean) {
+        this.isLandscape = isLandscape
+        endTemporarySpeed()
+        hideSpeedPanel()
+        applyOrientationIcon(isLandscape)
+    }
+
+    private fun applyOrientationIcon(isLandscape: Boolean) {
+        // 横屏时提供“切换竖屏”入口，竖屏时提供“切换横屏”入口
+        val iconRes = if (isLandscape) {
+            R.drawable.video_orientation_portrait_ic
+        } else {
+            R.drawable.video_orientation_landscape_ic
+        }
+        val descRes = if (isLandscape) {
+            R.string.video_orientation_to_portrait
+        } else {
+            R.string.video_orientation_to_landscape
+        }
+        ivPlayerViewOrientation.setImageResource(iconRes)
+        ivPlayerViewOrientation.contentDescription = context.getString(descRes)
+    }
+
+    //  倍速部分
+
+    /** 倍速档位文本：0.75x / 1.0x / 1.25x / 1.5x / 2.0x / 3.0x */
+    private fun formatSpeed(speed: Float): String {
+        val hundredths = Math.round(speed * 100)
+        val pattern = if (hundredths % 10 == 0) "%.1fx" else "%.2fx"
+        return String.format(Locale.US, pattern, speed)
+    }
+
+    private fun isSameSpeed(left: Float, right: Float): Boolean =
+        abs(left - right) < SPEED_EPSILON
+
+    private fun updateSpeedLabel() {
+        tvPlayerViewSpeed.text = formatSpeed(playbackSpeed)
+    }
+
+    private fun updateSpeedPanelSelection() {
+        for (index in 0 until speedPanel.childCount) {
+            val item = speedPanel.getChildAt(index)
+            val speed = item.tag as? Float ?: continue
+            item.isSelected = isSameSpeed(speed, playbackSpeed)
+        }
+    }
+
+    private fun buildSpeedPanel() {
+        if (speedPanel.childCount > 0) {
+            return
+        }
+        val paddingHorizontal = resources.getDimensionPixelSize(R.dimen.dp_16)
+        val paddingVertical = resources.getDimensionPixelSize(R.dimen.dp_8)
+        val itemTextColor = ContextCompat.getColorStateList(context, R.color.video_speed_item_text)
+        SPEED_OPTIONS.forEach { speed ->
+            val item = AppCompatTextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                tag = speed
+                text = formatSpeed(speed)
+                gravity = Gravity.CENTER
+                setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical)
+                setTextSize(
+                    TypedValue.COMPLEX_UNIT_PX,
+                    resources.getDimension(R.dimen.dp_14)
+                )
+                if (itemTextColor != null) {
+                    setTextColor(itemTextColor)
+                }
+                setBackgroundResource(R.drawable.bg_video_speed_item)
+                isClickable = true
+                setOnClickListener { onSpeedItemClick(speed) }
+            }
+            speedPanel.addView(item)
+        }
+    }
+
+    private fun onSpeedItemClick(speed: Float) {
+        // 立即收起面板，实际生效与选中态以引擎回调为准
+        hideSpeedPanel()
+        removeCallbacks(mHideControllerRunnable)
+        postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
+        if (temporarySpeedActive) {
+            // 长按临时加速期间不接受常驻倍速切换，避免松手后恢复到错误档位
+            return
+        }
+        playerEngine?.setPlaybackSpeed(speed)
+    }
+
+    private fun toggleSpeedPanel() {
+        if (speedPanel.isVisible) {
+            hideSpeedPanel()
+            return
+        }
+        buildSpeedPanel()
+        updateSpeedPanelSelection()
+        speedPanel.visibility = VISIBLE
+    }
+
+    private fun hideSpeedPanel() {
+        if (speedPanel.isVisible) {
+            speedPanel.visibility = GONE
+        }
+    }
+
+    /**
+     * 引擎回调的倍速结果。临时倍速与常驻倍速共用同一条回调，
+     * 用 [pendingTemporarySpeedCallbacks] 区分，避免迟到的临时倍速回调污染常驻倍速。
+     */
+    private fun onPlaybackSpeedApplied(speed: Float, applied: Boolean) {
+        if (pendingTemporarySpeedCallbacks > 0) {
+            pendingTemporarySpeedCallbacks--
+            if (!temporarySpeedActive) {
+                // 松手早于回调到达：临时倍速已由 endTemporarySpeed() 恢复，这里只丢弃回调
+                return
+            }
+            if (applied) {
+                tvSpeedTip.visibility = VISIBLE
+            } else {
+                // 切速失败：引擎已把音视频一并保持在原倍速，不展示成功提示
+                temporarySpeedActive = false
+                tvSpeedTip.visibility = GONE
+            }
+            return
+        }
+        playbackSpeed = speed
+        updateSpeedLabel()
+        updateSpeedPanelSelection()
+        if (!applied) {
+            onSpeedChangeFailed?.invoke(speed)
+        }
+    }
+
+    // 长按临时倍速部分
+
+    private val mLongPressRunnable = Runnable { startTemporarySpeed() }
+
+    /**
+     * 长按临时加速的前置条件：非锁定、非拖动、处于正常播放中，且未进入其他手势。
+     * 加载中、出错、播放完成、暂停状态下 [VideoPlayerEngine.isPlaying] 均为 false。
+     */
+    private fun canStartTemporarySpeed(): Boolean {
+        val engine = playerEngine ?: return false
+        return !isLock && !isDraggingProgress && touchOrientation == -1 &&
+                VIDEO_STATUS == STATUS_PLAYING && engine.isPlaying && !engine.isEnded
+    }
+
+    private fun startTemporarySpeed() {
+        if (temporarySpeedActive || !canStartTemporarySpeed()) {
+            return
+        }
+        val engine = playerEngine ?: return
+        speedBeforeTemporary = playbackSpeed
+        temporarySpeedActive = true
+        longPressConsumed = true
+        pendingTemporarySpeedCallbacks++
+        hideSpeedPanel()
+        // 提示只在引擎确认切速成功后展示
+        engine.setPlaybackSpeed(TEMPORARY_SPEED)
+    }
+
+    /**
+     * 结束长按临时倍速并恢复长按前的常驻倍速。
+     * 幂等：同一次长按的多个结束回调（松手、暂停、销毁、方向切换等）只恢复一次。
+     */
+    private fun endTemporarySpeed() {
+        removeCallbacks(mLongPressRunnable)
+        if (!temporarySpeedActive) {
+            return
+        }
+        temporarySpeedActive = false
+        tvSpeedTip.visibility = GONE
+        playerEngine?.setPlaybackSpeed(speedBeforeTemporary)
     }
 
     fun setVideoPath(urlString: String) {
@@ -248,6 +492,7 @@ class VideoPlayerView @JvmOverloads constructor(
         when (state) {
             STATUS_LOADING -> {
                 pbLoading.visibility = VISIBLE
+                hideSpeedPanel()
                 topLayout.visibility = GONE
                 bottomLayout.visibility = GONE
                 ivLock.visibility = GONE
@@ -265,6 +510,8 @@ class VideoPlayerView @JvmOverloads constructor(
 
 
     fun pause() {
+        // 暂停属于临时倍速的结束场景，必须先恢复常驻倍速
+        endTemporarySpeed()
         if (player.isPlaying) {
             player.pause()
             viewControl.pause()
@@ -283,9 +530,14 @@ class VideoPlayerView @JvmOverloads constructor(
     fun isPrepare() = isPrepare
 
     fun destroy() {
+        // 释放引擎前先结束临时倍速，保证同一次长按只恢复一次
+        endTemporarySpeed()
+        hideSpeedPanel()
+        surfaceView.holder.removeCallback(surfaceHolderCallback)
         playerEngine?.setListener(null)
         playerEngine?.release()
         playerEngine = null
+        removeCallbacks(mLongPressRunnable)
         removeCallbacks(mRefreshRunnable)
         removeCallbacks(mHideControllerRunnable)
         removeCallbacks(mShowControllerRunnable)
@@ -312,6 +564,7 @@ class VideoPlayerView @JvmOverloads constructor(
 
         override fun onEnded() {
             // 播放完毕：按钮置为暂停（可播放）状态，并展示控制面板便于点击重播
+            endTemporarySpeed()
             viewControl.pause()
             removeCallbacks(mRefreshRunnable)
             // 进度停在总时长，避免停留在最后一帧的时间戳上
@@ -326,11 +579,18 @@ class VideoPlayerView @JvmOverloads constructor(
         }
 
         override fun onError(error: Throwable) {
+            endTemporarySpeed()
             onError?.invoke(error)
         }
 
         override fun onVideoSizeChanged(width: Int, height: Int) {
+            videoWidth = width
+            videoHeight = height
             applyScaleType(width, height)
+        }
+
+        override fun onPlaybackSpeedChanged(speed: Float, applied: Boolean) {
+            onPlaybackSpeedApplied(speed, applied)
         }
     }
 
@@ -347,6 +607,12 @@ class VideoPlayerView @JvmOverloads constructor(
             this -> {
                 removeCallbacks(mHideControllerRunnable)
                 removeCallbacks(mShowControllerRunnable)
+                if (speedPanel.isVisible) {
+                    // 倍速面板展开时，点击视频区域只收起面板，不改变控制面板状态
+                    hideSpeedPanel()
+                    postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
+                    return
+                }
                 if (isControlPanelShow) {
                     // 隐藏控制面板
                     post(mHideControllerRunnable)
@@ -359,8 +625,20 @@ class VideoPlayerView @JvmOverloads constructor(
             btnActionBack -> {
                 onActionBack?.invoke()
             }
+            tvPlayerViewSpeed -> {
+                removeCallbacks(mHideControllerRunnable)
+                toggleSpeedPanel()
+                postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
+            }
+            ivPlayerViewOrientation -> {
+                hideSpeedPanel()
+                removeCallbacks(mHideControllerRunnable)
+                postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
+                onOrientationSwitch?.invoke()
+            }
             ivLock -> {
                 isLock = !isLock
+                hideSpeedPanel()
                 ivLock.setImageResource(if (isLock) R.drawable.icon_video_lock_close else R.drawable.icon_video_lock_open)
                 topLayout.visibility = if (isLock) GONE else VISIBLE
                 bottomLayout.visibility = if (isLock) GONE else VISIBLE
@@ -414,6 +692,8 @@ class VideoPlayerView @JvmOverloads constructor(
 
 
     private fun hideControlPanel() {
+        // 倍速面板依附于控制栏，控制栏收起时一并收起
+        hideSpeedPanel()
         if (!isControlPanelShow) {
             return
         }
@@ -530,7 +810,7 @@ class VideoPlayerView @JvmOverloads constructor(
         if (!gestureEnabled || isLock) {
             return super.onTouchEvent(event)
         }
-        when (event.action) {
+        when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 maxVoice = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                 currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
@@ -553,16 +833,42 @@ class VideoPlayerView @JvmOverloads constructor(
                 }
                 viewDownX = event.x
                 viewDownY = event.y
+                longPressConsumed = false
                 removeCallbacks(mHideControllerRunnable)
+                // 长按临时加速：使用系统长按判定时间，避免自定义过短时间造成误触
+                removeCallbacks(mLongPressRunnable)
+                if (canStartTemporarySpeed()) {
+                    postDelayed(
+                        mLongPressRunnable,
+                        ViewConfiguration.getLongPressTimeout().toLong()
+                    )
+                }
+            }
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                // 触摸转为多指操作：取消长按判定并结束临时倍速
+                endTemporarySpeed()
             }
             MotionEvent.ACTION_MOVE -> run {
+                if (event.pointerCount > 1) {
+                    endTemporarySpeed()
+                    return@run
+                }
+                if (temporarySpeedActive) {
+                    // 长按已生效：本次触摸序列不再触发快进/快退与亮度/音量手势
+                    return@run
+                }
                 // 计算偏移的距离（按下的位置 - 当前触摸的位置）
                 val distanceX: Float = viewDownX - event.x
                 val distanceY: Float = viewDownY - event.y
-                // 手指偏移的距离一定不能太短，这个是前提条件
-                if (abs(distanceY) < ViewConfiguration.get(context).scaledTouchSlop) {
+                val touchSlop: Int = ViewConfiguration.get(context).scaledTouchSlop
+                // 手指偏移的距离一定不能太短，这个是前提条件。
+                // 横向与纵向任一方向达到 touch slop 即可进入手势判定，
+                // 否则横向快进/快退会被迫先产生明显纵向位移才能识别。
+                if (abs(distanceX) < touchSlop && abs(distanceY) < touchSlop) {
                     return@run
                 }
+                // 已明显移动：取消尚未生效的长按判定，交给快进/快退或亮度/音量手势
+                removeCallbacks(mLongPressRunnable)
                 if (touchOrientation == -1) {
                     // 判断滚动方向是垂直的还是水平的
                     if (abs(distanceY) > abs(distanceX)) {
@@ -574,7 +880,8 @@ class VideoPlayerView @JvmOverloads constructor(
 
                 // 如果手指触摸方向是水平的
                 if (touchOrientation == LinearLayout.HORIZONTAL) {
-                    val second: Int = (-(distanceX / width.toFloat() * 60f)).toInt()
+                    val second: Int =
+                        (-(distanceX / width.toFloat() * SEEK_SECONDS_PER_WIDTH)).toInt()
                     val progress: Int = getProgress() + second * 1000
                     if (progress >= 0 && progress <= getDuration()) {
                         adjustSecond = second
@@ -659,7 +966,11 @@ class VideoPlayerView @JvmOverloads constructor(
                 }
             }
             MotionEvent.ACTION_UP -> {
-                if (abs(viewDownX - event.x) <= ViewConfiguration.get(context).scaledTouchSlop &&
+                // 结束临时倍速并恢复常驻倍速；长按已生效时不再派发点击、也不再执行 seek
+                val consumedByLongPress = longPressConsumed
+                endTemporarySpeed()
+                if (!consumedByLongPress &&
+                    abs(viewDownX - event.x) <= ViewConfiguration.get(context).scaledTouchSlop &&
                     abs(viewDownY - event.y) <= ViewConfiguration.get(context).scaledTouchSlop
                 ) {
                     // 如果整个视频播放区域太大，触摸移动会导致触发点击事件，所以这里换成手动派发点击事件
@@ -679,6 +990,7 @@ class VideoPlayerView @JvmOverloads constructor(
                 // postDelayed(mHideMessageRunnable, DIALOG_TIME.toLong())
             }
             MotionEvent.ACTION_CANCEL -> {
+                endTemporarySpeed()
                 touchOrientation = -1
                 currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
                 if (adjustSecond != 0) {
@@ -706,6 +1018,12 @@ class VideoPlayerView @JvmOverloads constructor(
     var onCompletion: (() -> Unit)? = null
 
     var onError: ((Throwable) -> Unit)? = null
+
+    /** 横竖屏切换按钮点击回调，由宿主 Activity 决定实际方向请求 */
+    var onOrientationSwitch: (() -> Unit)? = null
+
+    /** 常驻倍速切换失败回调，参数为回退后仍在生效的倍速 */
+    var onSpeedChangeFailed: ((Float) -> Unit)? = null
 
     /**
      * 时间转换
@@ -801,8 +1119,14 @@ class VideoPlayerView @JvmOverloads constructor(
         tvPlayerViewPlayTime.text = conversionTime(finalProgress.toLong())
     }
 
+    /** 容器尺寸变化（典型场景为横竖屏切换）后按新的宽高重新计算 Surface 尺寸 */
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        applyScaleType(videoWidth, videoHeight)
+    }
+
     private fun applyScaleType(videoWidth: Int, videoHeight: Int) {
-        if (videoWidth <= 0 || videoHeight <= 0) {
+        if (videoWidth <= 0 || videoHeight <= 0 || width <= 0 || height <= 0) {
             return
         }
         when (scaleType) {
@@ -827,8 +1151,15 @@ class VideoPlayerView @JvmOverloads constructor(
                 surfaceView.layoutParams = layoutPrams
             }
             else -> {
-                val width = height * videoWidth / videoHeight
-                val layoutPrams = LayoutParams(width, height)
+                // 等比缩放到容器内并居中：按宽高中较小的缩放比取整，
+                // 横屏下与原来的按高度换算结果一致，竖屏下不会因宽度溢出而被裁切。
+                val scale = min(
+                    width.toFloat() / videoWidth.toFloat(),
+                    height.toFloat() / videoHeight.toFloat()
+                )
+                val targetWidth = max((videoWidth * scale).toInt(), 1)
+                val targetHeight = max((videoHeight * scale).toInt(), 1)
+                val layoutPrams = LayoutParams(targetWidth, targetHeight)
                 layoutPrams.gravity = 0x11
                 surfaceView.layoutParams = layoutPrams
             }

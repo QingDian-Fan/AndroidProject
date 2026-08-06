@@ -307,9 +307,11 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
                 playbackSpeed = previousSpeed
                 videoPlayer?.setPlaybackSpeed(previousSpeed)
                 postSpeedChangeError(speed, previousSpeed)
+                postSpeedChanged(previousSpeed, false)
                 return@postPlayerAction
             }
             videoPlayer?.setPlaybackSpeed(speed)
+            postSpeedChanged(speed, true)
         }
     }
 
@@ -619,6 +621,7 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
                 speed = audio.playbackSpeed
                 playbackSpeed = speed
                 postSpeedChangeError(requestedSpeed, speed)
+                postSpeedChanged(speed, false)
             }
         }
 
@@ -654,6 +657,18 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
                 return@post
             }
             runCatching(action).onFailure(::postPlayerError)
+        }
+    }
+
+    /**
+     * 上报倍速请求的最终结果。倍速在播放线程上异步应用（需要先确认 AudioTrack 能否接受），
+     * UI 必须以本回调为准更新按钮与选中态，避免把失败的请求当成已生效。
+     */
+    private fun postSpeedChanged(speed: Float, applied: Boolean) {
+        postToMain {
+            if (!released) {
+                listener?.onPlaybackSpeedChanged(speed, applied)
+            }
         }
     }
 
