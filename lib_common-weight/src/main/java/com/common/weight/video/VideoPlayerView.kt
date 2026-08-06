@@ -26,9 +26,12 @@ import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.isGone
+import androidx.core.view.updateLayoutParams
 
 
 class VideoPlayerView @JvmOverloads constructor(
@@ -131,8 +134,11 @@ class VideoPlayerView @JvmOverloads constructor(
     /** 当前窗口对象（用于调节屏幕亮度），默认从宿主 Activity 解析 */
     private var window: Window? = findHostActivity()?.window
 
-    /** 调整秒数 */
+    /** 调整秒数（仅用于提示展示，已按钳制后的目标位置换算） */
     private var adjustSecond: Int = 0
+
+    /** 横向手势钳制后的目标进度（毫秒），-1 表示本次触摸序列没有待执行的定位 */
+    private var adjustTargetMs: Int = -1
 
     /** 触摸方向 */
     private var touchOrientation: Int = -1
@@ -160,6 +166,9 @@ class VideoPlayerView @JvmOverloads constructor(
     /** 当前是否处于横屏，仅用于同步方向按钮图标与无障碍描述 */
     private var isLandscape: Boolean = true
 
+    /** 横竖屏切换入口是否可用，音频场景由宿主关闭 */
+    private var orientationSwitchEnabled: Boolean = true
+
     /** 长按临时倍速是否生效 */
     private var temporarySpeedActive: Boolean = false
 
@@ -174,6 +183,17 @@ class VideoPlayerView @JvmOverloads constructor(
 
     /** 本次触摸序列是否已经触发过长按：用于屏蔽随后的点击与手势 */
     private var longPressConsumed: Boolean = false
+
+    /**
+     * 布局中声明的基准内边距/外边距。
+     * 必须在 init 之前声明：Insets 可能被多次分发，每次都要从基准值重新叠加，不能累加。
+     */
+    private var bottomBarBasePaddingStart: Int = 0
+    private var bottomBarBasePaddingEnd: Int = 0
+    private var bottomBarBasePaddingBottom: Int = 0
+    private var speedPanelBaseMarginEnd: Int = 0
+    private var speedPanelBaseMarginBottom: Int = 0
+    private var speedTipBaseMarginTop: Int = 0
 
     private val surfaceHolderCallback = object : SurfaceHolder.Callback {
         override fun surfaceCreated(holder: SurfaceHolder) = Unit
@@ -201,6 +221,14 @@ class VideoPlayerView @JvmOverloads constructor(
         surfaceView.holder.addCallback(surfaceHolderCallback)
         updateSpeedLabel()
         applyOrientationIcon(isLandscape)
+        recordInsetBaseValues()
+        // 宿主为 edge-to-edge（setDecorFitsSystemWindows(false)），底部控制栏、倍速面板
+        // 与顶部提示必须按安全区域动态避让，否则会落进手势热区、导航栏或显示切口
+        ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
+            applySafeAreaInsets(insets)
+            insets
+        }
+        ViewCompat.requestApplyInsets(this)
 
         audioManager = ContextCompat.getSystemService(context, AudioManager::class.java)!!
     }
@@ -289,6 +317,15 @@ class VideoPlayerView @JvmOverloads constructor(
      */
     fun setSpeed(speed: Float) {
         player.setPlaybackSpeed(speed)
+    }
+
+    /**
+     * 设置横竖屏切换入口是否可用。音频等不支持方向切换的场景必须关闭，
+     * 否则用户与无障碍服务会看到一个可点击却无响应的方向控制。
+     */
+    fun setOrientationSwitchEnabled(enabled: Boolean) {
+        orientationSwitchEnabled = enabled
+        ivPlayerViewOrientation.visibility = if (enabled) VISIBLE else GONE
     }
 
     /**
@@ -552,7 +589,14 @@ class VideoPlayerView @JvmOverloads constructor(
 
     private val playerListener = object : VideoPlayerEngine.Listener {
         override fun onBuffering() {
+            // 重新缓冲时已不在正常播放，临时倍速与其提示必须一并结束
+            endTemporarySpeed()
             setState(STATUS_LOADING)
+        }
+
+        override fun onPlaybackSuspended() {
+            // 引擎内部暂停（音频焦点丢失等），UI 未主动发起，同样按结束场景处理
+            endTemporarySpeed()
         }
 
         override fun onReady() {
@@ -631,6 +675,9 @@ class VideoPlayerView @JvmOverloads constructor(
                 postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
             }
             ivPlayerViewOrientation -> {
+                if (!orientationSwitchEnabled) {
+                    return
+                }
                 hideSpeedPanel()
                 removeCallbacks(mHideControllerRunnable)
                 postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
@@ -834,6 +881,9 @@ class VideoPlayerView @JvmOverloads constructor(
                 viewDownX = event.x
                 viewDownY = event.y
                 longPressConsumed = false
+                // 新的触摸序列开始，清空上一次可能残留的定位目标，避免跳到旧预览位置
+                adjustTargetMs = -1
+                adjustSecond = 0
                 removeCallbacks(mHideControllerRunnable)
                 // 长按临时加速：使用系统长按判定时间，避免自定义过短时间造成误触
                 removeCallbacks(mLongPressRunnable)
@@ -880,15 +930,23 @@ class VideoPlayerView @JvmOverloads constructor(
 
                 // 如果手指触摸方向是水平的
                 if (touchOrientation == LinearLayout.HORIZONTAL) {
+                    val duration: Int = getDuration()
+                    if (duration <= 0) {
+                        // 总时长未知时无法定位，直接忽略本次横向手势
+                        return@run
+                    }
+                    val basePosition: Int = getProgress()
                     val second: Int =
                         (-(distanceX / width.toFloat() * SEEK_SECONDS_PER_WIDTH)).toInt()
-                    val progress: Int = getProgress() + second * 1000
-                    if (progress >= 0 && progress <= getDuration()) {
-                        adjustSecond = second
-                        ivMessage.setImageResource(if (adjustSecond < 0) R.drawable.video_schedule_rewind_ic else R.drawable.video_schedule_forward_ic)
-                        tvMessage.text = String.format("%s s", abs(adjustSecond))
-                        post(mShowMessageRunnable)
-                    }
+                    // 每次移动都把目标位置钳制到 [0, duration]：越界时停在起点/终点，
+                    // 而不是丢弃本次预览、把上一次的有效值一直保留到抬手
+                    val target: Int = (basePosition + second * 1000).coerceIn(0, duration)
+                    adjustTargetMs = target
+                    // 提示秒数按钳制后的目标重新计算，保证与实际会跳转到的位置一致
+                    adjustSecond = (target - basePosition) / 1000
+                    ivMessage.setImageResource(if (adjustSecond < 0) R.drawable.video_schedule_rewind_ic else R.drawable.video_schedule_forward_ic)
+                    tvMessage.text = String.format("%s s", abs(adjustSecond))
+                    post(mShowMessageRunnable)
                     return@run
                 }
 
@@ -980,11 +1038,7 @@ class VideoPlayerView @JvmOverloads constructor(
                 }
                 touchOrientation = -1
                 currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-                if (adjustSecond != 0) {
-                    // 调整播放进度
-                    setProgress(getProgress() + adjustSecond * 1000)
-                    adjustSecond = 0
-                }
+                applyPendingSeek()
                 postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
                 post(mHideMessageRunnable)
                 // postDelayed(mHideMessageRunnable, DIALOG_TIME.toLong())
@@ -993,10 +1047,7 @@ class VideoPlayerView @JvmOverloads constructor(
                 endTemporarySpeed()
                 touchOrientation = -1
                 currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-                if (adjustSecond != 0) {
-                    setProgress(getProgress() + adjustSecond * 1000)
-                    adjustSecond = 0
-                }
+                applyPendingSeek()
                 postDelayed(mHideControllerRunnable, CONTROLLER_TIME.toLong())
                 post(mHideMessageRunnable)
 
@@ -1009,6 +1060,21 @@ class VideoPlayerView @JvmOverloads constructor(
     private fun getDuration(): Int = safeDuration().toInt()
 
     private fun getProgress(): Int = player.currentPosition.toInt()
+
+    /**
+     * 抬手/取消时执行本次横向手势累积的定位。
+     * 目标位置在手势过程中已钳制到 [0, 总时长]，这里只执行一次，且执行后立即清空，
+     * 保证同一次触摸序列不会重复 seek。
+     */
+    private fun applyPendingSeek() {
+        val target = adjustTargetMs
+        adjustTargetMs = -1
+        adjustSecond = 0
+        if (target < 0) {
+            return
+        }
+        setProgress(target)
+    }
 
 
     /** 返回事件回调 */
@@ -1117,6 +1183,51 @@ class VideoPlayerView @JvmOverloads constructor(
         player.seekTo(finalProgress.toLong())
         sbPlayerViewProgress.progress = finalProgress
         tvPlayerViewPlayTime.text = conversionTime(finalProgress.toLong())
+    }
+
+    //  安全区域适配
+
+    private fun recordInsetBaseValues() {
+        bottomBarBasePaddingStart = bottomLayout.paddingStart
+        bottomBarBasePaddingEnd = bottomLayout.paddingEnd
+        bottomBarBasePaddingBottom = bottomLayout.paddingBottom
+        (speedPanel.layoutParams as? ViewGroup.MarginLayoutParams)?.let {
+            speedPanelBaseMarginEnd = it.marginEnd
+            speedPanelBaseMarginBottom = it.bottomMargin
+        }
+        (tvSpeedTip.layoutParams as? ViewGroup.MarginLayoutParams)?.let {
+            speedTipBaseMarginTop = it.topMargin
+        }
+    }
+
+    /**
+     * 按安全区域避让：
+     * 底部控制栏与倍速面板同时避开系统手势热区、导航栏与显示切口；
+     * 顶部长按提示避开状态栏与显示切口。系统栏被隐藏时对应 Insets 为 0，
+     * 手势热区与切口 Insets 仍然存在，因此三者取并集。
+     */
+    private fun applySafeAreaInsets(insets: WindowInsetsCompat) {
+        val bottomSafe = insets.getInsets(
+            WindowInsetsCompat.Type.systemGestures() or
+                    WindowInsetsCompat.Type.navigationBars() or
+                    WindowInsetsCompat.Type.displayCutout()
+        )
+        val topSafe = insets.getInsets(
+            WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+        )
+        bottomLayout.setPaddingRelative(
+            bottomBarBasePaddingStart + bottomSafe.left,
+            bottomLayout.paddingTop,
+            bottomBarBasePaddingEnd + bottomSafe.right,
+            bottomBarBasePaddingBottom + bottomSafe.bottom
+        )
+        speedPanel.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            marginEnd = speedPanelBaseMarginEnd + bottomSafe.right
+            bottomMargin = speedPanelBaseMarginBottom + bottomSafe.bottom
+        }
+        tvSpeedTip.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            topMargin = speedTipBaseMarginTop + topSafe.top
+        }
     }
 
     /** 容器尺寸变化（典型场景为横竖屏切换）后按新的宽高重新计算 Surface 尺寸 */

@@ -62,6 +62,9 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
 
     private val orientationTimeoutRunnable = Runnable { syncOrientationState(true) }
 
+    /** 进入后台前是否处于播放中：用于区分用户主动暂停与页面切后台导致的暂停 */
+    private var shouldResumeOnForeground: Boolean = false
+
     override fun initialize(savedInstanceState: Bundle?) {
         getTitleBarView()?.visibility = gone
         // 播放期间保持屏幕常亮（页面销毁时随窗口自动清除）
@@ -98,6 +101,8 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
         binding.videoView.setSpeed(1f)
         binding.videoView.start()
 
+        // 音频不纳入横竖屏切换功能，直接隐藏方向入口，避免出现无响应的可点击控件
+        binding.videoView.setOrientationSwitchEnabled(isVideoMedia)
         binding.videoView.updateOrientation(currentOrientation == Configuration.ORIENTATION_LANDSCAPE)
 
         binding.videoView.onActionBack = {
@@ -197,15 +202,21 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
 
     override fun onPause() {
         super.onPause()
+        // 必须在 pause() 之前采样：只有“进入后台前确实在播放”才允许回到前台后续播，
+        // 用户主动点击暂停时该值为 false，返回前台必须保持暂停
+        shouldResumeOnForeground = binding.videoView.isPlaying()
         binding.videoView.pause()
     }
 
     override fun onResume() {
         super.onResume()
-        if (!binding.videoView.isPlaying() && binding.videoView.isPrepare()) {
+        if (shouldResumeOnForeground &&
+            !binding.videoView.isPlaying() &&
+            binding.videoView.isPrepare()
+        ) {
             binding.videoView.resume()
         }
-
+        shouldResumeOnForeground = false
     }
 
     override fun onDestroy() {

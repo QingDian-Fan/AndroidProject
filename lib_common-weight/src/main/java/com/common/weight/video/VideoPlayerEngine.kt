@@ -52,5 +52,11 @@ interface VideoPlayerEngine {
          * @param applied 本次请求是否成功；false 表示音视频已一并保持在原倍速
          */
         fun onPlaybackSpeedChanged(speed: Float, applied: Boolean) {}
+
+        /**
+         * 引擎自身进入非播放状态（音频焦点丢失、内部暂停等），调用方并未主动调用 [pause]。
+         * 依赖“正在播放”的临时状态（如长按临时倍速及其提示）必须据此幂等清理。
+         */
+        fun onPlaybackSuspended() {}
     }
 }

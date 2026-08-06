@@ -119,9 +119,16 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     private var surface: Surface? = null
     private var dataSource: String? = null
 
-    /** 目标倍速：主线程请求切换，播放线程在音频拒绝时回退，需保证可见性 */
+    /** 目标倍速：由播放线程在确认音频是否接受后写入，需保证可见性 */
     @Volatile
     private var playbackSpeed: Float = 1f
+
+    /**
+     * 最近一次确认生效的倍速，只在播放线程写入。
+     * 没有音频轨（无法从 AudioTrack 读取实际倍速）时，作为切速失败的回退基准。
+     */
+    @Volatile
+    private var appliedSpeed: Float = 1f
 
     private var needsStopBeforeRestart = false
     private var videoPlayer: FfmpegVideoPlayer? = null
@@ -295,21 +302,27 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     }
 
     override fun setPlaybackSpeed(speed: Float) {
-        val previousSpeed = playbackSpeed
-        playbackSpeed = speed
+        // 目标倍速不在调用线程上乐观写入 playbackSpeed：连续两次请求且都被 AudioTrack 拒绝时，
+        // 第二次会把尚未生效的第一个目标当成“旧倍速”回退，导致视频停在一个音频从未使用过的倍速。
+        // 回退基准统一在播放线程上从音频实际倍速（无音频轨时为最近一次确认生效的倍速）读取。
         postPlayerAction {
             ensurePlayers()
             val audio = audioPlayer
+            val hasAudio = audio != null && audioAvailable
+            val fallbackSpeed = if (hasAudio) audio!!.playbackSpeed else appliedSpeed
             // 必须先确认音频能按目标倍速输出，再切换视频：
             // 若音频回退而视频已切速，两侧倍速不一致会造成持续音画不同步
-            val audioApplied = audio == null || !audioAvailable || audio.setPlaybackSpeed(speed)
+            val audioApplied = !hasAudio || audio!!.setPlaybackSpeed(speed)
             if (!audioApplied) {
-                playbackSpeed = previousSpeed
-                videoPlayer?.setPlaybackSpeed(previousSpeed)
-                postSpeedChangeError(speed, previousSpeed)
-                postSpeedChanged(previousSpeed, false)
+                appliedSpeed = fallbackSpeed
+                playbackSpeed = fallbackSpeed
+                videoPlayer?.setPlaybackSpeed(fallbackSpeed)
+                postSpeedChangeError(speed, fallbackSpeed)
+                postSpeedChanged(fallbackSpeed, false)
                 return@postPlayerAction
             }
+            appliedSpeed = speed
+            playbackSpeed = speed
             videoPlayer?.setPlaybackSpeed(speed)
             postSpeedChanged(speed, true)
         }
@@ -370,6 +383,13 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             return
         }
         paused = true
+        // 音频焦点丢失等场景由引擎内部直接调用 pause()，UI 侧收不到任何事件，
+        // 这里统一上报，保证长按临时倍速等依赖播放状态的临时状态被清理
+        postToMain {
+            if (!released) {
+                listener?.onPlaybackSuspended()
+            }
+        }
         postPlayerAction {
             videoPlayer?.pause()
             audioPlayer?.pause()
@@ -624,6 +644,7 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
                 postSpeedChanged(speed, false)
             }
         }
+        appliedSpeed = speed
 
         video.setDataSource(source)
         video.setPlaybackSpeed(speed)

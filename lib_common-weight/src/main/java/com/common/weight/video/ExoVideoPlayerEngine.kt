@@ -24,6 +24,14 @@ class ExoVideoPlayerEngine(context: Context) : VideoPlayerEngine {
             }
         }
 
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            // 重新缓冲、内部停止等都会让播放停下来，统一上报，
+            // 便于上层清理依赖“正在播放”的临时状态（长按临时倍速等）
+            if (!isPlaying) {
+                listener?.onPlaybackSuspended()
+            }
+        }
+
         override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
             listener?.onError(error)
         }
