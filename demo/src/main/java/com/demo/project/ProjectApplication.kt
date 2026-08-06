@@ -5,6 +5,7 @@ import com.common.auth.AuthManager
 import com.common.auth.hook.LoginHookUtil
 import com.common.http.HttpUtils
 import com.common.scan.wechat.WeChatQRCodeDetector
+import com.common.share.WeiBoSdkUtils
 import com.common.theme.BaseApplication
 import com.common.utils.ExceptionHandlerUtil
 import com.common.utils.LogFileUtil
@@ -55,6 +56,7 @@ class ProjectApplication: BaseApplication() {
         //初始化日志库
         ExceptionHandlerUtil.init(this)
         LogFileUtil.init(this)
+        WeiBoSdkUtils.initWeiBoSdk(this)
     }
 
     private fun init() {
