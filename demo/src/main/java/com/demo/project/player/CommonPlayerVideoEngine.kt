@@ -55,6 +55,9 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         /** 读到无法继续解析的损坏数据 */
         private const val NATIVE_ERROR_READ_INVALID_DATA = -1103
 
+        /** 送包 / 取帧 / 重采样等解码环节不可恢复失败 */
+        private const val NATIVE_ERROR_DECODE_FAILED = -1104
+
         /** AudioTrack 相关错误码区间（-1005 ~ -1001） */
         private const val NATIVE_ERROR_AUDIO_TRACK_FIRST = -1001
         private const val NATIVE_ERROR_AUDIO_TRACK_LAST = -1005
@@ -184,6 +187,13 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     /** 播放结束是否已上报，避免主时钟轮询重复触发 */
     @Volatile
     private var completionNotified = false
+
+    /**
+     * 是否已上报致命错误。音视频两条线程可能先后失败，也可能一路失败、另一路随后读到 EOF，
+     * 该标记保证只上报一次 ERROR，且错误之后不再上报播放完成。
+     */
+    @Volatile
+    private var errorNotified = false
 
     /** 媒体是否存在可解码的音频轨 */
     @Volatile
@@ -437,6 +447,21 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             return
         }
         if (started && !ended) {
+            // 永久焦点丢失时已 abandonAudioFocus()，恢复播放必须重新申请，
+            // 否则会在别的应用持有焦点的情况下直接恢复 AudioTrack 输出造成同时发声。
+            // requestAudioFocus() 内部对「已持有」是幂等的，普通暂停恢复不会重复申请。
+            if (audioAvailable && !requestAudioFocus()) {
+                // 申请失败：保持暂停并按可重试的音频输出错误上报，不得恢复出声
+                paused = true
+                pendingPlay = false
+                postPlayerError(
+                    VideoPlaybackException(
+                        VideoPlayerErrorType.AUDIO_OUTPUT,
+                        "Audio focus request was denied."
+                    )
+                )
+                return
+            }
             paused = false
             postPlayerAction {
                 videoPlayer?.resume()
@@ -587,6 +612,8 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     private fun resetPlaybackState() {
         videoDecodeFinished = false
         completionNotified = false
+        // 重试 / 换源属于全新一轮播放，允许重新上报错误
+        errorNotified = false
         audioAvailable = true
         seekTargetMs = -1L
         audioDrainPositionMs = -1L
@@ -692,7 +719,9 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
 
     /** 视频解码结束且音频已播完时才判定播放完成 */
     private fun finishPlaybackIfDrained() {
-        if (released || completionNotified || !videoDecodeFinished) {
+        // errorNotified：一路已上报致命错误时，另一路随后到达的「解码结束」
+        // 不得再上报播放完成，否则错误面板与重试入口会被 ENDED 覆盖
+        if (released || completionNotified || errorNotified || !videoDecodeFinished) {
             return
         }
         val audio = audioPlayer
@@ -854,6 +883,8 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             NATIVE_ERROR_READ_FAILED -> VideoPlayerErrorType.NETWORK
             // 读到损坏数据无法继续解析
             NATIVE_ERROR_READ_INVALID_DATA -> VideoPlayerErrorType.DECODER
+            // 送包 / 取帧 / 重采样等解码环节失败
+            NATIVE_ERROR_DECODE_FAILED -> VideoPlayerErrorType.DECODER
             // AudioTrack 创建/启动/切速/写入失败（-1001 ~ -1005）
             in NATIVE_ERROR_AUDIO_TRACK_LAST..NATIVE_ERROR_AUDIO_TRACK_FIRST ->
                 VideoPlayerErrorType.AUDIO_OUTPUT
@@ -864,6 +895,11 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     }
 
     private fun postPlayerError(error: Throwable) {
+        // 幂等：音视频两条线程可能同时失败，UI 只能进入一次 ERROR
+        if (errorNotified) {
+            return
+        }
+        errorNotified = true
         com.common.utils.LogUtil.e(TAG, "player error", error)
         pendingPlay = false
         // 致命错误：清除意图与焦点续播标记，等待用户点击重试，不得自动恢复

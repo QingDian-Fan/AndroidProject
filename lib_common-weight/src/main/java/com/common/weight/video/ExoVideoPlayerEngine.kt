@@ -31,6 +31,9 @@ class ExoVideoPlayerEngine(context: Context) : VideoPlayerEngine {
 
     private var listener: VideoPlayerEngine.Listener? = null
 
+    /** 当前是否因临时焦点丢失被 Media3 抑制播放，用于去重并避免重复上报 */
+    private var suppressedByTransientFocus = false
+
     private val playerListener = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             when (playbackState) {
@@ -50,6 +53,7 @@ class ExoVideoPlayerEngine(context: Context) : VideoPlayerEngine {
                 return
             }
             val pausedReason = when (reason) {
+                // 永久焦点丢失：Media3 会把 playWhenReady 置 false，必须由用户重新播放
                 Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS ->
                     VideoPausedReason.AUDIO_FOCUS_PERMANENT
 
@@ -58,13 +62,35 @@ class ExoVideoPlayerEngine(context: Context) : VideoPlayerEngine {
 
                 else -> return // 用户或调用方主动暂停，上层已知晓，无需重复上报
             }
+            suppressedByTransientFocus = false
             listener?.onPlaybackSuspended(pausedReason)
+        }
+
+        /**
+         * 临时焦点丢失时 Media3 **不会**改变 playWhenReady，而是把播放置为「抑制」状态。
+         * 只监听 playWhenReady 会漏掉这种暂停，导致 UI 仍显示为播放中。
+         */
+        override fun onPlaybackSuppressionReasonChanged(playbackSuppressionReason: Int) {
+            val suppressed =
+                playbackSuppressionReason ==
+                    Player.PLAYBACK_SUPPRESSION_REASON_TRANSIENT_AUDIO_FOCUS_LOSS
+            if (suppressed == suppressedByTransientFocus) {
+                return
+            }
+            suppressedByTransientFocus = suppressed
+            if (suppressed) {
+                listener?.onPlaybackSuspended(VideoPausedReason.AUDIO_FOCUS_TRANSIENT)
+            } else if (player.playWhenReady) {
+                // 抑制解除且仍期望播放：焦点已恢复，同步 UI 回播放态
+                listener?.onPlaybackResumed()
+            }
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             // 缓冲同样会让 isPlaying 变 false，这里只用于清理依赖“正在播放”的临时状态
             // （长按临时倍速及其提示），不携带会清除用户意图的原因。
-            if (!isPlaying) {
+            // 焦点相关的暂停已由上面两个回调按真实原因上报，不在此泛化为 INTERNAL。
+            if (!isPlaying && !suppressedByTransientFocus) {
                 listener?.onPlaybackSuspended(VideoPausedReason.INTERNAL)
             }
         }

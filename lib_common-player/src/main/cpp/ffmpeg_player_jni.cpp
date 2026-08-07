@@ -59,6 +59,8 @@ static const int ERROR_OPEN_FAILED = -1101;
 static const int ERROR_READ_FAILED = -1102;
 /** 与 Java 侧约定的错误码：读到无法继续解析的损坏数据 */
 static const int ERROR_READ_INVALID_DATA = -1103;
+/** 与 Java 侧约定的错误码：送包/取帧/重采样等解码环节不可恢复失败 */
+static const int ERROR_DECODE_FAILED = -1104;
 
 static JavaVM *g_vm = nullptr;
 
@@ -216,14 +218,23 @@ enum class ReadOutcome {
     TIMED_OUT,
     /** 其他读取失败 */
     FAILED,
+    /** 送包 / 取帧 / 重采样等解码环节不可恢复失败 */
+    DECODE_FAILED,
 };
 
 /**
- * @param last_read_ret 最后一次 av_read_frame() 的返回值；0 表示循环未因读取失败退出
+ * @param last_read_ret     最后一次 av_read_frame() 的返回值；0 表示循环未因读取失败退出
+ * @param fatal_decode_ret  解码环节的致命错误码；0 表示解码未出错
  */
-static ReadOutcome classify_read_outcome(BasePlayer *player, int last_read_ret) {
+static ReadOutcome classify_read_outcome(BasePlayer *player, int last_read_ret,
+                                         int fatal_decode_ret) {
     if (player->stop_requested.load()) {
         return ReadOutcome::CANCELLED;
+    }
+    // 解码致命错误优先于读取结果：demuxer 之后仍可能读到 EOF，
+    // 若按 EOF 上报完成会把错误面板与重试入口覆盖掉
+    if (fatal_decode_ret < 0) {
+        return ReadOutcome::DECODE_FAILED;
     }
     if (player->io_timed_out.load()) {
         return ReadOutcome::TIMED_OUT;
@@ -245,11 +256,12 @@ static int read_error_code(int last_read_ret) {
 }
 
 /**
- * 统一处理读取循环的收尾上报。错误信息只使用 FFmpeg 的错误描述，
+ * 统一处理读取循环的收尾上报。整个播放线程只在这里上报一次完成或错误，
+ * 保证错误/完成回调幂等。错误信息只使用 FFmpeg 的错误描述，
  * 不拼接媒体地址，避免把鉴权参数写进日志与 UI 提示。
  */
-static void report_read_outcome(BasePlayer *player, int last_read_ret) {
-    switch (classify_read_outcome(player, last_read_ret)) {
+static void report_read_outcome(BasePlayer *player, int last_read_ret, int fatal_decode_ret) {
+    switch (classify_read_outcome(player, last_read_ret, fatal_decode_ret)) {
         case ReadOutcome::CANCELLED:
             break;
         case ReadOutcome::END_OF_STREAM:
@@ -260,6 +272,12 @@ static void report_read_outcome(BasePlayer *player, int last_read_ret) {
             break;
         case ReadOutcome::FAILED:
             player->notifyError(read_error_code(last_read_ret), ff_error(last_read_ret));
+            break;
+        case ReadOutcome::DECODE_FAILED:
+            player->notifyError(
+                    fatal_decode_ret == AVERROR_INVALIDDATA ? ERROR_READ_INVALID_DATA
+                                                            : ERROR_DECODE_FAILED,
+                    ff_error(fatal_decode_ret));
             break;
     }
 }
@@ -799,6 +817,8 @@ static void run_video(VideoPlayer *player) {
     int64_t last_pts_ms = -1;
     // 最后一次 av_read_frame() 的返回值，退出循环后据此区分 EOF / 超时 / 读取失败
     int last_read_ret = 0;
+    // 送包 / 取帧的致命错误码，非 0 时禁止按 EOF 上报播放完成
+    int fatal_decode_ret = 0;
     // 暂停期间发生 seek 时，解码到目标位置附近刷新一帧画面后重新挂起
     bool step_after_seek = false;
     int64_t step_target_ms = 0;
@@ -839,8 +859,14 @@ static void run_video(VideoPlayer *player) {
 
         ret = avcodec_send_packet(media.codec, packet);
         av_packet_unref(packet);
-        if (ret < 0) {
+        if (ret == AVERROR(EAGAIN)) {
+            // 解码器缓冲已满属于正常背压，取完帧后会重新送包
             continue;
+        }
+        if (ret < 0) {
+            // 送包失败不可恢复：记录后退出读取循环，禁止后续按 EOF 上报播放完成
+            fatal_decode_ret = ret;
+            break;
         }
 
         while (!player->stop_requested.load()) {
@@ -849,7 +875,8 @@ static void run_video(VideoPlayer *player) {
                 break;
             }
             if (ret < 0) {
-                player->notifyError(ret, ff_error(ret));
+                // 取帧失败不可恢复：不在此直接上报，统一交给 report_read_outcome 保证只报一次
+                fatal_decode_ret = ret;
                 break;
             }
 
@@ -888,6 +915,10 @@ static void run_video(VideoPlayer *player) {
                 break;
             }
         }
+        if (fatal_decode_ret < 0) {
+            // 内层取帧发生致命错误：退出读取循环，避免继续读到 EOF 后误报播放完成
+            break;
+        }
     }
 
     sws_freeContext(sws);
@@ -897,7 +928,7 @@ static void run_video(VideoPlayer *player) {
 
     // 按最后一次读取结果分类：主动停止不上报，EOF 才是播放完成，
     // 超时与其他读取失败一律按错误上报，避免网络中断被误判成正常结束
-    report_read_outcome(player, last_read_ret);
+    report_read_outcome(player, last_read_ret, fatal_decode_ret);
     arm_io_deadline(player, 0);
     player->running = false;
 }
@@ -979,6 +1010,8 @@ static void run_audio(AudioPlayer *player) {
 
     // 最后一次 av_read_frame() 的返回值，退出循环后据此区分 EOF / 超时 / 读取失败
     int last_read_ret = 0;
+    // 送包 / 取帧 / 重采样的致命错误码，非 0 时禁止按 EOF 上报播放完成
+    int fatal_decode_ret = 0;
 
     while (!player->stop_requested.load()) {
         player->waitForResumeOrSeek();
@@ -1006,8 +1039,14 @@ static void run_audio(AudioPlayer *player) {
 
         ret = avcodec_send_packet(media.codec, packet);
         av_packet_unref(packet);
-        if (ret < 0) {
+        if (ret == AVERROR(EAGAIN)) {
+            // 解码器缓冲已满属于正常背压，取完帧后会重新送包
             continue;
+        }
+        if (ret < 0) {
+            // 送包失败不可恢复：记录后退出读取循环，禁止后续按 EOF 上报播放完成
+            fatal_decode_ret = ret;
+            break;
         }
 
         while (!player->stop_requested.load()) {
@@ -1016,7 +1055,8 @@ static void run_audio(AudioPlayer *player) {
                 break;
             }
             if (ret < 0) {
-                player->notifyError(ret, ff_error(ret));
+                // 取帧失败不可恢复：统一交给 report_read_outcome 上报，保证只报一次
+                fatal_decode_ret = ret;
                 break;
             }
             int64_t frame_pts_ms =
@@ -1043,9 +1083,10 @@ static void run_audio(AudioPlayer *player) {
                     AV_SAMPLE_FMT_S16,
                     1);
             if (buffer_size <= 0) {
-                player->notifyError(buffer_size, "Could not allocate audio output buffer.");
+                // 输出缓冲尺寸非法，无法继续重采样：按解码失败终止，不再继续读到 EOF
+                fatal_decode_ret = buffer_size < 0 ? buffer_size : AVERROR(EINVAL);
                 av_frame_unref(frame);
-                continue;
+                break;
             }
             std::vector<uint8_t> buffer(buffer_size);
             uint8_t *out[] = {buffer.data()};
@@ -1056,9 +1097,16 @@ static void run_audio(AudioPlayer *player) {
                 int bytes = converted * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
                 player->notifyAudioData(buffer.data(), bytes, out_pts_ms);
             } else if (converted < 0) {
-                player->notifyError(converted, ff_error(converted));
+                // 重采样失败不可恢复：记录后终止，交给 report_read_outcome 统一上报
+                fatal_decode_ret = converted;
+                av_frame_unref(frame);
+                break;
             }
             av_frame_unref(frame);
+        }
+        if (fatal_decode_ret < 0) {
+            // 内层解码/重采样发生致命错误：退出读取循环，避免继续读到 EOF 后误报播放完成
+            break;
         }
     }
 
@@ -1069,7 +1117,7 @@ static void run_audio(AudioPlayer *player) {
 
     // 与视频线程一致：主动停止不上报，EOF 才是播放完成，
     // 超时与其他读取失败一律按错误上报
-    report_read_outcome(player, last_read_ret);
+    report_read_outcome(player, last_read_ret, fatal_decode_ret);
     arm_io_deadline(player, 0);
     player->running = false;
 }

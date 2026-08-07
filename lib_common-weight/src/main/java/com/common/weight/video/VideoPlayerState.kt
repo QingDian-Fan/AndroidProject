@@ -89,6 +89,38 @@ fun VideoPlayerState.isTerminal(): Boolean =
         this == VideoPlayerState.RELEASED
 
 /**
+ * 引擎 Ready 回调到达时，播放器应进入的状态。
+ *
+ * 准备/缓冲期间的暂停会先把状态切到 PAUSED，但引擎的 Ready 回调仍会滞后到达；
+ * 若无条件切到 READY 会形成「引擎已暂停、UI 显示播放中」的假播放，并启动不该运行的进度刷新。
+ *
+ * @param current       当前状态
+ * @param pauseReason   当前生效的暂停原因，null 表示未暂停
+ * @param playIntended  用户是否仍期望播放
+ * @return 目标状态；null 表示不改变当前状态
+ */
+fun resolveReadyState(
+    current: VideoPlayerState,
+    pauseReason: VideoPausedReason?,
+    playIntended: Boolean,
+): VideoPlayerState? = when {
+    // ENDED / ERROR / RELEASED 优先级最高，延迟回调不得把播放器拉回
+    current.isTerminal() -> null
+    // 暂停仍然有效，或用户已无播放意图：Ready 只代表「已就绪」而不是「正在播放」
+    pauseReason != null || !playIntended -> VideoPlayerState.PAUSED
+    else -> VideoPlayerState.READY
+}
+
+/**
+ * 引擎自动续播（临时焦点恢复等）时是否应被采纳。
+ * 用户主动暂停、永久焦点丢失、耳机拔出后不得被引擎自动拉回播放。
+ */
+fun shouldAcceptAutoResume(
+    current: VideoPlayerState,
+    pauseReason: VideoPausedReason?,
+): Boolean = !current.isTerminal() && pauseReason?.clearsPlayIntent() != true
+
+/**
  * 可区分的播放错误类型。UI 据此给出不同提示，
  * 并区分「致命错误（进入 [VideoPlayerState.ERROR]）」与「可恢复警告（继续播放）」。
  */

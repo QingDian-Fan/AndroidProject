@@ -164,6 +164,14 @@ class VideoPlayerView @JvmOverloads constructor(
      */
     private var desiredPlaying: Boolean = false
 
+    /**
+     * 当前生效的暂停原因；null 表示未处于暂停。
+     *
+     * 准备/缓冲期间暂停时 [playerState] 会先变成 PAUSED，但引擎的 Ready 回调仍会滞后到达，
+     * [playerListener] 需要据此判断「该暂停是否仍然有效」，避免把播放器拉回 READY 假播放。
+     */
+    private var activePauseReason: VideoPausedReason? = null
+
     private var scaleType: VideoScaleType = VideoScaleType.RATIO_FILL_SIZE
 
     /** 最近一次回调的视频原始宽高，横竖屏切换后需要据此重新计算 Surface 尺寸 */
@@ -544,6 +552,8 @@ class VideoPlayerView @JvmOverloads constructor(
         hideError()
         // 用户意图先于引擎实际状态记录：缓冲、等待 Surface 期间 isPlaying 仍为 false
         desiredPlaying = true
+        // 重新发起播放：之前的暂停原因失效，后续 Ready 回调可正常进入 READY
+        activePauseReason = null
         if (isStart) {
             setState(VideoPlayerState.BUFFERING)
             player.prepare()
@@ -570,6 +580,8 @@ class VideoPlayerView @JvmOverloads constructor(
         setState(VideoPlayerState.BUFFERING)
         engine.setDataSource(path)
         desiredPlaying = true
+        // 重试是一次全新的播放请求，旧的暂停原因不再适用
+        activePauseReason = null
         engine.prepare()
         engine.play()
         viewControl.play()
@@ -662,11 +674,15 @@ class VideoPlayerView @JvmOverloads constructor(
         if (reason.clearsPlayIntent()) {
             desiredPlaying = false
         }
+        // 记录生效中的暂停原因：准备/缓冲期间暂停时状态仍是 BUFFERING，
+        // 必须靠它拦截随后到达的 onReady()，否则会被覆盖成 READY 形成假播放
+        activePauseReason = reason
         // 必须无条件下发：缓冲中、等待 Surface 时 isPlaying 为 false，
         // 但引擎内部仍保留待播放请求，只有 pause() 能取消它
         playerEngine?.pause(reason)
         viewControl.pause()
-        if (playerState == VideoPlayerState.READY) {
+        // 准备中暂停同样要显式进入暂停态，不能停留在 BUFFERING
+        if (playerState == VideoPlayerState.READY || playerState == VideoPlayerState.BUFFERING) {
             setState(VideoPlayerState.PAUSED)
         }
     }
@@ -738,18 +754,20 @@ class VideoPlayerView @JvmOverloads constructor(
                 return
             }
             // 其余原因（焦点丢失、Surface、生命周期）UI 必须显示为暂停，
-            // 不能停留在 READY 假播放
+            // 不能停留在 READY 假播放；同时记录原因拦截随后到达的 Ready 回调
+            activePauseReason = reason
             viewControl.pause()
-            if (playerState == VideoPlayerState.READY) {
+            if (playerState == VideoPlayerState.READY || playerState == VideoPlayerState.BUFFERING) {
                 setState(VideoPlayerState.PAUSED)
             }
         }
 
         override fun onPlaybackResumed() {
-            // 引擎因临时焦点恢复而自动续播：把 UI 与播放按钮同步回播放中
-            if (playerState.isTerminal()) {
+            // 引擎因临时焦点恢复而自动续播；用户主动暂停 / 永久焦点丢失后不得被覆盖
+            if (!shouldAcceptAutoResume(playerState, activePauseReason)) {
                 return
             }
+            activePauseReason = null
             desiredPlaying = true
             viewControl.play()
             if (playerState == VideoPlayerState.PAUSED) {
@@ -758,18 +776,24 @@ class VideoPlayerView @JvmOverloads constructor(
         }
 
         override fun onReady() {
-            if (playerState == VideoPlayerState.ERROR || playerState == VideoPlayerState.RELEASED) {
-                return
-            }
+            val target = resolveReadyState(playerState, activePauseReason, desiredPlaying)
+                ?: return // 终止态：不接受延迟到达的 Ready
+            // 时长/进度条量程等准备信息与是否暂停无关，先同步
             if (!isPrepare) {
                 onPrepared()
             }
-            setState(VideoPlayerState.READY)
+            if (target == VideoPlayerState.PAUSED) {
+                // 暂停仍然有效：只退出加载态，不启动播放态的进度刷新任务
+                pbLoading.visibility = GONE
+                viewControl.pause()
+            }
+            setState(target)
         }
 
         override fun onEnded() {
-            if (playerState == VideoPlayerState.ENDED || playerState == VideoPlayerState.RELEASED) {
-                // 幂等：引擎可能重复上报结束
+            if (playerState.isTerminal()) {
+                // 幂等：引擎可能重复上报结束；ERROR 同样不得被延迟到达的完成回调覆盖，
+                // 否则错误面板与重试入口会被「播放完成」顶掉
                 return
             }
             // 播放完毕：按钮置为暂停（可播放）状态，并展示控制面板便于点击重播
