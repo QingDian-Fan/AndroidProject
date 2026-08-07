@@ -55,6 +55,10 @@ static const int IO_MAX_RECONNECT = 3;
 static const int ERROR_IO_ABORTED = -1100;
 /** 与 Java 侧约定的错误码：数据源打开失败 */
 static const int ERROR_OPEN_FAILED = -1101;
+/** 与 Java 侧约定的错误码：播放中读取失败（I/O、连接重置、服务端断开、重连耗尽等） */
+static const int ERROR_READ_FAILED = -1102;
+/** 与 Java 侧约定的错误码：读到无法继续解析的损坏数据 */
+static const int ERROR_READ_INVALID_DATA = -1103;
 
 static JavaVM *g_vm = nullptr;
 
@@ -195,6 +199,70 @@ struct BasePlayer {
         seek_done_serial = 0;
     }
 };
+
+/**
+ * 读取循环退出后的结果分类。
+ *
+ * av_read_frame() 只有返回 AVERROR_EOF 才代表数据读到末尾；EIO、连接重置、
+ * 服务端断开、协议超时、重连耗尽、数据损坏等同样是负值，若一并当成 EOF
+ * 会把异常中断误报成「播放完成」。
+ */
+enum class ReadOutcome {
+    /** 主动停止 / 释放 / 换源：既不上报完成也不上报错误 */
+    CANCELLED,
+    /** 正常读到文件或流末尾 */
+    END_OF_STREAM,
+    /** interrupt deadline 触发的读取超时 */
+    TIMED_OUT,
+    /** 其他读取失败 */
+    FAILED,
+};
+
+/**
+ * @param last_read_ret 最后一次 av_read_frame() 的返回值；0 表示循环未因读取失败退出
+ */
+static ReadOutcome classify_read_outcome(BasePlayer *player, int last_read_ret) {
+    if (player->stop_requested.load()) {
+        return ReadOutcome::CANCELLED;
+    }
+    if (player->io_timed_out.load()) {
+        return ReadOutcome::TIMED_OUT;
+    }
+    if (last_read_ret == AVERROR_EOF) {
+        return ReadOutcome::END_OF_STREAM;
+    }
+    if (last_read_ret < 0) {
+        return ReadOutcome::FAILED;
+    }
+    // 未读到任何失败返回值就退出循环（例如刚进入循环即被要求停止），按取消处理，
+    // 不猜测为播放完成，避免异常路径上报 ENDED。
+    return ReadOutcome::CANCELLED;
+}
+
+/** 损坏数据映射为解码错误，其余读取失败统一按 I/O 错误上报 */
+static int read_error_code(int last_read_ret) {
+    return last_read_ret == AVERROR_INVALIDDATA ? ERROR_READ_INVALID_DATA : ERROR_READ_FAILED;
+}
+
+/**
+ * 统一处理读取循环的收尾上报。错误信息只使用 FFmpeg 的错误描述，
+ * 不拼接媒体地址，避免把鉴权参数写进日志与 UI 提示。
+ */
+static void report_read_outcome(BasePlayer *player, int last_read_ret) {
+    switch (classify_read_outcome(player, last_read_ret)) {
+        case ReadOutcome::CANCELLED:
+            break;
+        case ReadOutcome::END_OF_STREAM:
+            player->notifyCompletion();
+            break;
+        case ReadOutcome::TIMED_OUT:
+            player->notifyError(ERROR_IO_ABORTED, "Media read timed out.");
+            break;
+        case ReadOutcome::FAILED:
+            player->notifyError(read_error_code(last_read_ret), ff_error(last_read_ret));
+            break;
+    }
+}
 
 struct VideoPlayer : BasePlayer {
     jmethodID on_prepared = nullptr;
@@ -729,6 +797,8 @@ static void run_video(VideoPlayer *player) {
 
     int continuous_drops = 0;
     int64_t last_pts_ms = -1;
+    // 最后一次 av_read_frame() 的返回值，退出循环后据此区分 EOF / 超时 / 读取失败
+    int last_read_ret = 0;
     // 暂停期间发生 seek 时，解码到目标位置附近刷新一帧画面后重新挂起
     bool step_after_seek = false;
     int64_t step_target_ms = 0;
@@ -758,6 +828,8 @@ static void run_video(VideoPlayer *player) {
         int read_ret = av_read_frame(media.format, packet);
         arm_io_deadline(player, 0);
         if (read_ret < 0) {
+            // 保存返回值：只有 AVERROR_EOF 才是正常结束，其余负值必须按错误上报
+            last_read_ret = read_ret;
             break;
         }
         if (packet->stream_index != media.stream_index) {
@@ -823,12 +895,9 @@ static void run_video(VideoPlayer *player) {
     av_frame_free(&rgba_frame);
     av_packet_free(&packet);
 
-    if (player->io_timed_out.load()) {
-        // 读取被超时中断，不是正常播放结束，否则会被上层当成播放完成
-        player->notifyError(ERROR_IO_ABORTED, "Media read timed out.");
-    } else if (!player->stop_requested.load()) {
-        player->notifyCompletion();
-    }
+    // 按最后一次读取结果分类：主动停止不上报，EOF 才是播放完成，
+    // 超时与其他读取失败一律按错误上报，避免网络中断被误判成正常结束
+    report_read_outcome(player, last_read_ret);
     arm_io_deadline(player, 0);
     player->running = false;
 }
@@ -908,6 +977,9 @@ static void run_audio(AudioPlayer *player) {
     player->notifyAudioFormat(out_sample_rate, out_channels);
     player->notifyProgress(true);
 
+    // 最后一次 av_read_frame() 的返回值，退出循环后据此区分 EOF / 超时 / 读取失败
+    int last_read_ret = 0;
+
     while (!player->stop_requested.load()) {
         player->waitForResumeOrSeek();
         if (player->stop_requested.load()) {
@@ -923,6 +995,8 @@ static void run_audio(AudioPlayer *player) {
         int read_ret = av_read_frame(media.format, packet);
         arm_io_deadline(player, 0);
         if (read_ret < 0) {
+            // 保存返回值：只有 AVERROR_EOF 才是正常结束，其余负值必须按错误上报
+            last_read_ret = read_ret;
             break;
         }
         if (packet->stream_index != media.stream_index) {
@@ -993,12 +1067,9 @@ static void run_audio(AudioPlayer *player) {
     swr_free(&swr);
     av_channel_layout_uninit(&out_layout);
 
-    if (player->io_timed_out.load()) {
-        // 读取被超时中断，不是正常播放结束
-        player->notifyError(ERROR_IO_ABORTED, "Media read timed out.");
-    } else if (!player->stop_requested.load()) {
-        player->notifyCompletion();
-    }
+    // 与视频线程一致：主动停止不上报，EOF 才是播放完成，
+    // 超时与其他读取失败一律按错误上报
+    report_read_outcome(player, last_read_ret);
     arm_io_deadline(player, 0);
     player->running = false;
 }

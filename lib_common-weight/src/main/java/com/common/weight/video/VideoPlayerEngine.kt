@@ -28,6 +28,15 @@ interface VideoPlayerEngine {
 
     fun pause()
 
+    /**
+     * 带原因的暂停。引擎据此决定是否取消「因临时焦点丢失而续播」的标记：
+     * 用户暂停、进入后台、销毁等外部暂停都必须取消该标记，
+     * 否则后续 AUDIOFOCUS_GAIN 会绕过用户意图自动播放。
+     *
+     * 默认实现忽略原因，保持与只关心「暂停」语义的引擎兼容。
+     */
+    fun pause(reason: VideoPausedReason) = pause()
+
     fun seekTo(positionMs: Long)
 
     fun release()
@@ -54,9 +63,19 @@ interface VideoPlayerEngine {
         fun onPlaybackSpeedChanged(speed: Float, applied: Boolean) {}
 
         /**
-         * 引擎自身进入非播放状态（音频焦点丢失、内部暂停等），调用方并未主动调用 [pause]。
+         * 引擎自身进入非播放状态（音频焦点丢失、耳机拔出、内部暂停等），调用方并未主动调用 [pause]。
          * 依赖“正在播放”的临时状态（如长按临时倍速及其提示）必须据此幂等清理。
+         *
+         * @param reason 暂停原因。UI 据此决定是否清除用户播放意图：
+         * [VideoPausedReason.AUDIO_FOCUS_PERMANENT] 与 [VideoPausedReason.BECOMING_NOISY]
+         * 必须清除意图（要求用户重新点击播放），其余原因保留意图等待条件满足后恢复。
          */
-        fun onPlaybackSuspended() {}
+        fun onPlaybackSuspended(reason: VideoPausedReason) {}
+
+        /**
+         * 引擎自身恢复播放（临时焦点重新获得等），调用方并未主动调用 [play]。
+         * UI 据此把状态与播放按钮同步回播放中，避免停留在假暂停。
+         */
+        fun onPlaybackResumed() {}
     }
 }

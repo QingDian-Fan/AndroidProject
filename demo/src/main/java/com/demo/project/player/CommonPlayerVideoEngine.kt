@@ -15,6 +15,9 @@ import android.view.SurfaceView
 import com.common.player.FfmpegAudioPlayer
 import com.common.player.FfmpegVideoPlayer
 import com.common.player.PlayerListener
+import com.common.weight.video.VideoPausedReason
+import com.common.weight.video.allowsFocusGainResume
+import com.common.weight.video.clearsPlayIntent
 import com.common.weight.video.VideoPlaybackException
 import com.common.weight.video.VideoPlayerEngine
 import com.common.weight.video.VideoPlayerErrorType
@@ -46,6 +49,12 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         /** 数据源打开失败 */
         private const val NATIVE_ERROR_OPEN_FAILED = -1101
 
+        /** 播放中读取失败：I/O 错误、连接重置、服务端断开、重连耗尽等 */
+        private const val NATIVE_ERROR_READ_FAILED = -1102
+
+        /** 读到无法继续解析的损坏数据 */
+        private const val NATIVE_ERROR_READ_INVALID_DATA = -1103
+
         /** AudioTrack 相关错误码区间（-1005 ~ -1001） */
         private const val NATIVE_ERROR_AUDIO_TRACK_FIRST = -1001
         private const val NATIVE_ERROR_AUDIO_TRACK_LAST = -1005
@@ -65,15 +74,19 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     private val audioFocusListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
         when (focusChange) {
             AudioManager.AUDIOFOCUS_LOSS -> {
+                // 永久丢失：清除续播标记与用户播放意图，后续 Gain / 前后台 / Surface 重建
+                // 都不得自动恢复，必须由用户重新点击播放
                 pausedByFocusLoss = false
-                pause()
+                playIntended = false
+                applyAudioDucking(false)
+                pause(VideoPausedReason.AUDIO_FOCUS_PERMANENT)
                 abandonAudioFocus()
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                // 只有本来正在播放才需要在恢复焦点后续播，用户主动暂停的状态必须保留
-                pausedByFocusLoss = isPlaying
-                pause()
+                // 只有丢失焦点前用户确实期望播放，才允许在重新获得焦点后续播
+                pausedByFocusLoss = playIntended && isPlaying
+                pause(VideoPausedReason.AUDIO_FOCUS_TRANSIENT)
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
@@ -82,13 +95,26 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
 
             AudioManager.AUDIOFOCUS_GAIN -> {
                 applyAudioDucking(false)
-                if (pausedByFocusLoss) {
+                // 只有「确因临时焦点丢失而暂停」且用户意图仍然有效时才自动续播；
+                // 期间发生的用户暂停、切后台、错误、结束都会把标记清掉
+                if (pausedByFocusLoss && playIntended && canResumeFromFocusGain()) {
                     pausedByFocusLoss = false
                     play()
+                    postToMain {
+                        if (!released) listener?.onPlaybackResumed()
+                    }
+                } else {
+                    pausedByFocusLoss = false
                 }
             }
         }
     }
+
+    /**
+     * 焦点恢复的前置条件：播放器未释放、未结束、未处于错误停止状态，
+     * 且 Surface 可用或引擎可以安全等待 Surface（[play] 会记录 pendingPlay）。
+     */
+    private fun canResumeFromFocusGain(): Boolean = !released && !ended && started
 
     private val audioFocusRequest: AudioFocusRequest? =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -108,6 +134,13 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     /** 是否因临时失去音频焦点而暂停：重新获得焦点后据此决定是否续播 */
     @Volatile
     private var pausedByFocusLoss = false
+
+    /**
+     * 用户播放意图。独立于瞬时播放状态：准备中、缓冲中、等待 Surface 时 [isPlaying] 为 false，
+     * 但意图仍为 true。只有用户暂停、切后台、永久焦点丢失、播放结束、致命错误与释放才会清除。
+     */
+    @Volatile
+    private var playIntended = false
 
     /** 是否已持有音频焦点，避免重复申请与重复放弃 */
     @Volatile
@@ -198,8 +231,10 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             postToMain {
                 if (released) return@postToMain
                 started = true
-                paused = false
                 ended = false
+                // 准备是异步的：回调到达时页面可能已切后台、被用户暂停或丢失音频焦点。
+                // 这里**不得**把 paused 置为 false，否则会把上述暂停状态覆盖掉，
+                // 导致后台出声或用户暂停被自动取消。暂停的解除只能由 play() 触发。
                 listener?.onReady()
             }
         }
@@ -343,6 +378,10 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     override fun setDataSource(urlString: String) {
         dataSource = urlString
         pendingPlay = false
+        // 换源属于外部暂停场景：必须取消焦点续播标记与旧的播放意图，
+        // 否则旧任务的焦点 Gain 会让新数据源意外自动播放
+        playIntended = false
+        pausedByFocusLoss = false
         started = false
         paused = false
         ended = false
@@ -391,6 +430,8 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     }
 
     override fun play() {
+        // 意图先于引擎状态记录：等待 Surface、准备中、缓冲中都不会改变它
+        playIntended = true
         pendingPlay = true
         if (!surfaceReady) {
             return
@@ -435,17 +476,29 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         startClock()
     }
 
-    override fun pause() {
+    override fun pause() = pause(VideoPausedReason.USER)
+
+    override fun pause(reason: VideoPausedReason) {
         pendingPlay = false
+        // 除临时焦点丢失外的任何暂停都必须取消「焦点恢复后续播」，
+        // 否则后续 AUDIOFOCUS_GAIN 会绕过用户意图自动播放
+        if (!reason.allowsFocusGainResume()) {
+            pausedByFocusLoss = false
+        }
+        // 用户暂停、永久焦点丢失、耳机拔出都视为「取消播放意图」，需要用户重新点击播放；
+        // 切后台与 Surface 不可用保留意图，等条件满足后恢复
+        if (reason.clearsPlayIntent()) {
+            playIntended = false
+        }
         if (!started || ended) {
             return
         }
         paused = true
         // 音频焦点丢失等场景由引擎内部直接调用 pause()，UI 侧收不到任何事件，
-        // 这里统一上报，保证长按临时倍速等依赖播放状态的临时状态被清理
+        // 这里统一上报并带上原因，保证 UI 状态、播放按钮与临时倍速一致
         postToMain {
             if (!released) {
-                listener?.onPlaybackSuspended()
+                listener?.onPlaybackSuspended(reason)
             }
         }
         postPlayerAction {
@@ -483,6 +536,9 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     override fun release() {
         released = true
         pendingPlay = false
+        // 释放后不再接受任何恢复、焦点或延迟回调
+        playIntended = false
+        pausedByFocusLoss = false
         started = false
         paused = false
         ended = false
@@ -655,6 +711,9 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             }
         }
         completionNotified = true
+        // 播放完成：清除意图与焦点续播标记，避免焦点 Gain 或返回前台重新播放
+        playIntended = false
+        pausedByFocusLoss = false
         clockRunning = false
         playerHandler.removeCallbacks(clockRunnable)
         if (cachedDuration > 0L) {
@@ -791,6 +850,10 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             NATIVE_ERROR_IO_ABORTED -> VideoPlayerErrorType.NETWORK
             // 数据源打开失败（地址无效、无权限、格式无法解析）
             NATIVE_ERROR_OPEN_FAILED -> VideoPlayerErrorType.DATA_SOURCE
+            // 播放中读取失败：连接重置、服务端断开、协议错误、重连耗尽
+            NATIVE_ERROR_READ_FAILED -> VideoPlayerErrorType.NETWORK
+            // 读到损坏数据无法继续解析
+            NATIVE_ERROR_READ_INVALID_DATA -> VideoPlayerErrorType.DECODER
             // AudioTrack 创建/启动/切速/写入失败（-1001 ~ -1005）
             in NATIVE_ERROR_AUDIO_TRACK_LAST..NATIVE_ERROR_AUDIO_TRACK_FIRST ->
                 VideoPlayerErrorType.AUDIO_OUTPUT
@@ -803,6 +866,9 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     private fun postPlayerError(error: Throwable) {
         com.common.utils.LogUtil.e(TAG, "player error", error)
         pendingPlay = false
+        // 致命错误：清除意图与焦点续播标记，等待用户点击重试，不得自动恢复
+        playIntended = false
+        pausedByFocusLoss = false
         started = false
         paused = false
         ended = false

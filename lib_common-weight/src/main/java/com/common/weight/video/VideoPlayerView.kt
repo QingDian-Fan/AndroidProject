@@ -653,13 +653,18 @@ class VideoPlayerView @JvmOverloads constructor(
         VideoPlayerErrorType.UNKNOWN -> R.string.video_error_unknown
     }
 
-    fun pause() {
+    @JvmOverloads
+    fun pause(reason: VideoPausedReason = VideoPausedReason.USER) {
         // 暂停属于临时倍速的结束场景，必须先恢复常驻倍速
         endTemporarySpeed()
-        desiredPlaying = false
+        // 只有用户主动暂停（及永久焦点丢失、耳机拔出）才清除播放意图；
+        // 页面切后台保留意图，由宿主在返回前台时按原意图恢复（缓冲/等待 Surface 期间同样成立）
+        if (reason.clearsPlayIntent()) {
+            desiredPlaying = false
+        }
         // 必须无条件下发：缓冲中、等待 Surface 时 isPlaying 为 false，
         // 但引擎内部仍保留待播放请求，只有 pause() 能取消它
-        playerEngine?.pause()
+        playerEngine?.pause(reason)
         viewControl.pause()
         if (playerState == VideoPlayerState.READY) {
             setState(VideoPlayerState.PAUSED)
@@ -717,9 +722,39 @@ class VideoPlayerView @JvmOverloads constructor(
             setState(VideoPlayerState.BUFFERING)
         }
 
-        override fun onPlaybackSuspended() {
-            // 引擎内部暂停（音频焦点丢失等），UI 未主动发起，同样按结束场景处理
+        override fun onPlaybackSuspended(reason: VideoPausedReason) {
+            // 引擎内部暂停（音频焦点丢失、耳机拔出等），UI 未主动发起，同样按结束场景处理
             endTemporarySpeed()
+            if (playerState.isTerminal()) {
+                // 更高优先级状态不得被延迟到达的暂停回调拉回暂停/播放态
+                return
+            }
+            // 永久焦点丢失与耳机拔出必须由用户重新点击播放，这里同步清除播放意图
+            if (reason.clearsPlayIntent()) {
+                desiredPlaying = false
+            }
+            // INTERNAL（缓冲等）不改变用户意图，也不把 UI 拉成暂停态
+            if (reason == VideoPausedReason.INTERNAL) {
+                return
+            }
+            // 其余原因（焦点丢失、Surface、生命周期）UI 必须显示为暂停，
+            // 不能停留在 READY 假播放
+            viewControl.pause()
+            if (playerState == VideoPlayerState.READY) {
+                setState(VideoPlayerState.PAUSED)
+            }
+        }
+
+        override fun onPlaybackResumed() {
+            // 引擎因临时焦点恢复而自动续播：把 UI 与播放按钮同步回播放中
+            if (playerState.isTerminal()) {
+                return
+            }
+            desiredPlaying = true
+            viewControl.play()
+            if (playerState == VideoPlayerState.PAUSED) {
+                setState(VideoPlayerState.READY)
+            }
         }
 
         override fun onReady() {

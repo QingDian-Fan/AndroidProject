@@ -14,6 +14,8 @@ import com.common.ui.BaseAppBindActivity
 import com.common.utils.LogUtil
 import com.common.utils.StatusBarUtil
 import com.common.utils.ToastUtil
+import com.common.weight.video.VideoPausedReason
+import com.common.weight.video.VideoPlayerState
 import com.common.weight.video.VideoScaleType
 import com.demo.project.R
 import com.demo.project.databinding.ActivityVideoPlayerBinding
@@ -247,20 +249,36 @@ class VideoPlayerActivity: BaseAppBindActivity<ActivityVideoPlayerBinding>() {
     override fun onPause() {
         super.onPause()
         // 必须在 pause() 之前采样，且必须取「用户期望的播放状态」而不是瞬时 isPlaying：
-        // 缓冲中或 Surface 尚未创建时 isPlaying 为 false，但用户仍期望继续播放。
+        // 准备中、缓冲中或 Surface 尚未创建时 isPlaying 为 false，但用户仍期望继续播放。
         // 用户主动点击暂停时该值为 false，返回前台必须保持暂停。
         shouldResumeOnForeground = binding.videoView.isPlayIntended()
-        binding.videoView.pause()
+        // 以生命周期原因暂停：播放意图由本页面保管，不能被当成用户主动暂停，
+        // 同时会取消引擎的焦点续播标记，避免后台收到 AUDIOFOCUS_GAIN 时出声
+        binding.videoView.pause(VideoPausedReason.LIFECYCLE)
     }
 
     override fun onResume() {
         super.onResume()
-        if (shouldResumeOnForeground &&
-            !binding.videoView.isPlaying() &&
-            binding.videoView.isPrepare()
-        ) {
-            binding.videoView.resume()
+        if (!shouldResumeOnForeground) {
+            return
         }
+        // ENDED / ERROR / RELEASED 属于更高优先级状态，放弃恢复并清除标记
+        when (binding.videoView.currentState()) {
+            VideoPlayerState.ENDED,
+            VideoPlayerState.ERROR,
+            VideoPlayerState.RELEASED,
+            -> {
+                shouldResumeOnForeground = false
+                return
+            }
+
+            else -> Unit
+        }
+        // 不再要求 isPrepare()/isPlaying()：仍在准备、缓冲或等待 Surface 时
+        // resume() 会把播放意图重新交给引擎（引擎以 pendingPlay 记录并在条件满足后自动起播），
+        // 之前的实现会在这里直接跳过并清空标记，导致恢复意图永久丢失。
+        binding.videoView.resume()
+        // 意图已由播放器接管（desiredPlaying / pendingPlay），页面级标记可以清除
         shouldResumeOnForeground = false
     }
 

@@ -2,6 +2,7 @@ package com.common.weight.video
 
 import android.content.Context
 import android.view.SurfaceView
+import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -12,7 +13,21 @@ import androidx.media3.exoplayer.ExoPlayer
 
 class ExoVideoPlayerEngine(context: Context) : VideoPlayerEngine {
 
-    private val player: ExoPlayer = ExoPlayer.Builder(context).build()
+    /**
+     * 显式声明媒体音频属性并交由 ExoPlayer 处理音频焦点：
+     * 不能依赖 Builder 默认值（默认不处理焦点，会与其他应用同时发声）。
+     * 同时开启 becoming-noisy 处理：耳机拔出 / 蓝牙断开时自动暂停，避免突然外放。
+     */
+    private val player: ExoPlayer = ExoPlayer.Builder(context)
+        .setAudioAttributes(
+            AudioAttributes.Builder()
+                .setUsage(C.USAGE_MEDIA)
+                .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                .build(),
+            /* handleAudioFocus = */ true
+        )
+        .setHandleAudioBecomingNoisy(true)
+        .build()
 
     private var listener: VideoPlayerEngine.Listener? = null
 
@@ -25,11 +40,32 @@ class ExoVideoPlayerEngine(context: Context) : VideoPlayerEngine {
             }
         }
 
+        /**
+         * 区分「谁让播放停下来」。ExoPlayer 在焦点丢失与 becoming-noisy 时会把
+         * playWhenReady 置为 false 并带上原因，上层据此决定是否清除用户播放意图；
+         * 缓冲导致的停止不会走到这里（缓冲时 playWhenReady 仍为 true）。
+         */
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            if (playWhenReady) {
+                return
+            }
+            val pausedReason = when (reason) {
+                Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS ->
+                    VideoPausedReason.AUDIO_FOCUS_PERMANENT
+
+                Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_BECOMING_NOISY ->
+                    VideoPausedReason.BECOMING_NOISY
+
+                else -> return // 用户或调用方主动暂停，上层已知晓，无需重复上报
+            }
+            listener?.onPlaybackSuspended(pausedReason)
+        }
+
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            // 重新缓冲、内部停止等都会让播放停下来，统一上报，
-            // 便于上层清理依赖“正在播放”的临时状态（长按临时倍速等）
+            // 缓冲同样会让 isPlaying 变 false，这里只用于清理依赖“正在播放”的临时状态
+            // （长按临时倍速及其提示），不携带会清除用户意图的原因。
             if (!isPlaying) {
-                listener?.onPlaybackSuspended()
+                listener?.onPlaybackSuspended(VideoPausedReason.INTERNAL)
             }
         }
 
