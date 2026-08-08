@@ -102,6 +102,55 @@ public final class FfmpegVideoPlayer {
         return nativeHandle != 0 && nativeIsSeeking(nativeHandle);
     }
 
+    /**
+     * 视频解码器是否已排空。demux 读到 EOF 不代表解码器排空：
+     * B 帧会缓存在解码器内部，必须送空包并取到 EOF 才算真正播完。
+     *
+     * 这是「视频侧是否播完」的唯一权威来源。
+     */
+    public boolean isDecoderDrained() {
+        return nativeHandle != 0 && nativeIsDecoderDrained(nativeHandle);
+    }
+
+    /** Debug 帧调度统计快照，native 未就绪时返回 null */
+    public FrameStats getFrameStats() {
+        if (nativeHandle == 0) {
+            return null;
+        }
+        long[] values = nativeGetFrameStats(nativeHandle);
+        if (values == null || values.length < 5) {
+            return null;
+        }
+        return new FrameStats(values[0], values[1], values[2], values[3], values[4]);
+    }
+
+    /** 帧调度统计：用于区分设备性能不足、屏幕刷新限制与调度异常 */
+    public static final class FrameStats {
+        public final long decodedFrames;
+        public final long renderedFrames;
+        public final long droppedFrames;
+        public final long maxConsecutiveDrops;
+        public final long sendPacketEagain;
+
+        FrameStats(long decodedFrames, long renderedFrames, long droppedFrames,
+                   long maxConsecutiveDrops, long sendPacketEagain) {
+            this.decodedFrames = decodedFrames;
+            this.renderedFrames = renderedFrames;
+            this.droppedFrames = droppedFrames;
+            this.maxConsecutiveDrops = maxConsecutiveDrops;
+            this.sendPacketEagain = sendPacketEagain;
+        }
+
+        @Override
+        public String toString() {
+            return "decoded=" + decodedFrames
+                    + " rendered=" + renderedFrames
+                    + " dropped=" + droppedFrames
+                    + " maxConsecutiveDrops=" + maxConsecutiveDrops
+                    + " sendEagain=" + sendPacketEagain;
+        }
+    }
+
     public void switchQuality(String pathOrUrl) {
         long positionMs = getCurrentPosition();
         stop();
@@ -210,6 +259,10 @@ public final class FfmpegVideoPlayer {
     private static native void nativeSetMasterClock(long handle, long positionMs);
 
     private static native boolean nativeIsSeeking(long handle);
+
+    private static native boolean nativeIsDecoderDrained(long handle);
+
+    private static native long[] nativeGetFrameStats(long handle);
 
     private static native void nativeStop(long handle);
 

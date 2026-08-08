@@ -15,6 +15,7 @@ import android.view.SurfaceView
 import com.common.player.FfmpegAudioPlayer
 import com.common.player.FfmpegVideoPlayer
 import com.common.player.PlayerListener
+import com.demo.project.BuildConfig
 import com.common.weight.video.VideoPausedReason
 import com.common.weight.video.allowsFocusGainResume
 import com.common.weight.video.clearsPlayIntent
@@ -33,8 +34,8 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         /** 定位保护超时：超过该时长仍未收到解码器落点，则回到真实时钟 */
         private const val SEEK_TIMEOUT_MS = 5000L
 
-        /** 音频输出停滞多久后判定异常，用于播放结束的兜底（正常推进的音频不受此限制） */
-        private const val AUDIO_DRAIN_STALL_TIMEOUT_MS = 3000L
+        /** Debug 统计输出间隔，避免高频日志 */
+        private const val STATS_LOG_INTERVAL_MS = 1000L
 
         /** 短暂失去音频焦点且允许降低音量时使用的输出音量比例 */
         private const val DUCK_VOLUME = 0.2f
@@ -173,20 +174,17 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
     @Volatile
     private var cachedPosition = 0L
 
-    /** 视频解码线程是否已结束 */
-    @Volatile
-    private var videoDecodeFinished = false
+    /**
+     * 唯一逻辑媒体时钟、公开进度与完成聚合的权威来源。
+     * 只在播放线程（clockRunnable / postPlayerAction）上访问。
+     *
+     * 进度单调性、音频结束后的自由推进、完成条件与完成幂等全部由它负责，
+     * Engine 不再保留 videoDecodeFinished / audioDrain* / completionNotified 等重复状态。
+     */
+    private val playbackClock = PlaybackClock()
 
-    /** 音频排空检测：最近一次观察到的输出位置及其时间戳 */
-    @Volatile
-    private var audioDrainPositionMs = -1L
-
-    @Volatile
-    private var audioDrainProgressUptimeMs = 0L
-
-    /** 播放结束是否已上报，避免主时钟轮询重复触发 */
-    @Volatile
-    private var completionNotified = false
+    /** 上一次输出 Debug 统计的时刻，仅播放线程访问 */
+    private var lastStatsLogUptimeMs = 0L
 
     /**
      * 是否已上报致命错误。音视频两条线程可能先后失败，也可能一路失败、另一路随后读到 EOF，
@@ -250,11 +248,10 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         }
 
         override fun onCompletion() {
-            // 视频解码结束不代表播放结束，还需等待音频输出播完，避免残留声音
-            audioDrainPositionMs = -1L
-            audioDrainProgressUptimeMs = SystemClock.uptimeMillis()
-            videoDecodeFinished = true
-            postPlayerAction { finishPlaybackIfDrained() }
+            // 视频解码线程结束只是一个事件，是否真的播完由 PlaybackClock 依据
+            // 各层排空快照统一聚合（native 的 isDecoderDrained 才是权威来源）。
+            // 这里只唤醒一次时钟采样，避免等到下一个采样周期。
+            postPlayerAction { updateClock() }
         }
 
         override fun onProgress(positionMs: Long, durationMs: Long) {
@@ -290,7 +287,8 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         }
 
         override fun onCompletion() {
-            postPlayerAction { finishPlaybackIfDrained() }
+            // 同上：音频解码线程结束不代表 AudioTrack 已经播完，交给统一聚合判断
+            postPlayerAction { updateClock() }
         }
 
         override fun onAudioUnavailable() {
@@ -475,14 +473,16 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         started = true
         paused = false
         ended = false
-        resetPlaybackState()
         val resumeAt = pendingSeekMs
         pendingSeekMs = -1L
+        // 新一轮会话从 resumeAt 开始计时，时钟不得沿用上一轮的进度与完成标记
+        resetPlaybackState(resumeAt.coerceAtLeast(0L))
         if (resumeAt > 0L) {
             // 重启后解码器需要重新定位，这段时间内对外保持目标位置
             cachedPosition = resumeAt
             seekTargetMs = resumeAt
             seekStartUptimeMs = SystemClock.uptimeMillis()
+            playbackClock.beginSeek(resumeAt)
         }
         postPlayerAction {
             if (needsStopBeforeRestart) {
@@ -553,6 +553,9 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
             pendingSeekMs = target
         }
         postPlayerAction {
+            // 用户主动 seek 是唯一允许进度跳变的场景：告知时钟重建锚点，
+            // 并丢弃旧位置的采样（旧 packet / PCM / 视频帧由 native 按 seek 序号丢弃）
+            playbackClock.beginSeek(target)
             videoPlayer?.seekTo(target)
             audioPlayer?.seekTo(target)
         }
@@ -609,15 +612,13 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         }
     }
 
-    private fun resetPlaybackState() {
-        videoDecodeFinished = false
-        completionNotified = false
+    private fun resetPlaybackState(startPositionMs: Long = 0L) {
         // 重试 / 换源属于全新一轮播放，允许重新上报错误
         errorNotified = false
         audioAvailable = true
         seekTargetMs = -1L
-        audioDrainPositionMs = -1L
-        audioDrainProgressUptimeMs = 0L
+        // 新一轮会话：时钟锚点、进度单调性与完成标记一并复位
+        playbackClock.reset(startPositionMs)
     }
 
     private fun startClock() {
@@ -644,110 +645,151 @@ class CommonPlayerVideoEngine(context: Context) : VideoPlayerEngine {
         }
         val video = videoPlayer ?: return
         val audio = audioPlayer
-        val hasAudioOutput = audio != null && audioAvailable && audio.isOutputActive
 
-        if (cachedDuration <= 0L) {
+        if (playbackClock.durationMs <= 0L) {
             val duration = runCatching { video.duration }.getOrDefault(0L)
+            playbackClock.setDuration(duration)
             if (duration > 0L) {
                 cachedDuration = duration
             }
         }
-        val duration = cachedDuration
 
-        val target = seekTargetMs
-        if (target >= 0L) {
-            val seeking = runCatching { video.isSeeking }.getOrDefault(false) ||
-                    (hasAudioOutput && runCatching { audio!!.isSeeking }.getOrDefault(false))
+        // seek 落点确认：解码器不再 seeking，或保护超时
+        if (playbackClock.isSeeking) {
+            val stillSeeking = runCatching { video.isSeeking }.getOrDefault(false) ||
+                    (audio != null && audioAvailable &&
+                            runCatching { audio.isSeeking }.getOrDefault(false))
             val expired = SystemClock.uptimeMillis() - seekStartUptimeMs > SEEK_TIMEOUT_MS
-            if (seeking && !expired) {
-                cachedPosition = clampPosition(target, duration)
-                runCatching { video.setMasterClock(cachedPosition) }
-                return
+            if (!stillSeeking || expired) {
+                playbackClock.endSeek()
+                seekTargetMs = -1L
             }
-            seekTargetMs = -1L
         }
 
-        // 音频播完后其输出位置不再推进，必须撤下主时钟，
-        // 否则音轨短于视轨时视频会一直等待一个静止的主时钟
-        val audioClockUsable = hasAudioOutput &&
-                !runCatching { audio!!.isPlaybackFinished }.getOrDefault(true)
-
-        val position = if (audioClockUsable) {
-            runCatching { audio!!.currentPosition }.getOrDefault(cachedPosition)
+        val hasAudioOutput = audio != null && audioAvailable && audio.isOutputActive
+        // 音频时钟必须来自 AudioTrack **实际播放头**，不能用解码进度或写入进度冒充
+        val audioOutputPosition = if (hasAudioOutput) {
+            runCatching { audio!!.outputPositionMs }.getOrDefault(-1L)
         } else {
-            runCatching { video.currentPosition }.getOrDefault(cachedPosition)
+            -1L
         }
-        val next = clampPosition(position, duration)
-        // 视频已解码完但音频更长时，时钟从音频切回视频 PTS 会导致进度倒退，尾段保持单调
-        cachedPosition = if (videoDecodeFinished) maxOf(next, cachedPosition) else next
-        if (audioClockUsable) {
-            runCatching { video.setMasterClock(cachedPosition) }
-        } else if (hasAudioOutput) {
+        val videoPosition = runCatching { video.currentPosition }.getOrDefault(-1L)
+        val hasAudio = audioAvailable && audio != null
+
+        val drain = DrainSnapshot(
+            videoDecoderDrained = runCatching { video.isDecoderDrained }.getOrDefault(false),
+            hasAudio = hasAudio,
+            audioDecoderDrained = !hasAudio ||
+                    runCatching { audio!!.isDecoderDrained }.getOrDefault(false),
+            audioOutputDrained = !hasAudio ||
+                    runCatching { audio!!.isOutputDrained }.getOrDefault(true),
+        )
+
+        val output = playbackClock.update(
+            ClockInput(
+                audioOutputPositionMs = audioOutputPosition,
+                videoPositionMs = videoPosition,
+                speed = playbackSpeed,
+                wallClockMs = SystemClock.uptimeMillis(),
+                drain = drain,
+                // 已上报致命错误时禁止判定完成
+                terminated = errorNotified,
+            )
+        )
+        cachedPosition = output.positionMs
+        if (output.masterClockMs >= 0L) {
+            runCatching { video.setMasterClock(output.masterClockMs) }
+        } else {
+            // 仅无音轨媒体会走到这里：视频使用自身 PTS 时钟
             runCatching { video.clearMasterClock() }
         }
-        finishPlaybackIfDrained()
-    }
-
-    private fun clampPosition(position: Long, duration: Long): Long {
-        val safePosition = position.coerceAtLeast(0L)
-        return if (duration > 0L) safePosition.coerceAtMost(duration) else safePosition
+        if (output.shouldComplete) {
+            finishPlayback()
+        }
+        logPlaybackStats(video, audio, output, audioOutputPosition, videoPosition, drain)
     }
 
     /**
-     * 判断音频输出是否已停滞。只有确认输出长时间没有任何推进（设备异常、写入失败等）
-     * 才允许超时兜底结束播放，正常推进的音频必须等到实际播完。
+     * Debug 受控统计。Release 不输出（[BuildConfig.isDebug] 为 false 时直接返回），
+     * 且只输出播放器内部指标，不包含媒体地址与鉴权参数。
      */
-    private fun isAudioOutputStalled(audio: FfmpegAudioPlayer?): Boolean {
-        if (audio == null) {
-            return true
-        }
-        val position = runCatching { audio.outputPositionMs }.getOrDefault(-1L)
-        val now = SystemClock.uptimeMillis()
-        if (position < 0L) {
-            // 输出位置不可读，无法确认是否推进，沿用上一次的停滞计时
-            if (audioDrainProgressUptimeMs <= 0L) {
-                audioDrainProgressUptimeMs = now
-            }
-        } else if (position > audioDrainPositionMs) {
-            audioDrainPositionMs = position
-            audioDrainProgressUptimeMs = now
-        } else if (audioDrainProgressUptimeMs <= 0L) {
-            audioDrainProgressUptimeMs = now
-        }
-        return now - audioDrainProgressUptimeMs > AUDIO_DRAIN_STALL_TIMEOUT_MS
-    }
-
-    /** 视频解码结束且音频已播完时才判定播放完成 */
-    private fun finishPlaybackIfDrained() {
-        // errorNotified：一路已上报致命错误时，另一路随后到达的「解码结束」
-        // 不得再上报播放完成，否则错误面板与重试入口会被 ENDED 覆盖
-        if (released || completionNotified || errorNotified || !videoDecodeFinished) {
+    private fun logPlaybackStats(
+        video: FfmpegVideoPlayer,
+        audio: FfmpegAudioPlayer?,
+        output: ClockOutput,
+        audioOutputPosition: Long,
+        videoPosition: Long,
+        drain: DrainSnapshot,
+    ) {
+        if (!BuildConfig.isDebug) {
             return
         }
-        val audio = audioPlayer
-        val audioDrained = audio == null || !audioAvailable || !audio.isOutputActive ||
-                runCatching { audio.isPlaybackFinished }.getOrDefault(true)
-        if (!audioDrained) {
-            if (paused || !surfaceReady) {
-                // 预期内的暂停（用户暂停、页面 onPause、音频焦点丢失、Surface 等待重建）
-                // 不是输出停滞。重置计时，恢复播放后重新开始判定，避免截断尾音。
-                audioDrainProgressUptimeMs = SystemClock.uptimeMillis()
-                return
-            }
-            if (!isAudioOutputStalled(audio)) {
-                // 音频输出仍在推进（音轨可能长于视频轨），等待其真正播完，不截断尾音
-                return
-            }
+        val now = SystemClock.uptimeMillis()
+        if (now - lastStatsLogUptimeMs < STATS_LOG_INTERVAL_MS) {
+            return
         }
-        completionNotified = true
+        lastStatsLogUptimeMs = now
+
+        // 音视频时钟差必须基于「实际展示帧 PTS」与「AudioTrack 实际输出位置」，
+        // 而不是两个解码线程的进度
+        val syncDiff = if (audioOutputPosition >= 0L && videoPosition >= 0L) {
+            videoPosition - audioOutputPosition
+        } else {
+            Long.MIN_VALUE
+        }
+        val stats = runCatching { video.frameStats }.getOrNull()
+        val diagnosis = stats?.let {
+            FrameDropAnalyzer.analyze(
+                decodedFrames = it.decodedFrames,
+                renderedFrames = it.renderedFrames,
+                maxConsecutiveDrops = it.maxConsecutiveDrops,
+                // 屏幕展示能力按 60Hz 估算本次采样窗口的上限
+                displayCapacityFrames = it.renderedFrames,
+            )
+        }
+        val builder = StringBuilder(256)
+            .append("speed req=").append(playbackSpeed)
+            .append(" applied=").append(appliedSpeed)
+            .append(" | master=").append(output.masterClockMs)
+            .append(" public=").append(output.positionMs)
+            .append(" videoPts=").append(videoPosition)
+            .append(" audioOut=").append(audioOutputPosition)
+        if (syncDiff != Long.MIN_VALUE) {
+            builder.append(" syncDiff=").append(syncDiff).append("ms")
+        }
+        if (audio != null) {
+            builder.append(" | written=").append(runCatching { audio.writtenFrames }.getOrDefault(-1L))
+                .append(" played=").append(runCatching { audio.playedFrames }.getOrDefault(-1L))
+        }
+        builder.append(" | drain v=").append(drain.videoDecoderDrained)
+            .append(" aDec=").append(drain.audioDecoderDrained)
+            .append(" aOut=").append(drain.audioOutputDrained)
+        if (stats != null) {
+            builder.append(" | ").append(stats)
+        }
+        if (diagnosis != null) {
+            builder.append(" verdict=").append(diagnosis.verdict)
+        }
+        builder.append(" | seeking=").append(playbackClock.isSeeking)
+            .append(" completed=").append(playbackClock.completed)
+        com.common.utils.LogUtil.d(TAG, builder.toString())
+    }
+
+    /**
+     * 上报播放完成。完成条件由 [PlaybackClock] 统一聚合（视频解码器排空 +
+     * 音频解码器/SWR 排空 + AudioTrack 播完，或媒体无音轨），
+     * [PlaybackClock.markCompleted] 保证同一会话只执行一次。
+     */
+    private fun finishPlayback() {
+        if (released || !playbackClock.markCompleted()) {
+            return
+        }
         // 播放完成：清除意图与焦点续播标记，避免焦点 Gain 或返回前台重新播放
         playIntended = false
         pausedByFocusLoss = false
         clockRunning = false
         playerHandler.removeCallbacks(clockRunnable)
-        if (cachedDuration > 0L) {
-            cachedPosition = cachedDuration
-        }
+        cachedPosition = playbackClock.positionMs
         seekTargetMs = -1L
         pendingSeekMs = -1L
         stopPlayers()

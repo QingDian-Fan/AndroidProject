@@ -37,8 +37,18 @@ static const int64_t SYNC_RESET_THRESHOLD_MS = 2000;
 static const int64_t MASTER_CLOCK_TIMEOUT_US = 1000000;
 /** 同步等待的分片时长，保证能及时响应暂停、seek 与倍速切换 */
 static const int64_t SYNC_SLEEP_SLICE_US = 20000;
-/** 连续丢帧上限，避免长时间不刷新画面 */
-static const int MAX_CONTINUOUS_DROP_FRAMES = 15;
+/**
+ * 两次真实展示之间的最小间隔：约等于 60Hz 屏幕的刷新能力上限。
+ * 高倍速下媒体帧率会超过屏幕刷新能力（例如 30fps 素材 3.0x 对应每秒 90 帧），
+ * 此时按该间隔均匀选帧，而不是把多余的帧攒到一起成组丢弃。
+ */
+static const int64_t MIN_DISPLAY_INTERVAL_US = 16000;
+
+/**
+ * 允许的最大画面停滞时间。落后主时钟时会持续跳过已过期的帧，
+ * 但超过该间隔仍未展示任何画面时必须强制展示当前帧，避免出现周期性冻结。
+ */
+static const int64_t MAX_DISPLAY_GAP_US = 100000;
 /** 暂停状态下 seek 时，为对齐目标位置最多丢弃的帧数 */
 static const int MAX_SEEK_SKIP_FRAMES = 600;
 
@@ -300,11 +310,33 @@ struct VideoPlayer : BasePlayer {
     int64_t video_clock_pts_ms = 0;
     int64_t video_clock_time_us = 0;
 
+    /** 最近一次真实展示画面的时刻，用于均匀选帧与冻结保护，仅解码线程访问 */
+    int64_t last_display_time_us = 0;
+
+    /**
+     * 视频解码器是否已排空（送空包后取到 AVERROR_EOF）。
+     * 这是「视频侧是否真正播完」的唯一权威来源，demux EOF 不等于解码器排空。
+     */
+    std::atomic_bool video_decoder_drained{false};
+
+    // ---- Debug 统计（仅由解码线程写入，JNI 读取快照） ----
+    /** 已解码帧数 */
+    std::atomic<int64_t> stat_decoded_frames{0};
+    /** 已真实展示帧数 */
+    std::atomic<int64_t> stat_rendered_frames{0};
+    /** 主动丢弃（过期或过密）的帧数 */
+    std::atomic<int64_t> stat_dropped_frames{0};
+    /** 最大连续丢帧数 */
+    std::atomic<int64_t> stat_max_consecutive_drops{0};
+    /** avcodec_send_packet 返回 EAGAIN 的次数 */
+    std::atomic<int64_t> stat_send_eagain{0};
+
     void onStopped() override {
         master_clock_time_us = 0;
         master_clock_ms = 0;
         video_clock_time_us = 0;
         video_clock_pts_ms = 0;
+        last_display_time_us = 0;
         clock_rebase_requested = true;
     }
 
@@ -332,6 +364,15 @@ struct AudioPlayer : BasePlayer {
     jmethodID on_audio_data = nullptr;
     jmethodID on_audio_flush = nullptr;
     jmethodID on_audio_unavailable = nullptr;
+
+    /**
+     * 音频解码器是否已排空（送空包后取到 AVERROR_EOF）。
+     * 与 [swr_drained] 分开表达：解码器排空不代表重采样缓存已经输出。
+     */
+    std::atomic_bool audio_decoder_drained{false};
+
+    /** SWR 中的延迟样本是否已全部输出 */
+    std::atomic_bool swr_drained{false};
 
     /** 解码器完成定位后通知上层丢弃 AudioTrack 中的旧数据并重建输出时钟 */
     void notifyAudioFlush(int64_t position_ms) {
@@ -646,13 +687,23 @@ static void rebase_video_clock(VideoPlayer *player, int64_t pts_ms) {
 }
 
 /**
- * 按帧 PTS 与主时钟对齐：需要等待时分片休眠，落后过多时返回 false 要求丢弃该帧。
- * 有音频轨时以音频输出进度为主时钟，否则退化为视频自身时钟（兼容变帧率）。
+ * 帧调度：决定当前帧是等待展示、立即展示还是丢弃。
+ *
+ * 综合以下数据：帧 PTS、当前实际生效倍速、统一媒体主时钟、屏幕刷新能力
+ * （[MIN_DISPLAY_INTERVAL_US]）与最近一次真实展示时间。
+ *
+ * 落后主时钟时**逐帧**跳过已过期的帧，直到遇到最接近主时钟的那一帧，
+ * 不再使用「最多连续丢 N 帧」的批量策略，避免「连丢一批、只显示一帧」的跳跃感；
+ * 同时用 [MAX_DISPLAY_GAP_US] 兜底，保证画面不会长时间冻结。
+ *
+ * @return true 表示应当展示（调用方才执行 RGBA 转换、旋转与 Surface 拷贝）
  */
-static bool sync_video_frame(VideoPlayer *player, int64_t pts_ms, int *continuous_drops) {
+static bool sync_video_frame(VideoPlayer *player, int64_t pts_ms) {
     if (player->clock_rebase_requested.exchange(false)) {
+        // 倍速切换、seek、暂停恢复、主时钟切换后重建锚点，
+        // 避免沿用旧差值导致瞬间大量丢帧
         rebase_video_clock(player, pts_ms);
-        *continuous_drops = 0;
+        player->last_display_time_us = 0;
         if (master_clock_now(player) < 0) {
             // 无主时钟：以当前帧重建视频时钟并立即显示
             return true;
@@ -681,14 +732,23 @@ static bool sync_video_frame(VideoPlayer *player, int64_t pts_ms, int *continuou
         }
 
         int64_t diff_ms = pts_ms - clock;
+        int64_t since_display_us =
+                player->last_display_time_us > 0 ? now_us - player->last_display_time_us : INT64_MAX;
+
         if (diff_ms < -SYNC_DROP_THRESHOLD_MS) {
-            if (*continuous_drops < MAX_CONTINUOUS_DROP_FRAMES) {
-                (*continuous_drops)++;
-                return false;
+            // 该帧已过期。正常情况下逐帧丢弃直到追上主时钟；
+            // 但画面停滞过久时必须强制展示，避免周期性冻结。
+            if (since_display_us >= MAX_DISPLAY_GAP_US) {
+                break;
             }
-            break;
+            return false;
         }
         if (diff_ms <= 0) {
+            // 已到展示时刻。倍速导致媒体帧率高于屏幕刷新能力时按最小展示间隔均匀选帧，
+            // 跳过的帧不会进入 RGBA 转换与内存拷贝。
+            if (since_display_us < MIN_DISPLAY_INTERVAL_US) {
+                return false;
+            }
             break;
         }
         // 帧超前时一律继续分片等待：变帧率视频的合法长帧间隔不能提前显示。
@@ -701,7 +761,6 @@ static bool sync_video_frame(VideoPlayer *player, int64_t pts_ms, int *continuou
         std::this_thread::sleep_for(std::chrono::microseconds(sleep_us));
     }
 
-    *continuous_drops = 0;
     return true;
 }
 
@@ -735,6 +794,14 @@ static void render_video_frame(VideoPlayer *player, const uint8_t *src_data, int
 static void run_video(VideoPlayer *player) {
     MediaContext media;
     player->io_timed_out = false;
+    // 新一轮播放：排空状态与调度统计必须复位，避免沿用上一次会话的结果
+    player->video_decoder_drained = false;
+    player->last_display_time_us = 0;
+    player->stat_decoded_frames = 0;
+    player->stat_rendered_frames = 0;
+    player->stat_dropped_frames = 0;
+    player->stat_max_consecutive_drops = 0;
+    player->stat_send_eagain = 0;
     int ret = open_media(player->source, AVMEDIA_TYPE_VIDEO, &media, player);
     if (ret < 0) {
         if (player->io_timed_out.load()) {
@@ -813,73 +880,44 @@ static void run_video(VideoPlayer *player) {
     player->notifyPrepared();
     player->notifyProgress(true);
 
-    int continuous_drops = 0;
     int64_t last_pts_ms = -1;
     // 最后一次 av_read_frame() 的返回值，退出循环后据此区分 EOF / 超时 / 读取失败
     int last_read_ret = 0;
     // 送包 / 取帧的致命错误码，非 0 时禁止按 EOF 上报播放完成
     int fatal_decode_ret = 0;
+    // 当前 packet 是否尚未被解码器接收（EAGAIN 背压）：为 true 时不得释放，需重新提交
+    bool packet_pending = false;
+    // 连续丢帧统计，仅用于 Debug 观测
+    int64_t consecutive_drops = 0;
     // 暂停期间发生 seek 时，解码到目标位置附近刷新一帧画面后重新挂起
     bool step_after_seek = false;
     int64_t step_target_ms = 0;
     int step_skipped = 0;
 
-    while (!player->stop_requested.load()) {
-        if (!step_after_seek) {
-            player->waitForResumeOrSeek();
-            if (player->stop_requested.load()) {
-                break;
-            }
-        }
-        bool paused_now = player->pause_requested.load();
-        if (consume_pending_seek(player, &media)) {
-            continuous_drops = 0;
-            last_pts_ms = -1;
-            if (paused_now) {
-                step_after_seek = true;
-                step_target_ms = player->current_position_ms.load();
-                step_skipped = 0;
-            }
-        } else if (paused_now && !step_after_seek) {
-            continue;
-        }
-
-        arm_io_deadline(player, IO_READ_TIMEOUT_US);
-        int read_ret = av_read_frame(media.format, packet);
-        arm_io_deadline(player, 0);
-        if (read_ret < 0) {
-            // 保存返回值：只有 AVERROR_EOF 才是正常结束，其余负值必须按错误上报
-            last_read_ret = read_ret;
-            break;
-        }
-        if (packet->stream_index != media.stream_index) {
-            av_packet_unref(packet);
-            continue;
-        }
-
-        ret = avcodec_send_packet(media.codec, packet);
-        av_packet_unref(packet);
-        if (ret == AVERROR(EAGAIN)) {
-            // 解码器缓冲已满属于正常背压，取完帧后会重新送包
-            continue;
-        }
-        if (ret < 0) {
-            // 送包失败不可恢复：记录后退出读取循环，禁止后续按 EOF 上报播放完成
-            fatal_decode_ret = ret;
-            break;
-        }
-
+    /**
+     * 取帧并按调度结果展示或丢弃。
+     * @param flushing true 表示正在排空解码器（已送空包），此时 EAGAIN 不会再出现，
+     *                 必须一直取到 AVERROR_EOF
+     * @return false 表示需要退出外层读取循环
+     */
+    auto drain_video_frames = [&](bool flushing) -> bool {
         while (!player->stop_requested.load()) {
-            ret = avcodec_receive_frame(media.codec, frame);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                break;
+            int recv = avcodec_receive_frame(media.codec, frame);
+            if (recv == AVERROR_EOF) {
+                player->video_decoder_drained = true;
+                return true;
             }
-            if (ret < 0) {
+            if (recv == AVERROR(EAGAIN)) {
+                // 排空阶段不应出现 EAGAIN；正常阶段表示需要继续送包
+                return true;
+            }
+            if (recv < 0) {
                 // 取帧失败不可恢复：不在此直接上报，统一交给 report_read_outcome 保证只报一次
-                fatal_decode_ret = ret;
-                break;
+                fatal_decode_ret = recv;
+                return false;
             }
 
+            player->stat_decoded_frames.fetch_add(1);
             int64_t pts_ms = frame_position_ms(frame, stream);
             if (pts_ms <= 0 && last_pts_ms >= 0) {
                 // 部分帧缺少 PTS，按估算帧间隔递推，保证时钟单调
@@ -893,18 +931,31 @@ static void run_video(VideoPlayer *player) {
                 if (!render) {
                     step_skipped++;
                 }
+            } else if (flushing) {
+                // 排空阶段仍按主时钟调度，保证尾部画面与音频保持同步
+                render = sync_video_frame(player, pts_ms);
             } else {
-                render = sync_video_frame(player, pts_ms, &continuous_drops);
+                render = sync_video_frame(player, pts_ms);
             }
 
             last_pts_ms = pts_ms;
             if (render) {
+                // 只有确定展示的帧才执行 RGBA 转换、旋转与 Surface 拷贝
                 sws_scale(sws, frame->data, frame->linesize, 0, height,
                           rgba_frame->data, rgba_frame->linesize);
                 player->current_position_ms = pts_ms;
                 player->notifyProgress();
                 render_video_frame(player, rgba_frame->data[0], rgba_frame->linesize[0],
                                    width, height, rotation);
+                player->last_display_time_us = av_gettime_relative();
+                player->stat_rendered_frames.fetch_add(1);
+                consecutive_drops = 0;
+            } else {
+                player->stat_dropped_frames.fetch_add(1);
+                consecutive_drops++;
+                if (consecutive_drops > player->stat_max_consecutive_drops.load()) {
+                    player->stat_max_consecutive_drops = consecutive_drops;
+                }
             }
             av_frame_unref(frame);
 
@@ -912,13 +963,94 @@ static void run_video(VideoPlayer *player) {
                 step_after_seek = false;
                 rebase_video_clock(player, pts_ms);
                 player->clock_rebase_requested = true;
+                return true;
+            }
+        }
+        return true;
+    };
+
+    while (!player->stop_requested.load()) {
+        if (!step_after_seek) {
+            player->waitForResumeOrSeek();
+            if (player->stop_requested.load()) {
                 break;
             }
+        }
+        bool paused_now = player->pause_requested.load();
+        if (consume_pending_seek(player, &media)) {
+            last_pts_ms = -1;
+            consecutive_drops = 0;
+            if (packet_pending) {
+                // seek 后旧代次的 packet 必须丢弃，不得再提交给解码器
+                av_packet_unref(packet);
+                packet_pending = false;
+            }
+            if (paused_now) {
+                step_after_seek = true;
+                step_target_ms = player->current_position_ms.load();
+                step_skipped = 0;
+            }
+        } else if (paused_now && !step_after_seek) {
+            continue;
+        }
+
+        // packet_pending 为 true 时跳过读取，直接重新提交上一轮被 EAGAIN 拒绝的同一个 packet
+        if (!packet_pending) {
+            arm_io_deadline(player, IO_READ_TIMEOUT_US);
+            int read_ret = av_read_frame(media.format, packet);
+            arm_io_deadline(player, 0);
+            if (read_ret < 0) {
+                // 保存返回值：只有 AVERROR_EOF 才是正常结束，其余负值必须按错误上报
+                last_read_ret = read_ret;
+                break;
+            }
+            if (packet->stream_index != media.stream_index) {
+                av_packet_unref(packet);
+                continue;
+            }
+        }
+
+        ret = avcodec_send_packet(media.codec, packet);
+        if (ret == AVERROR(EAGAIN)) {
+            // 解码器缓冲已满：**不得释放该 packet**，先取帧腾出空间，
+            // 下一轮循环用同一个 packet 重新提交，否则这段压缩数据会永久丢失
+            packet_pending = true;
+            player->stat_send_eagain.fetch_add(1);
+        } else if (ret < 0) {
+            // 送包失败不可恢复：记录后退出读取循环，禁止后续按 EOF 上报播放完成
+            av_packet_unref(packet);
+            packet_pending = false;
+            fatal_decode_ret = ret;
+            break;
+        } else {
+            // 解码器确认接收后才允许释放
+            av_packet_unref(packet);
+            packet_pending = false;
+        }
+
+        if (!drain_video_frames(false)) {
+            break;
         }
         if (fatal_decode_ret < 0) {
             // 内层取帧发生致命错误：退出读取循环，避免继续读到 EOF 后误报播放完成
             break;
         }
+    }
+
+    if (packet_pending) {
+        // 循环退出时仍未被接收的 packet 属于旧代次数据，安全丢弃
+        av_packet_unref(packet);
+        packet_pending = false;
+    }
+
+    // demux EOF 不等于解码器已排空：H.264/H.265 的 B 帧会缓存在解码器里。
+    // 必须送空包并持续取帧，直到解码器返回 AVERROR_EOF，否则尾部画面会丢失。
+    if (last_read_ret == AVERROR_EOF && fatal_decode_ret >= 0 &&
+        !player->stop_requested.load()) {
+        if (avcodec_send_packet(media.codec, nullptr) >= 0) {
+            drain_video_frames(true);
+        }
+        player->video_decoder_drained = true;
     }
 
     sws_freeContext(sws);
@@ -936,6 +1068,9 @@ static void run_video(VideoPlayer *player) {
 static void run_audio(AudioPlayer *player) {
     MediaContext media;
     player->io_timed_out = false;
+    // 新一轮播放：排空状态必须复位
+    player->audio_decoder_drained = false;
+    player->swr_drained = false;
     int ret = open_media(player->source, AVMEDIA_TYPE_AUDIO, &media, player);
     if (ret < 0) {
         if (ret == AVERROR_STREAM_NOT_FOUND || ret == AVERROR_DECODER_NOT_FOUND) {
@@ -1012,52 +1147,42 @@ static void run_audio(AudioPlayer *player) {
     int last_read_ret = 0;
     // 送包 / 取帧 / 重采样的致命错误码，非 0 时禁止按 EOF 上报播放完成
     int fatal_decode_ret = 0;
+    // 当前 packet 是否尚未被解码器接收（EAGAIN 背压）：为 true 时不得释放，需重新提交
+    bool packet_pending = false;
 
-    while (!player->stop_requested.load()) {
-        player->waitForResumeOrSeek();
-        if (player->stop_requested.load()) {
-            break;
+    /** 把一块重采样结果投递给 AudioTrack；返回 false 表示发生致命错误 */
+    auto push_resampled = [&](int converted, uint8_t *buffer, int64_t out_pts_ms) -> bool {
+        if (converted > 0) {
+            int bytes = converted * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+            player->notifyAudioData(buffer, bytes, out_pts_ms);
+            return true;
         }
-        consume_pending_seek(player, &media);
-        if (player->pause_requested.load()) {
-            // 仍处于暂停状态（seek 已消费），回到等待，避免向暂停的 AudioTrack 灌数据
-            continue;
+        if (converted < 0) {
+            fatal_decode_ret = converted;
+            return false;
         }
+        return true;
+    };
 
-        arm_io_deadline(player, IO_READ_TIMEOUT_US);
-        int read_ret = av_read_frame(media.format, packet);
-        arm_io_deadline(player, 0);
-        if (read_ret < 0) {
-            // 保存返回值：只有 AVERROR_EOF 才是正常结束，其余负值必须按错误上报
-            last_read_ret = read_ret;
-            break;
-        }
-        if (packet->stream_index != media.stream_index) {
-            av_packet_unref(packet);
-            continue;
-        }
-
-        ret = avcodec_send_packet(media.codec, packet);
-        av_packet_unref(packet);
-        if (ret == AVERROR(EAGAIN)) {
-            // 解码器缓冲已满属于正常背压，取完帧后会重新送包
-            continue;
-        }
-        if (ret < 0) {
-            // 送包失败不可恢复：记录后退出读取循环，禁止后续按 EOF 上报播放完成
-            fatal_decode_ret = ret;
-            break;
-        }
-
+    /**
+     * 取帧 → 重采样 → 投递。
+     * @param flushing 排空阶段（已送空包），必须一直取到 AVERROR_EOF
+     * @return false 表示需要退出外层读取循环
+     */
+    auto drain_audio_frames = [&](bool flushing) -> bool {
         while (!player->stop_requested.load()) {
-            ret = avcodec_receive_frame(media.codec, frame);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                break;
+            int recv = avcodec_receive_frame(media.codec, frame);
+            if (recv == AVERROR_EOF) {
+                player->audio_decoder_drained = true;
+                return true;
             }
-            if (ret < 0) {
+            if (recv == AVERROR(EAGAIN)) {
+                return true;
+            }
+            if (recv < 0) {
                 // 取帧失败不可恢复：统一交给 report_read_outcome 上报，保证只报一次
-                fatal_decode_ret = ret;
-                break;
+                fatal_decode_ret = recv;
+                return false;
             }
             int64_t frame_pts_ms =
                     frame_position_ms(frame, media.format->streams[media.stream_index]);
@@ -1077,37 +1202,118 @@ static void run_audio(AudioPlayer *player) {
                     media.codec->sample_rate,
                     AV_ROUND_UP);
             int buffer_size = av_samples_get_buffer_size(
-                    nullptr,
-                    out_channels,
-                    dst_samples,
-                    AV_SAMPLE_FMT_S16,
-                    1);
+                    nullptr, out_channels, dst_samples, AV_SAMPLE_FMT_S16, 1);
             if (buffer_size <= 0) {
-                // 输出缓冲尺寸非法，无法继续重采样：按解码失败终止，不再继续读到 EOF
+                // 输出缓冲尺寸非法，无法继续重采样：按解码失败终止
                 fatal_decode_ret = buffer_size < 0 ? buffer_size : AVERROR(EINVAL);
                 av_frame_unref(frame);
-                break;
+                return false;
             }
             std::vector<uint8_t> buffer(buffer_size);
             uint8_t *out[] = {buffer.data()};
             int converted = swr_convert(swr, out, dst_samples,
                                         const_cast<const uint8_t **>(frame->extended_data),
                                         frame->nb_samples);
-            if (converted > 0) {
-                int bytes = converted * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
-                player->notifyAudioData(buffer.data(), bytes, out_pts_ms);
-            } else if (converted < 0) {
-                // 重采样失败不可恢复：记录后终止，交给 report_read_outcome 统一上报
-                fatal_decode_ret = converted;
-                av_frame_unref(frame);
+            bool ok = push_resampled(converted, buffer.data(), out_pts_ms);
+            av_frame_unref(frame);
+            if (!ok) {
+                return false;
+            }
+            (void) flushing;
+        }
+        return true;
+    };
+
+    while (!player->stop_requested.load()) {
+        player->waitForResumeOrSeek();
+        if (player->stop_requested.load()) {
+            break;
+        }
+        if (consume_pending_seek(player, &media) && packet_pending) {
+            // seek 后旧代次的 packet 必须丢弃，不得再提交给解码器
+            av_packet_unref(packet);
+            packet_pending = false;
+        }
+        if (player->pause_requested.load()) {
+            // 仍处于暂停状态（seek 已消费），回到等待，避免向暂停的 AudioTrack 灌数据
+            continue;
+        }
+
+        // packet_pending 为 true 时跳过读取，直接重新提交上一轮被 EAGAIN 拒绝的同一个 packet
+        if (!packet_pending) {
+            arm_io_deadline(player, IO_READ_TIMEOUT_US);
+            int read_ret = av_read_frame(media.format, packet);
+            arm_io_deadline(player, 0);
+            if (read_ret < 0) {
+                // 保存返回值：只有 AVERROR_EOF 才是正常结束，其余负值必须按错误上报
+                last_read_ret = read_ret;
                 break;
             }
-            av_frame_unref(frame);
+            if (packet->stream_index != media.stream_index) {
+                av_packet_unref(packet);
+                continue;
+            }
+        }
+
+        ret = avcodec_send_packet(media.codec, packet);
+        if (ret == AVERROR(EAGAIN)) {
+            // 解码器缓冲已满：**不得释放该 packet**，先取帧腾出空间后重新提交同一个 packet
+            packet_pending = true;
+        } else if (ret < 0) {
+            // 送包失败不可恢复：记录后退出读取循环，禁止后续按 EOF 上报播放完成
+            av_packet_unref(packet);
+            packet_pending = false;
+            fatal_decode_ret = ret;
+            break;
+        } else {
+            av_packet_unref(packet);
+            packet_pending = false;
+        }
+
+        if (!drain_audio_frames(false)) {
+            break;
         }
         if (fatal_decode_ret < 0) {
             // 内层解码/重采样发生致命错误：退出读取循环，避免继续读到 EOF 后误报播放完成
             break;
         }
+    }
+
+    if (packet_pending) {
+        av_packet_unref(packet);
+        packet_pending = false;
+    }
+
+    // demux EOF 不等于解码器与重采样器已排空：AAC 编码延迟与 SWR 缓存都会留下尾部样本。
+    // 必须依次排空解码器和 SWR，否则尾音会被截断。
+    if (last_read_ret == AVERROR_EOF && fatal_decode_ret >= 0 &&
+        !player->stop_requested.load()) {
+        if (avcodec_send_packet(media.codec, nullptr) >= 0) {
+            drain_audio_frames(true);
+        }
+        player->audio_decoder_drained = true;
+
+        // 排空 SWR 中仍未输出的延迟样本
+        while (!player->stop_requested.load() && fatal_decode_ret >= 0) {
+            int pending = swr_get_out_samples(swr, 0);
+            if (pending <= 0) {
+                break;
+            }
+            int buffer_size = av_samples_get_buffer_size(
+                    nullptr, out_channels, pending, AV_SAMPLE_FMT_S16, 1);
+            if (buffer_size <= 0) {
+                break;
+            }
+            std::vector<uint8_t> buffer(buffer_size);
+            uint8_t *out[] = {buffer.data()};
+            int converted = swr_convert(swr, out, pending, nullptr, 0);
+            if (converted <= 0) {
+                break;
+            }
+            int bytes = converted * out_channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+            player->notifyAudioData(buffer.data(), bytes, player->current_position_ms.load());
+        }
+        player->swr_drained = true;
     }
 
     av_frame_free(&frame);
@@ -1247,6 +1453,33 @@ Java_com_common_player_FfmpegVideoPlayer_nativeIsSeeking(JNIEnv *, jclass, jlong
            ? JNI_TRUE : JNI_FALSE;
 }
 
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_common_player_FfmpegVideoPlayer_nativeIsDecoderDrained(JNIEnv *, jclass, jlong handle) {
+    return reinterpret_cast<VideoPlayer *>(handle)->video_decoder_drained.load()
+           ? JNI_TRUE : JNI_FALSE;
+}
+
+/**
+ * Debug 帧调度统计快照，顺序与 FfmpegVideoPlayer.FrameStats 一致：
+ * 已解码 / 已展示 / 已丢弃 / 最大连续丢帧 / send_packet EAGAIN 次数。
+ */
+extern "C" JNIEXPORT jlongArray JNICALL
+Java_com_common_player_FfmpegVideoPlayer_nativeGetFrameStats(JNIEnv *env, jclass, jlong handle) {
+    auto *player = reinterpret_cast<VideoPlayer *>(handle);
+    jlong values[5] = {
+            player->stat_decoded_frames.load(),
+            player->stat_rendered_frames.load(),
+            player->stat_dropped_frames.load(),
+            player->stat_max_consecutive_drops.load(),
+            player->stat_send_eagain.load(),
+    };
+    jlongArray array = env->NewLongArray(5);
+    if (array != nullptr) {
+        env->SetLongArrayRegion(array, 0, 5, values);
+    }
+    return array;
+}
+
 extern "C" JNIEXPORT jlong JNICALL
 Java_com_common_player_FfmpegVideoPlayer_nativeGetCurrentPosition(JNIEnv *, jclass,
                                                                       jlong handle) {
@@ -1367,6 +1600,14 @@ Java_com_common_player_FfmpegAudioPlayer_nativeSeekTo(JNIEnv *, jclass, jlong ha
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_common_player_FfmpegAudioPlayer_nativeIsSeeking(JNIEnv *, jclass, jlong handle) {
     return reinterpret_cast<AudioPlayer *>(handle)->isSeeking() ? JNI_TRUE : JNI_FALSE;
+}
+
+/** 音频解码器与 SWR 是否均已排空。AudioTrack 是否播完由 Java 侧输出层判断 */
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_common_player_FfmpegAudioPlayer_nativeIsDecoderDrained(JNIEnv *, jclass, jlong handle) {
+    auto *player = reinterpret_cast<AudioPlayer *>(handle);
+    return (player->audio_decoder_drained.load() && player->swr_drained.load())
+           ? JNI_TRUE : JNI_FALSE;
 }
 
 extern "C" JNIEXPORT void JNICALL

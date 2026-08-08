@@ -36,8 +36,6 @@ public final class FfmpegAudioPlayer {
 
     /** 停止中标记：用于打断写入循环，避免 native 线程 join 时死锁 */
     private volatile boolean stopping;
-    /** native 解码线程是否已结束 */
-    private volatile boolean decodeFinished;
     /** 是否存在可解码的音频轨 */
     private volatile boolean audioAvailable = true;
     /** 是否有 seek 请求尚未被解码线程消费 */
@@ -63,7 +61,6 @@ public final class FfmpegAudioPlayer {
         dataSource = pathOrUrl;
         audioErrorNotified = false;
         audioAvailable = true;
-        decodeFinished = false;
         awaitingSeekFlush = false;
         synchronized (clockLock) {
             seekTargetMs = -1L;
@@ -81,7 +78,6 @@ public final class FfmpegAudioPlayer {
             throw new IllegalStateException("Data source is empty.");
         }
         stopping = false;
-        decodeFinished = false;
         nativeStart(requireHandle());
     }
 
@@ -203,18 +199,49 @@ public final class FfmpegAudioPlayer {
         return nativeHandle != 0 && nativeIsSeeking(nativeHandle);
     }
 
-    /** 解码结束且 AudioTrack 中的数据已全部播放完毕 */
-    public boolean isPlaybackFinished() {
-        if (!decodeFinished) {
-            return false;
-        }
+    /**
+     * 音频解码器与 SWR 是否均已排空。
+     *
+     * 这是「音频解码侧是否播完」的唯一权威来源，由 native 解码层提供；
+     * 与 [isOutputDrained] 分开表达——解码排空不代表 AudioTrack 已经把 PCM 播出去。
+     */
+    public boolean isDecoderDrained() {
+        return nativeHandle != 0 && nativeIsDecoderDrained(nativeHandle);
+    }
+
+    /**
+     * AudioTrack 是否已播放完全部写入的 PCM。
+     *
+     * 依据「播放头位置 >= 已写入帧数」判断，而不是 native 音频线程是否结束，
+     * 因此不会截断仍在缓冲区里的尾音。这是音频输出层的唯一权威来源。
+     */
+    public boolean isOutputDrained() {
         AudioTrack track = audioTrack;
         if (track == null) {
+            // 没有建立输出（无音轨或建轨失败）时视为无需等待
             return true;
         }
         synchronized (clockLock) {
             long head = readHeadPositionLocked(track);
             return head < 0L || head >= writtenFrames;
+        }
+    }
+
+    /** 已写入 AudioTrack 的帧数快照，仅用于 Debug 统计 */
+    public long getWrittenFrames() {
+        synchronized (clockLock) {
+            return writtenFrames;
+        }
+    }
+
+    /** AudioTrack 播放头帧数快照，仅用于 Debug 统计；返回负数表示不可读 */
+    public long getPlayedFrames() {
+        AudioTrack track = audioTrack;
+        if (track == null) {
+            return -1L;
+        }
+        synchronized (clockLock) {
+            return readHeadPositionLocked(track);
         }
     }
 
@@ -224,7 +251,6 @@ public final class FfmpegAudioPlayer {
 
     public void seekTo(long positionMs) {
         long target = Math.max(0L, positionMs);
-        decodeFinished = false;
         synchronized (clockLock) {
             seekTargetMs = target;
         }
@@ -423,7 +449,6 @@ public final class FfmpegAudioPlayer {
 
     @SuppressWarnings("unused")
     private void onNativeCompletion() {
-        decodeFinished = true;
         PlayerListener current = listener;
         if (current != null) {
             current.onCompletion();
@@ -580,6 +605,8 @@ public final class FfmpegAudioPlayer {
     private static native void nativeSeekTo(long handle, long positionMs);
 
     private static native boolean nativeIsSeeking(long handle);
+
+    private static native boolean nativeIsDecoderDrained(long handle);
 
     private static native void nativeStop(long handle);
 
