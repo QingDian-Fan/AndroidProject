@@ -11,6 +11,7 @@ import android.view.KeyEvent
 import com.common.share.dialog.ShareDialog
 import com.common.ui.BaseAppBindActivity
 import com.common.utils.ResourcesUtil
+import com.common.utils.ScreenShotUtil
 import com.common.weight.titlebar.CommonTitleBar
 import com.demo.project.R
 import com.demo.project.databinding.ActivityWebBinding
@@ -109,6 +110,8 @@ class WebActivity : BaseAppBindActivity<ActivityWebBinding>() {
             }
             val shareDesc = desc.ifEmpty { shareUrl }
             val dialog = ShareDialog()
+        //    val mBitmap = ScreenShotUtil.shotView(binding.flContainer)
+           // dialog.setBitmapData(mBitmap)
             val coverUrl = covers.firstOrNull().orEmpty()
             if (coverUrl.isNotEmpty()) {
                 dialog.setLinkData(true, shareUrl, coverUrl, shareTitle, shareDesc)

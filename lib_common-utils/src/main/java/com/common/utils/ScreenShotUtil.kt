@@ -113,6 +113,15 @@ object ScreenShotUtil {
         return bitmap
     }
 
+    @JvmStatic
+    fun shotView(mView: View): Bitmap {
+
+        val bitmap = Bitmap.createBitmap(mView.width, mView.height, Bitmap.Config.RGB_565)
+        val canvas = Canvas(bitmap)
+        mView.draw(canvas)
+        return bitmap
+    }
+
     /**
      * ListView截图
      *
