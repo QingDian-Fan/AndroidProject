@@ -59,7 +59,7 @@ class HomeActivity : BaseAppVMActivity<ActivityMainBinding, MainViewModel>() {
             CameraActivity.start(this@HomeActivity)
         }
         binding.btnWebActivity.setOnClickListener {
-            WebActivity.start(this@HomeActivity,"${ANDROID_ASSET_URI}demo.html")
+            WebActivity.start(this@HomeActivity)
         }
         binding.btnBrowseActivity.setOnClickListener {
             WebExplorerActivity.start(this@HomeActivity,"${ANDROID_ASSET_URI}demo.html")

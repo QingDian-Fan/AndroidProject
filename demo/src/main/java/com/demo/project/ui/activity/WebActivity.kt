@@ -26,7 +26,7 @@ class WebActivity : BaseAppBindActivity<ActivityWebBinding>() {
         @JvmStatic
         fun start(
             mContext: Context,
-            urlString: String,
+            urlString: String = DEFAULT_URL,
             titleString: String? = null
         ) {
             val intent = Intent(mContext, WebActivity::class.java)
