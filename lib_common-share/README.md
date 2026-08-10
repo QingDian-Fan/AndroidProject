@@ -12,7 +12,7 @@
 
 - `ShareActivity`: 分享结果回调基础 Activity。
 - `ShareFactory`: 渠道创建和分享成功广播。
-- `ShareModel`: 分享内容数据模型。
+- `ShareModel`: 文本、图片、链接和文件分享数据模型。
 - `ShareDialog`: 平台选择弹窗。
 - `QQChannel`、`WeChatChannel`、`WeiBoChannel`、`CustomChannel`: 不同分享渠道实现。
 - `FileShareHelper`、`ShareUtils`: 文件分享和通用分享工具。
@@ -29,3 +29,5 @@
 - 新增平台时优先扩展 `Channel` 体系，避免在业务页面中直接调用平台 SDK。
 - 分享内容统一通过 `ShareModel` 传递，减少字段散落。
 - 第三方 SDK 的 appId、回调 Activity 和 manifest 配置应由接入应用统一确认。
+- 文件分享可通过 `ShareDialog().setFileData(file, mimeType)` 配置；`mimeType` 为空时会根据扩展名推断。
+- 文件必须位于宿主 `<applicationId>.provider` 的 `FileProvider` 可共享路径内。QQ 空间和朋友圈不支持任意文件，因此文件模式下不会展示这两个入口。

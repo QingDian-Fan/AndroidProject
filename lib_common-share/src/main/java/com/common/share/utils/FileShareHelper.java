@@ -7,6 +7,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.TextUtils;
+import android.webkit.MimeTypeMap;
+
+import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,6 +18,47 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public class FileShareHelper {
+
+    private static final String DEFAULT_MIME_TYPE = "application/octet-stream";
+
+    private FileShareHelper() {
+    }
+
+    public static boolean isReadableFile(File file) {
+        return file != null && file.exists() && file.isFile() && file.canRead();
+    }
+
+    public static Uri getShareUri(Context context, File file) {
+        if (context == null || !isReadableFile(file)) {
+            return null;
+        }
+        try {
+            return FileProvider.getUriForFile(
+                    context,
+                    context.getPackageName() + ".provider",
+                    file
+            );
+        } catch (IllegalArgumentException e) {
+            com.common.utils.LogUtil.printStackTrace(e);
+            return null;
+        }
+    }
+
+    public static String resolveMimeType(File file, String mimeType) {
+        if (!TextUtils.isEmpty(mimeType)) {
+            return mimeType;
+        }
+        if (file == null) {
+            return DEFAULT_MIME_TYPE;
+        }
+        String extension = MimeTypeMap.getFileExtensionFromUrl(file.getName());
+        if (TextUtils.isEmpty(extension)) {
+            return DEFAULT_MIME_TYPE;
+        }
+        String resolvedType = MimeTypeMap.getSingleton()
+                .getMimeTypeFromExtension(extension.toLowerCase(java.util.Locale.ROOT));
+        return TextUtils.isEmpty(resolvedType) ? DEFAULT_MIME_TYPE : resolvedType;
+    }
 
 
     public static  String getBitmapPath(Context context, Bitmap bitmap){

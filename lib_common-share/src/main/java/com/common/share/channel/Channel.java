@@ -2,6 +2,8 @@ package com.common.share.channel;
 
 import android.graphics.Bitmap;
 
+import java.io.File;
+
 public interface Channel {
     int WECHAT = 1;
     int WECHAT_TIMELINE = 2;
@@ -23,5 +25,7 @@ public interface Channel {
     void shareBitmap(Bitmap bitmap);
 
     void shareLink(String title, String des, String link, Bitmap bitmap);
+
+    void shareFile(File file, String mimeType);
 
 }

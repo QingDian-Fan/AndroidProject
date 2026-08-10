@@ -1,6 +1,7 @@
 package com.common.share.channel;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -8,6 +9,9 @@ import android.text.TextUtils;
 
 import com.common.share.R;
 import com.common.share.ShareUtils;
+import com.common.share.utils.FileShareHelper;
+
+import java.io.File;
 
 
 public class CustomChannel implements Channel {
@@ -72,5 +76,29 @@ public class CustomChannel implements Channel {
             return;
         }
         shareText(des+"\n"+link);
+    }
+
+    @Override
+    public void shareFile(File file, String mimeType) {
+        if (context == null || context.isFinishing() || !FileShareHelper.isReadableFile(file)) {
+            return;
+        }
+        Uri fileUri = FileShareHelper.getShareUri(context, file);
+        if (fileUri == null) {
+            return;
+        }
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType(FileShareHelper.resolveMimeType(file, mimeType));
+        shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+        shareIntent.putExtra(Intent.EXTRA_TITLE, file.getName());
+        shareIntent.setClipData(ClipData.newRawUri(file.getName(), fileUri));
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        if (!TextUtils.isEmpty(packageName)) {
+            shareIntent.setPackage(packageName);
+        }
+        if (shareIntent.resolveActivity(context.getPackageManager()) == null) {
+            return;
+        }
+        context.startActivity(shareIntent);
     }
 }

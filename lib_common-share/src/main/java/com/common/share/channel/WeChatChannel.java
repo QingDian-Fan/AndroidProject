@@ -13,8 +13,8 @@ import androidx.core.content.FileProvider;
 
 import com.common.share.R;
 import com.common.share.ShareConfig;
-
 import com.common.share.ShareUtils;
+import com.common.share.utils.FileShareHelper;
 import com.common.utils.ResourcesUtil;
 import com.common.utils.Utils;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
@@ -122,6 +122,23 @@ public class WeChatChannel extends CustomChannel {
         req.message = msg;
         req.scene = isTimeLine ? SendMessageToWX.Req.WXSceneTimeline : SendMessageToWX.Req.WXSceneSession;
         iwxapi.sendReq(req);
+    }
+
+    @Override
+    public void shareFile(File file, String mimeType) {
+        if (iwxapi == null || isTimeLine || !FileShareHelper.isReadableFile(file)) {
+            return;
+        }
+        WXFileObject fileObject = new WXFileObject();
+        fileObject.setFilePath(file.getAbsolutePath());
+        WXMediaMessage message = new WXMediaMessage(fileObject);
+        message.title = file.getName();
+        message.description = file.getName();
+        SendMessageToWX.Req request = new SendMessageToWX.Req();
+        request.transaction = buildTransaction("file");
+        request.message = message;
+        request.scene = SendMessageToWX.Req.WXSceneSession;
+        iwxapi.sendReq(request);
     }
 
 

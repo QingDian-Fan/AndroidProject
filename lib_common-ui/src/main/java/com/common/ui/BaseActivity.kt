@@ -6,7 +6,7 @@ import android.view.Window
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
+import com.common.share.ShareActivity
 import com.common.utils.ToastUtil
 
 /**
@@ -16,13 +16,14 @@ import com.common.utils.ToastUtil
  * @description: Activity 基类
  * @since: 1.0.0
  */
-abstract class BaseActivity : AppCompatActivity(), ViewBehavior {
+abstract class BaseActivity : ShareActivity(), ViewBehavior {
 
     protected val TAG: String = this::class.java.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
         super.onCreate(savedInstanceState)
+        initShare()
         initContentView()
         supportActionBar?.hide()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {

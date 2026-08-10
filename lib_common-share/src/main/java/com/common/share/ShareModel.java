@@ -2,10 +2,13 @@ package com.common.share;
 
 import android.graphics.Bitmap;
 
+import java.io.File;
+
 public class ShareModel {
     public static final int TYPE_TEXT = 1;
     public static final int TYPE_BITMAP = 2;
     public static final int TYPE_HTML = 3;
+    public static final int TYPE_FILE = 4;
 
 
     public String title;
@@ -15,6 +18,8 @@ public class ShareModel {
     public int type;
 
     public Bitmap bitmap;
+    public File file;
+    public String mimeType;
 
     /**
      * 分享文本
@@ -79,6 +84,17 @@ public class ShareModel {
         shareModel.link = link;
         shareModel.bitmap = bitmap;
 
+        return shareModel;
+    }
+
+    /**
+     * 分享文件。mimeType 为空时由分享渠道根据扩展名推断。
+     */
+    public static ShareModel shareFile(File file, String mimeType) {
+        ShareModel shareModel = new ShareModel();
+        shareModel.file = file;
+        shareModel.mimeType = mimeType;
+        shareModel.type = TYPE_FILE;
         return shareModel;
     }
 

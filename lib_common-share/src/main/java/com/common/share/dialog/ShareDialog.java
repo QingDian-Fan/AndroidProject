@@ -38,6 +38,7 @@ import com.common.utils.ResourcesUtil;
 import com.common.utils.ToastUtil;
 import com.common.utils.Utils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,13 +104,18 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
             return;
         }
         platformList.clear();
+        boolean isFileShare = shareModel != null && shareModel.type == ShareModel.TYPE_FILE;
         if (IntentUtil.isInstalled(context, Channel.PACKAGE_QQ)) {
             platformList.add(new PlatformData(1, ResourcesUtil.getString(R.string.share_qq), Channel.PACKAGE_QQ, ResourcesUtil.getDrawable(R.drawable.icon_share_qq), Channel.QQ));
-            platformList.add(new PlatformData(2, ResourcesUtil.getString(R.string.share_qzone), Channel.PACKAGE_QQ, ResourcesUtil.getDrawable(R.drawable.icon_share_qzone), Channel.QQ_ZONE));
+            if (!isFileShare) {
+                platformList.add(new PlatformData(2, ResourcesUtil.getString(R.string.share_qzone), Channel.PACKAGE_QQ, ResourcesUtil.getDrawable(R.drawable.icon_share_qzone), Channel.QQ_ZONE));
+            }
         }
         if (IntentUtil.isInstalled(context, Channel.PACKAGE_WECHAT)) {
             platformList.add(new PlatformData(3, ResourcesUtil.getString(R.string.share_wechat), Channel.PACKAGE_WECHAT, ResourcesUtil.getDrawable(R.drawable.icon_share_wechat), Channel.WECHAT));
-            platformList.add(new PlatformData(4, ResourcesUtil.getString(R.string.share_moment), Channel.PACKAGE_WECHAT, ResourcesUtil.getDrawable(R.drawable.icon_share_moment), Channel.WECHAT_TIMELINE));
+            if (!isFileShare) {
+                platformList.add(new PlatformData(4, ResourcesUtil.getString(R.string.share_moment), Channel.PACKAGE_WECHAT, ResourcesUtil.getDrawable(R.drawable.icon_share_moment), Channel.WECHAT_TIMELINE));
+            }
         }
         if (IntentUtil.isInstalled(context, Channel.PACKAGE_WEIBO)) {
             platformList.add(new PlatformData(7, ResourcesUtil.getString(R.string.share_weibo), Channel.PACKAGE_WEIBO, ResourcesUtil.getDrawable(R.drawable.icon_share_weibo), Channel.WEIBO));
@@ -201,6 +207,16 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
         this.title = title;
         this.content = content;
         BITMAP_TYPE = 2;
+        return this;
+    }
+
+    public ShareDialog setFileData(File file) {
+        return setFileData(file, null);
+    }
+
+    public ShareDialog setFileData(File file, String mimeType) {
+        this.shareModel = ShareModel.shareFile(file, mimeType);
+        BITMAP_TYPE = 0;
         return this;
     }
 
@@ -301,6 +317,9 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
                 } else {
                     customChannel.shareLink(shareModel.title, shareModel.des, shareModel.link, null);
                 }
+                break;
+            case ShareModel.TYPE_FILE:
+                customChannel.shareFile(shareModel.file, shareModel.mimeType);
                 break;
         }
     }

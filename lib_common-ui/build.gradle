@@ -49,7 +49,8 @@ dependencies {
 
     implementation project(":lib_common-utils")
     implementation project(":lib_common-theme")
-  //  api project(":lib_common-share")
+    // BaseActivity 的公开父类来自分享模块，需向所有 UI 使用方暴露该依赖。
+    api project(":lib_common-share")
     api project(":lib_common-weight")
     // UI 基类可被 AOP 织入，但不向宿主强传递 AOP；需要 AOP 的宿主显式依赖 lib_common-aop。
     compileOnly project(":lib_common-aop")
