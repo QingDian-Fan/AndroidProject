@@ -1,8 +1,9 @@
 package com.demo.project.ui.dialog
 
+import android.content.ActivityNotFoundException
+import android.content.ClipData
 import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -11,12 +12,14 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView.HORIZONTAL
 import com.common.image.ext.loadImage
 import com.common.share.ShareUtils
+import com.common.share.temp.ShareTempFileStore
+import com.common.share.temp.ShareTempFiles
+import com.common.utils.LogUtil
 import com.common.utils.ResourcesUtil
 import com.common.utils.ScreenShotUtil
 import com.common.utils.ToastUtil.showToast
@@ -24,18 +27,17 @@ import com.common.utils.code.generate.GenerateCodeUtils
 import com.common.utils.ext.gone
 import com.common.utils.ext.visible
 import com.common.utils.moshi.MoshiUtil
-import com.demo.project.BuildConfig
 import com.demo.project.ProjectApplication.Companion.getAppContext
 import com.demo.project.R
 import com.demo.project.databinding.DialogWebShareBinding
 import com.demo.project.ui.adapter.WebShareLogoAdapter
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
 
 class WebShareDialog : AppCompatDialogFragment() {
     companion object {
+        /** 系统分享面板不属于 Channel 中的任何具体三方渠道，仅作为会话的渠道标记 */
+        private const val CHANNEL_SYSTEM_CHOOSER = 0
+
         fun getDialog(
             url: String,
             covers: MutableList<String?>,
@@ -57,6 +59,9 @@ class WebShareDialog : AppCompatDialogFragment() {
     private var url: String? = ""
     private var title: String? = ""
     private var contentString: String? = ""
+
+    /** 防止快速连续点击重复生成临时图片；弹窗关闭即销毁，无需在 onDestroyView 复位 */
+    private var sharing = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -122,10 +127,20 @@ class WebShareDialog : AppCompatDialogFragment() {
             binding.tvContent.text = it
         }
         binding.btnShare.setOnClickListener {
+            if (sharing) return@setOnClickListener
+            sharing = true
             val shareBitmap = ScreenShotUtil.getViewBitmap(binding.cardContainer)
-            shareBitmap?.let {
-                shareBitmap(it,"share-${System.currentTimeMillis()}.png")
+            if (shareBitmap == null) {
+                sharing = false
+                showToast(
+                    getAppContext(),
+                    ResourcesUtil.getString(com.common.share.R.string.share_image_failed),
+                    false,
+                    Gravity.CENTER
+                )
+                return@setOnClickListener
             }
+            shareBitmap(shareBitmap)
             dismissAllowingStateLoss()
         }
         binding.btnSave.setOnClickListener {
@@ -165,37 +180,67 @@ class WebShareDialog : AppCompatDialogFragment() {
         }
     }
 
-    private fun shareBitmap(bitmap: Bitmap, fileName: String) {
-       activity?.apply{
-            // 保存Bitmap到文件
-            val cacheDir: File? = externalCacheDir // 或使用内部缓存 getCacheDir()
-            val file = File(cacheDir, fileName)
-            try {
-                FileOutputStream(file).use { out ->
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out) // PNG或JPEG
-                    out.flush()
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
-                return
-            }
-
-            // 通过FileProvider获取内容URI
-            val contentUri: Uri? = FileProvider.getUriForFile(
-                this,
-                BuildConfig.APPLICATION_ID + ".provider",
-                file
-            )
-
-            // 创建分享Intent
-            val intent = Intent(Intent.ACTION_SEND)
-            intent.setType("image/png") // 根据实际格式调整MIME类型
-            intent.putExtra(Intent.EXTRA_STREAM, contentUri)
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // 临时授权
-
-            // 触发系统分享菜单
-            startActivity(Intent.createChooser(intent, getString(R.string.web_share_chooser_title)))
+    /**
+     * 把分享卡片写入本次分享会话的临时目录，并调起系统分享面板。
+     *
+     * 系统面板无法证明接收方已经读完文件，因此这里不在 [startActivity] 之后立即删除，
+     * 而是进入「安全读取期 + 过期扫描」组合清理；调起失败或生成失败则立即清理半成品。
+     */
+    private fun shareBitmap(bitmap: Bitmap) {
+        val activity = activity ?: return
+        val format = Bitmap.CompressFormat.PNG
+        // 系统面板走 FileProvider content URI，使用内部缓存即可
+        val session = ShareTempFiles.beginSession(activity, CHANNEL_SYSTEM_CHOOSER, false)
+        if (session == null) {
+            notifyShareFailed()
+            return
         }
 
+        val file = ShareTempFiles.writeBitmap(session, bitmap, format, 100)
+        if (file == null) {
+            ShareTempFiles.finishNow(session.sessionId)
+            notifyShareFailed()
+            return
+        }
+
+        val contentUri = ShareTempFiles.shareUri(activity, session, file)
+        if (contentUri == null) {
+            // 无法生成可分享 URI，清理半成品并提示失败，不继续传递空路径
+            ShareTempFiles.finishNow(session.sessionId)
+            notifyShareFailed()
+            return
+        }
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = ShareTempFiles.mimeTypeOf(format)
+            putExtra(Intent.EXTRA_STREAM, contentUri)
+            // 部分接收方只认 ClipData 携带的授权，两者同时设置
+            clipData = ClipData.newRawUri(file.name, contentUri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        val chooser = Intent.createChooser(intent, getString(R.string.web_share_chooser_title))
+        try {
+            activity.startActivity(chooser)
+        } catch (e: ActivityNotFoundException) {
+            // 没有可用目标应用，文件不会被读取，立即清理
+            LogUtil.printStackTrace(e)
+            ShareTempFiles.finishNow(session.sessionId)
+            notifyShareFailed()
+            return
+        }
+        // 面板已调起：预留集中配置的安全读取时间后删除，超时未删也会被过期扫描兜底
+        ShareTempFiles.finishAfterSafeDelay(
+            session.sessionId,
+            ShareTempFileStore.CHOOSER_SAFE_DELETE_DELAY_MILLIS
+        )
+    }
+
+    private fun notifyShareFailed() {
+        showToast(
+            getAppContext(),
+            ResourcesUtil.getString(com.common.share.R.string.share_image_failed),
+            false,
+            Gravity.CENTER
+        )
     }
 }

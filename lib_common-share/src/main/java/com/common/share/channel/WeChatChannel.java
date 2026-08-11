@@ -2,20 +2,21 @@ package com.common.share.channel;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Environment;
 import android.text.TextUtils;
-
-import androidx.core.content.FileProvider;
+import android.view.Gravity;
 
 import com.common.share.R;
 import com.common.share.ShareConfig;
 import com.common.share.ShareUtils;
+import com.common.share.temp.ShareTempFiles;
+import com.common.share.temp.ShareTempSession;
 import com.common.share.utils.FileShareHelper;
+import com.common.utils.LogUtil;
 import com.common.utils.ResourcesUtil;
+import com.common.utils.ToastUtil;
 import com.common.utils.Utils;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 import com.tencent.mm.opensdk.modelmsg.WXFileObject;
@@ -27,8 +28,6 @@ import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class WeChatChannel extends CustomChannel {
     private IWXAPI iwxapi;
@@ -69,9 +68,11 @@ public class WeChatChannel extends CustomChannel {
             return;
         }
         WXImageObject imgObj;
-        String path;
+        // 只有大图需要落盘；小图直接以 Bitmap 传给 SDK，不产生临时文件也就无需清理
+        ShareTempSession session = null;
         if (bitmap.getByteCount() > 1000000) {
-            path = saveImageToLocal(bitmap);
+            session = beginSession();
+            String path = saveImageToLocal(session, bitmap);
             if (TextUtils.isEmpty(path)) {
                 return;
             }
@@ -88,7 +89,7 @@ public class WeChatChannel extends CustomChannel {
         req.transaction = buildTransaction("img");
         req.message = msg;
         req.scene = isTimeLine ? SendMessageToWX.Req.WXSceneTimeline : SendMessageToWX.Req.WXSceneSession;
-        iwxapi.sendReq(req);
+        sendReq(req, session);
     }
 
     @Override
@@ -142,29 +143,75 @@ public class WeChatChannel extends CustomChannel {
     }
 
 
-    public String saveImageToLocal(Bitmap bmp) {
-        if (bmp == null || bmp.isRecycled()) {
+    /** 创建本次微信分享的临时文件会话；低版本微信只认文件路径，优先使用外部缓存目录 */
+    private ShareTempSession beginSession() {
+        ShareTempSession session = ShareTempFiles.beginSession(
+                Utils.INSTANCE.getAppContext(),
+                isTimeLine ? Channel.WECHAT_TIMELINE : Channel.WECHAT,
+                true
+        );
+        if (session == null) {
+            notifyImageFailed();
+        }
+        return session;
+    }
+
+    /**
+     * 把大图写入本次会话目录。
+     *
+     * <p>微信 7.0.13 及以上且系统 7.0 以上时返回 content URI，否则返回文件绝对路径；
+     * 写盘或生成 URI 失败都会立即清理半成品，不会把空路径继续传给 SDK。
+     *
+     * @return 可交给微信的路径或 content URI 字符串；失败返回 {@code null}
+     */
+    public String saveImageToLocal(ShareTempSession session, Bitmap bmp) {
+        if (session == null || bmp == null || bmp.isRecycled()) {
             return null;
         }
-        String storePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "share";// 首先保存图片
-        File appDir = new File(storePath);
-        if (!appDir.exists() && !appDir.mkdirs()) {
-            return null;
-        }
-        String fileName = System.currentTimeMillis() + ".jpg";
-        File file = new File(appDir, fileName);
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            bmp.compress(Bitmap.CompressFormat.JPEG, 90, fos);//通过io流的方式来压缩保存图片
-            fos.flush();
-        } catch (IOException e) {
-            com.common.utils.LogUtil.printStackTrace(e);
+        File file = ShareTempFiles.writeBitmap(session, bmp, Bitmap.CompressFormat.JPEG, 90);
+        if (file == null) {
+            ShareTempFiles.finishNow(session.getSessionId());
+            notifyImageFailed();
             return null;
         }
         if (checkVersionValid(Utils.INSTANCE.getAppContext()) && checkAndroidNotBelowN()) {
-            String fileUri = getFileUri(Utils.INSTANCE.getAppContext(), file);
-            return TextUtils.isEmpty(fileUri) ? null : fileUri;
+            String fileUri = getFileUri(Utils.INSTANCE.getAppContext(), session, file);
+            if (TextUtils.isEmpty(fileUri)) {
+                ShareTempFiles.finishNow(session.getSessionId());
+                notifyImageFailed();
+                return null;
+            }
+            return fileUri;
         }
-        return storePath + File.separator + fileName;
+        return file.getAbsolutePath();
+    }
+
+    /**
+     * 调起微信。
+     *
+     * <p>先登记「等待结果」再 {@code sendReq}，保证微信读取文件期间不会被清理；
+     * {@code sendReq} 返回 false 或抛异常都说明微信不会读取文件，立即清理本次会话。
+     */
+    private void sendReq(SendMessageToWX.Req req, ShareTempSession session) {
+        if (session != null) {
+            ShareTempFiles.setPendingSession(Channel.WECHAT, session);
+        }
+        boolean sent;
+        try {
+            sent = iwxapi.sendReq(req);
+        } catch (Exception e) {
+            LogUtil.printStackTrace(e);
+            sent = false;
+        }
+        if (!sent && session != null) {
+            ShareTempFiles.finishPendingSession(Channel.WECHAT);
+            notifyImageFailed();
+        }
+    }
+
+    private void notifyImageFailed() {
+        ToastUtil.showToast(Utils.INSTANCE.getAppContext(),
+                ResourcesUtil.getString(R.string.share_image_failed), false, Gravity.CENTER);
     }
 
     public boolean checkVersionValid(Context context) { // 判断微信版本是否为7.0.13及以上
@@ -177,23 +224,22 @@ public class WeChatChannel extends CustomChannel {
 
 
     public boolean checkAndroidNotBelowN() {// 判断Android版本是否7.0及以上
-        return android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.N;
+        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N;
     }
 
 
-    public String getFileUri(Context context, File file) {//android7.0以上 获取文件路径
-        if (context == null || file == null) {
+    public String getFileUri(Context context, ShareTempSession session, File file) {//android7.0以上 获取文件路径
+        if (context == null || session == null || file == null) {
             return null;
         }
-        try {
-            Uri contentUri = FileProvider.getUriForFile(context, Utils.INSTANCE.getApplicationId() + ".provider", file);
-            // 授权给微信访问路径
-            context.grantUriPermission("com.tencent.mm", contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);// 这里填微信包名
-            return contentUri.toString();   // contentUri.toString() 即是以"content://"开头的用于共享的路径
-        } catch (IllegalArgumentException e) {
-            com.common.utils.LogUtil.printStackTrace(e);
+        // 由 ShareTempFiles 统一生成并登记 content URI，删除文件后据此撤销临时授权
+        Uri contentUri = ShareTempFiles.shareUri(context, session, file);
+        if (contentUri == null) {
             return null;
         }
+        // 只针对本次 URI 授权给微信，不做目录级或长期授权
+        ShareTempFiles.grantRead(context, contentUri, Channel.PACKAGE_WECHAT);
+        return contentUri.toString();   // contentUri.toString() 即是以"content://"开头的用于共享的路径
     }
 
     private String buildTransaction(final String type) {

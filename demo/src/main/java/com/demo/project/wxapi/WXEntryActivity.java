@@ -4,7 +4,6 @@ import static com.common.share.ShareConfig.WX_APPID;
 import static com.common.share.ShareConfig.WX_APPKEY;
 
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.Gravity;
 import android.view.WindowManager;
 
@@ -13,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.common.share.ShareFactory;
 import com.common.share.channel.Channel;
-import com.common.utils.CacheUtil;
+import com.common.share.temp.ShareTempFiles;
 import com.common.utils.ResourcesUtil;
 import com.common.utils.ToastUtil;
 import com.demo.project.ProjectApplication;
@@ -25,7 +24,6 @@ import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
-import java.io.File;
 import java.util.HashMap;
 
 public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHandler {
@@ -49,6 +47,7 @@ public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHan
     @Override
     public void onResp(BaseResp baseResp) {
         if (baseResp.getType() == WX_LOGIN) {
+            // 登录回调不涉及分享临时文件，不得触发任何清理
             SendAuth.Resp resp = (SendAuth.Resp) baseResp;
             switch (resp.errCode) {
                 case BaseResp.ErrCode.ERR_OK:
@@ -63,7 +62,10 @@ public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHan
                     break;
             }
         } else {
-            CacheUtil.INSTANCE.deleteDir(new File(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "share"));
+            // 分享结果已明确（成功 / 取消 / 拒绝 / 其他错误），微信不会再读取文件，
+            // 按本次会话精准清理，而不是删除外部存储根目录下的整个 /share 目录。
+            // 清理失败不会改变下面的分享结果提示。
+            ShareTempFiles.finishPendingSession(Channel.WECHAT);
             switch (baseResp.errCode) {
                 case BaseResp.ErrCode.ERR_OK://分享成功
                     ShareFactory.sendSuccessAction(Channel.WECHAT);

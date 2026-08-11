@@ -13,6 +13,7 @@
     <string name="share_subject">Share</string>
     <string name="share_web_page">Share webpage</string>
     <string name="share_text_not_supported">Sharing plain text is not supported</string>
+    <string name="share_image_failed">Failed to generate the shared image</string>
     <string name="share_cancel">Share cancelled</string>
     <string name="share_denied">Share denied</string>
     <string name="cancel">Cancel</string>
