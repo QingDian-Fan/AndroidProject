@@ -109,17 +109,17 @@ class WebActivity : BaseAppBindActivity<ActivityWebBinding>() {
                     .ifEmpty { ResourcesUtil.getString(R.string.app_name) }
             }
             val shareDesc = desc.ifEmpty { shareUrl }
-            val dialog = ShareDialog()
-        //    val mBitmap = ScreenShotUtil.shotView(binding.flContainer)
-           // dialog.setBitmapData(mBitmap)
+
+           // val mBitmap = ScreenShotUtil.shotView(binding.flContainer)
+           // ShareDialog().shareBitmapData(mBitmap).show(supportFragmentManager, "")
             val coverUrl = covers.firstOrNull().orEmpty()
             if (coverUrl.isNotEmpty()) {
-                dialog.setLinkData(true, shareUrl, coverUrl, shareTitle, shareDesc)
+                ShareDialog().shareLinkData(true, shareUrl, coverUrl, shareTitle, shareDesc).show(supportFragmentManager, "")
             } else {
                 val bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
-                dialog.setLinkData(true, bitmap, shareUrl, shareTitle, shareDesc)
+                ShareDialog().shareLinkData(true, bitmap, shareUrl, shareTitle, shareDesc).show(supportFragmentManager, "")
             }
-            dialog.show(supportFragmentManager, "")
+
         }
     }
 }

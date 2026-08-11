@@ -138,21 +138,21 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
         });
     }
 
-    public ShareDialog setText(boolean isShow, String text) {
+    public ShareDialog shareText(boolean isShow, String text) {
         this.shareModel = ShareModel.shareText(text);
         this.isShow = isShow;
         BITMAP_TYPE = 0;
         return this;
     }
 
-    public ShareDialog setLinkData(boolean isShow, String shareLink, String imageLink, String linkTitle, String linkContent) {
+    public ShareDialog shareLinkData(boolean isShow, String shareLink, String imageLink, String linkTitle, String linkContent) {
         this.shareModel = ShareModel.shareUrl(linkTitle, linkContent, shareLink, imageLink);
         this.isShow = isShow;
         BITMAP_TYPE = 0;
         return this;
     }
 
-    public ShareDialog setLinkData(boolean isShow, String shareLink, String imageLink, String linkTitle, String linkContent, String title, String content) {
+    public ShareDialog shareLinkData(boolean isShow, String shareLink, String imageLink, String linkTitle, String linkContent, String title, String content) {
         this.shareModel = ShareModel.shareUrl(linkTitle, linkContent, shareLink, imageLink);
         this.isShow = isShow;
         isHeaderShow = true;
@@ -162,14 +162,14 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
         return this;
     }
 
-    public ShareDialog setLinkData(boolean isShow, Bitmap bitmap, String shareLink, String linkTitle, String linkContent) {
+    public ShareDialog shareLinkData(boolean isShow, Bitmap bitmap, String shareLink, String linkTitle, String linkContent) {
         this.shareModel = ShareModel.shareUrl(linkTitle, linkContent, shareLink, bitmap);
         this.isShow = isShow;
         BITMAP_TYPE = 0;
         return this;
     }
 
-    public ShareDialog setLinkData(boolean isShow, Bitmap bitmap, String shareLink, String linkTitle, String linkContent, String title, String content) {
+    public ShareDialog shareLinkData(boolean isShow, Bitmap bitmap, String shareLink, String linkTitle, String linkContent, String title, String content) {
         this.shareModel = ShareModel.shareUrl(linkTitle, linkContent, shareLink, bitmap);
         this.isShow = isShow;
         isHeaderShow = true;
@@ -180,13 +180,13 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
     }
 
 
-    public ShareDialog setBitmapData(Bitmap mBitmap) {
+    public ShareDialog shareBitmapData(Bitmap mBitmap) {
         this.shareModel = ShareModel.shareBitmap(mBitmap);
         BITMAP_TYPE = 1;
         return this;
     }
 
-    public ShareDialog setBitmapData(Bitmap mBitmap, String title, String content) {
+    public ShareDialog shareBitmapData(Bitmap mBitmap, String title, String content) {
         this.shareModel = ShareModel.shareBitmap(mBitmap);
         isHeaderShow = true;
         this.title = title;
@@ -195,13 +195,13 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
         return this;
     }
 
-    public ShareDialog setBitmapData(String imageUrl) {
+    public ShareDialog shareBitmapData(String imageUrl) {
         this.shareModel = ShareModel.shareBitmap(imageUrl);
         BITMAP_TYPE = 2;
         return this;
     }
 
-    public ShareDialog setBitmapData(String imageUrl, String title, String content) {
+    public ShareDialog shareBitmapData(String imageUrl, String title, String content) {
         this.shareModel = ShareModel.shareBitmap(imageUrl);
         isHeaderShow = true;
         this.title = title;
@@ -210,11 +210,11 @@ public class ShareDialog extends DialogFragment implements ShareAdapter.ItemOnCl
         return this;
     }
 
-    public ShareDialog setFileData(File file) {
-        return setFileData(file, null);
+    public ShareDialog shareFileData(File file) {
+        return shareFileData(file, null);
     }
 
-    public ShareDialog setFileData(File file, String mimeType) {
+    public ShareDialog shareFileData(File file, String mimeType) {
         this.shareModel = ShareModel.shareFile(file, mimeType);
         BITMAP_TYPE = 0;
         return this;
