@@ -132,10 +132,15 @@ public final class ShareTempFiles {
         if (context == null || session == null || file == null || !file.exists()) {
             return null;
         }
+        String authority = ShareFileProviders.authorityOf(context);
+        if (authority == null) {
+            LogUtil.e(TAG, "file provider authority unavailable");
+            return null;
+        }
         try {
             Uri uri = FileProvider.getUriForFile(
                     context.getApplicationContext(),
-                    context.getPackageName() + ".provider",
+                    authority,
                     file
             );
             ShareTempFileStore store = SESSION_STORES.get(session.getSessionId());
@@ -144,21 +149,42 @@ public final class ShareTempFiles {
             }
             return uri;
         } catch (IllegalArgumentException e) {
+            // 临时目录不在 file_provider_paths.xml 覆盖范围内时会走到这里
             LogUtil.printStackTrace(e);
             return null;
         }
     }
 
-    /** 只针对本次 URI 授予目标应用读权限，不做目录级或长期授权 */
-    public static void grantRead(Context context, Uri uri, String targetPackage) {
+    /**
+     * 按目标 SDK 的要求校验本次临时图片。
+     *
+     * @param maxBytes 目标 SDK 的大小上限，传 {@code <= 0} 表示不限制
+     */
+    public static ShareImageValidator.Result validateImage(ShareTempSession session, File file,
+                                                           long maxBytes) {
+        ShareTempFileStore store = storeOf(session);
+        if (store == null) {
+            return ShareImageValidator.Result.INVALID_ARGUMENT;
+        }
+        return ShareImageValidator.validate(store, session, file, maxBytes);
+    }
+
+    /**
+     * 只针对本次 URI 授予目标应用读权限，不做目录级、长期或写权限授权。
+     *
+     * @return 是否授权成功；失败只记录日志，由调用方决定是否继续
+     */
+    public static boolean grantRead(Context context, Uri uri, String targetPackage) {
         if (context == null || uri == null || TextUtils.isEmpty(targetPackage)) {
-            return;
+            return false;
         }
         try {
             context.getApplicationContext()
                     .grantUriPermission(targetPackage, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            return true;
         } catch (Exception e) {
             LogUtil.printStackTrace(e);
+            return false;
         }
     }
 
@@ -304,7 +330,8 @@ public final class ShareTempFiles {
         return Math.min(quality, 100);
     }
 
-    private static ShareTempFileStore storeOf(ShareTempSession session) {
+    /** 会话所属的 store；会话已清理或未登记时返回 {@code null} */
+    public static ShareTempFileStore storeOf(ShareTempSession session) {
         return session == null ? null : SESSION_STORES.get(session.getSessionId());
     }
 

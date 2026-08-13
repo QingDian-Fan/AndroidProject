@@ -1,10 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    FileProvider 授权目录，按实际调用方逐条收敛，不使用 path="." 或 <root-path>。
+    authority 由 Manifest 的 ${applicationId}.provider 展开，运行时统一经
+    com.common.share.temp.ShareFileProviders 生成，QQ OpenSDK 初始化使用同一个值。
+
+    调用方对照：
+    - share_temp_cache / share_temp_external_cache：ShareTempFiles，分享临时图片
+      （cacheDir/share_temp、externalCacheDir/share_temp），QQ SDK 也依赖它生成 content URI。
+    - qq_sdk_images：QQ OpenSDK 将无公共存储权限的图片复制到
+      getExternalFilesDir(null)/Images/tmp 后，再通过同一个 FileProvider 交给 QQ。
+    - crash_log：ExceptionHandlerUtil.doShareExceptionFile()，filesDir/crash。
+    - app_log：LogFileUtil.doShareLogFile()，getExternalFilesDir("log")/log。
+-->
 <resources>
-    <external-path name="external" path="."/>
-    <cache-path name="cache" path="." />
-    <external-cache-path name="external_cache" path="." />
-    <external-files-path name="external_files" path="." />
+    <cache-path
+        name="share_temp_cache"
+        path="share_temp" />
+    <external-cache-path
+        name="share_temp_external_cache"
+        path="share_temp" />
     <files-path
-        name="internal_files"
-        path="." />
+        name="crash_log"
+        path="crash" />
+    <external-files-path
+        name="app_log"
+        path="log/log" />
+    <external-files-path
+        name="qq_sdk_images"
+        path="Images/tmp" />
 </resources>

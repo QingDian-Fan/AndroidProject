@@ -7,6 +7,8 @@ import android.webkit.MimeTypeMap;
 
 import androidx.core.content.FileProvider;
 
+import com.common.share.temp.ShareFileProviders;
+
 import java.io.File;
 
 public class FileShareHelper {
@@ -24,12 +26,14 @@ public class FileShareHelper {
         if (context == null || !isReadableFile(file)) {
             return null;
         }
+        // authority 统一由 ShareFileProviders 按运行时包名生成，
+        // 保证与 Manifest ${applicationId}.provider 及 QQ SDK 初始化值完全一致
+        String authority = ShareFileProviders.authorityOf(context);
+        if (authority == null) {
+            return null;
+        }
         try {
-            return FileProvider.getUriForFile(
-                    context,
-                    context.getPackageName() + ".provider",
-                    file
-            );
+            return FileProvider.getUriForFile(context, authority, file);
         } catch (IllegalArgumentException e) {
             com.common.utils.LogUtil.printStackTrace(e);
             return null;
