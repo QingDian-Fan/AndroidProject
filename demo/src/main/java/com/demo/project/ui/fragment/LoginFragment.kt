@@ -19,7 +19,7 @@ class LoginFragment : BaseAppVMFragment<FragmentLoginBinding, LoginViewModel>() 
 
     override fun initialize(savedInstanceState: Bundle?) {
         with(binding) {
-            btnLoginCommit.singleClick {
+            btnLoginCommit.setOnClickListener {
                 val userName = etLoginPhone.text.toString().trim()
                 val password = etLoginPassword.text.toString().trim()
                 viewModel.doLogin(userName, password)

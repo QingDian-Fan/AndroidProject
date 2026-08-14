@@ -1,5 +1,6 @@
 package com.demo.project.repository.remote
 
+import com.common.aop.CheckNet
 import com.common.http.HttpUtils
 import com.common.http.ResponseHolder
 import com.common.http.Result
@@ -10,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 class DataRepoImpl : DataRepo {
 
     companion object {
-        private const val REGISTER_URL = "https://www.wanandroid.com/user/register"
+        private const val REGISTER_URL = "/user/register"
     }
 
     override suspend fun doLogin(

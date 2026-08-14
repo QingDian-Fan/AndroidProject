@@ -1,6 +1,7 @@
 package com.demo.project.vm
 
 import androidx.lifecycle.MutableLiveData
+import com.common.aop.CheckNet
 import com.common.ui.BaseViewModel
 import com.demo.project.R
 import com.demo.project.model.LoginData
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.onStart
 class LoginViewModel : BaseViewModel() {
     val loginInfo by lazy { MutableLiveData<LoginData>() }
     private val mRepo: DataRepo by lazy { DataRepoImpl() }
+    @CheckNet
     fun doLogin(username: String, password: String) {
         if (username.isBlank() || password.isBlank()) {
             showToast(R.string.toast_account_password_empty)
@@ -34,7 +36,7 @@ class LoginViewModel : BaseViewModel() {
         }
     }
 
-
+    @CheckNet
     fun doRegister(username: String, password: String, rePassword: String) {
         if (username.isBlank() || password.isBlank() || rePassword.isBlank()) {
             showToast(R.string.toast_account_password_empty)

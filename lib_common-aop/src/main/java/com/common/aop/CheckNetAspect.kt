@@ -11,8 +11,8 @@ import org.aspectj.lang.annotation.Pointcut
 @Aspect
 class CheckNetAspect {
 
-
-    @Pointcut("execution(@com.common.aop.CheckNet * *(**))")
+    // @Pointcut("execution(@com.common.aop.CheckNet * *(**))")
+    @Pointcut("execution(@com.common.aop.CheckNet * *(..))")
     fun methodCheckNet(){
 
     }
