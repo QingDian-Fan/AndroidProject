@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_common"
     android:orientation="vertical"
     tools:context=".ui.fragment.WebExplorerFragment">
 
@@ -77,6 +78,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_above="@+id/ll_web_bottom"
+        android:background="@color/bg_common"
         android:layout_below="@+id/progress_bar"
         android:layout_weight="1" />
 

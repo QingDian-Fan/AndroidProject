@@ -42,12 +42,14 @@
             android:name=".ui.activity.WebExplorerActivity"
             android:exported="false"
             android:process=":web"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AndroidProject.Web" />
         <activity
             android:name=".ui.activity.WebActivity"
             android:exported="false"
             android:process=":web"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AndroidProject.Web" />
         <activity
             android:name=".ui.activity.VideoPlayerActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"

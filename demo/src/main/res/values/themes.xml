@@ -6,4 +6,10 @@
     </style>
 
     <style name="Theme.AndroidProject" parent="Base.Theme.AndroidProject" />
+
+    <style name="Theme.AndroidProject.Web" parent="Theme.AndroidProject">
+        <item name="android:colorBackground">@color/bg_common</item>
+        <item name="android:windowBackground">@color/bg_common</item>
+        <item name="android:windowDisablePreview">true</item>
+    </style>
 </resources>

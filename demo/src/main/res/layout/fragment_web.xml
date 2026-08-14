@@ -4,6 +4,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_common"
     android:layerType="hardware"
     android:orientation="vertical"
     tools:context=".ui.fragment.WebFragment">
@@ -23,6 +24,7 @@
         android:id="@+id/web_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/bg_common"
         android:focusable="true"
         android:focusableInTouchMode="true" />
 
