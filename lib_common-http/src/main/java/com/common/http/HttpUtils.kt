@@ -11,7 +11,7 @@ import com.common.http.interceptor.ParamsInterceptor
 import com.common.http.interceptor.curl.CurlLogInterceptor
 import com.common.utils.LogUtil
 import com.common.utils.Utils
-
+import kotlinx.coroutines.flow.Flow
 import okhttp3.Cache
 import java.io.File
 import java.lang.reflect.Type
@@ -94,4 +94,15 @@ class HttpUtils {
         type: Type,
         isInfoResponse: Boolean = true
     ): ResponseHolder<T> = httClient.postForm(url, headers, params, type, isInfoResponse)
+
+    @JvmOverloads
+    fun <T> postFlow(
+        url: String,
+        headers: Map<String, String>? = null,
+        params: Map<String, String>? = null,
+        type: Type,
+        isInfoResponse: Boolean = true
+    ): Flow<ResponseHolder<T>> = httClient.requestFlow(type, isInfoResponse) {
+        it.postForm(url, headers ?: emptyMap(), params ?: emptyMap())
+    }
 }

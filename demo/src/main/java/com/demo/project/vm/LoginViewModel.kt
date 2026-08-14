@@ -6,7 +6,9 @@ import com.demo.project.R
 import com.demo.project.model.LoginData
 import com.demo.project.repository.remote.DataRepo
 import com.demo.project.repository.remote.DataRepoImpl
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 
 class LoginViewModel : BaseViewModel() {
     val loginInfo by lazy { MutableLiveData<LoginData>() }
@@ -32,7 +34,7 @@ class LoginViewModel : BaseViewModel() {
 
 
     fun doRegister(username: String, password: String, rePassword: String) {
-        if (username.isBlank() || password.isBlank()) {
+        if (username.isBlank() || password.isBlank() || rePassword.isBlank()) {
             showToast(R.string.toast_account_password_empty)
             return
         }
@@ -41,10 +43,25 @@ class LoginViewModel : BaseViewModel() {
             return
         }
         launchOnUI {
-            showLoadingView(true)
-            delay(500)
-            showLoadingView(false)
-            loginInfo.value = username
+            mRepo.doRegister(username, password, rePassword)
+                .onStart { showLoadingView(true) }
+                .onCompletion { showLoadingView(false) }
+                .collect { response ->
+                    response
+                        .onSuccess {
+                            loginInfo.value = it
+                        }
+                        .onFailure { _, message ->
+                            if (message.isNullOrBlank()) {
+                                showErrorView(true)
+                            } else {
+                                showToast(message)
+                            }
+                        }
+                        .onCatch {
+                            showErrorView(true)
+                        }
+                }
         }
     }
 }

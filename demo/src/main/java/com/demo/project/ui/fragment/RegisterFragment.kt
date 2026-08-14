@@ -21,7 +21,8 @@ class RegisterFragment : BaseAppVMFragment<FragmentRegisterBinding, LoginViewMod
             btnRegisterCommit.singleClick {
                 val userName = etRegisterPhone.text.toString().trim()
                 val password = etRegisterPassword.text.toString().trim()
-                viewModel.doRegister(userName, password, password)
+                val rePassword = etRegisterRepassword.text.toString().trim()
+                viewModel.doRegister(userName, password, rePassword)
             }
         }
 

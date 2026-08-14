@@ -31,6 +31,7 @@
     <string name="login_action">登录</string>
     <string name="login_other_methods">其他方式登录</string>
     <string name="register_action">注册</string>
+    <string name="register_confirm_password_hint">请再次输入密码</string>
     <string name="toast_account_password_empty">账号或密码不能为空</string>
     <string name="toast_password_not_match">两次密码不一致</string>
     <string name="toast_login_success">登录成功：%1$s</string>

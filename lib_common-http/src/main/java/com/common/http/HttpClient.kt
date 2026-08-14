@@ -9,7 +9,6 @@ import com.common.utils.moshi.MoshiUtil
 import com.common.utils.ToastUtil
 import com.common.utils.Utils
 import com.google.gson.JsonParseException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -192,22 +191,17 @@ open class HttpClient : HttpClientBase() {
      * 使用普通的协程访问已经足够满足大部分请求，此处使用Flow请求仅仅作为一个扩展
      * 如需大规模使用Flow，可以按照上述request方式进行扩充
      */
-    @ExperimentalCoroutinesApi
     open fun <T> requestFlow(
         type: Type,
         isInfoResponse: Boolean = true,
         call: suspend (service: RequestService) -> Response<String>
-    ): Flow<ResponseHolder<T>> {
-        return try {
-            flow {
-                val response = call.invoke(getRequestService())
-                emit(parseResponse(response, type, isInfoResponse))
-            }
+    ): Flow<ResponseHolder<T>> = flow {
+        try {
+            val response = call.invoke(getRequestService())
+            emit(parseResponse(response, type, isInfoResponse))
         } catch (cause: Throwable) {
-            flow {
-                val httpError = catchException(cause)
-                emit(ResponseHolder.Error(httpError))
-            }
+            val httpError = catchException(cause)
+            emit(ResponseHolder.Error(httpError))
         }
     }
 
