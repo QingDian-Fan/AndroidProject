@@ -65,7 +65,7 @@
     <string name="audio_state_error">播放出错：%1$s</string>
     <string name="img_is_save">图片已保存</string>
     <!-- 网页菜单弹窗 -->
-    <string name="web_menu_host_tip">网页由wanandroid.com提供</string>
+    <string name="web_menu_host_tip">网页由AndroidProject提供</string>
     <string name="web_menu_share_square">分享到广场</string>
     <string name="web_menu_interrupt">网页拦截</string>
     <!-- 网页分享弹窗 -->
