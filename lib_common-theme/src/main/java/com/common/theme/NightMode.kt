@@ -9,7 +9,7 @@ enum class NightMode(val storageKey: String, val delegateMode: Int) {
 
     companion object {
         fun fromStorageKey(storageKey: String?): NightMode {
-            return values().firstOrNull { it.storageKey == storageKey } ?: FOLLOW_SYSTEM
+            return entries.firstOrNull { it.storageKey == storageKey } ?: FOLLOW_SYSTEM
         }
     }
 }
