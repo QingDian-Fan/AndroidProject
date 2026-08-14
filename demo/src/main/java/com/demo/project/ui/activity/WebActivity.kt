@@ -4,14 +4,17 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.View
 import com.common.share.dialog.ShareDialog
 import com.common.ui.BaseAppBindActivity
 import com.common.utils.ResourcesUtil
-import com.common.utils.ScreenShotUtil
 import com.common.utils.code.generate.GenerateCodeUtils
 import com.common.weight.titlebar.CommonTitleBar
 import com.demo.project.R
@@ -106,27 +109,62 @@ class WebActivity : BaseAppBindActivity<ActivityWebBinding>() {
     }
 
     private fun showShareDialog() {
-        webFragment?.getShareData { url, covers, title, desc ->
-
-
-
-
-            val mBitmap = ScreenShotUtil.shotView(binding.flContainer)
-            ShareDialog().shareBitmapData(mBitmap).show(supportFragmentManager, "")
-            /* val shareUrl = url.ifEmpty { webFragment?.getCurrentUrlString().orEmpty() }
+        val fragment = webFragment ?: return
+        val isShareBitmap = true
+        fragment.getShareData { url, covers, title, desc ->
+            val shareUrl = url.ifEmpty { fragment.getCurrentUrlString() }
             val shareTitle = title.ifEmpty {
-                webFragment?.getCurrentTitleString().orEmpty()
-                    .ifEmpty { ResourcesUtil.getString(R.string.app_name) }
+                fragment.getCurrentTitleString().ifEmpty { getString(R.string.app_name) }
             }
             val shareDesc = desc.ifEmpty { shareUrl }
-            val coverUrl = covers.firstOrNull().orEmpty()
-            if (coverUrl.isNotEmpty()) {
-                ShareDialog().shareLinkData(true, shareUrl, coverUrl, shareTitle, shareDesc).show(supportFragmentManager, "")
-            } else {
-                val bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
-                ShareDialog().shareLinkData(true, bitmap, shareUrl, shareTitle, shareDesc).show(supportFragmentManager, "")
-            }*/
 
+            if (isShareBitmap){
+                val shareBinding = LayoutShareFooterBinding.inflate(LayoutInflater.from(this@WebActivity))
+                val codeBitmap = shareUrl.takeIf { it.isNotEmpty() }
+                    ?.let { GenerateCodeUtils.createQRCodeBitmap(it, null, 1024, 150) }
+                shareBinding.ivCode.setImageBitmap(codeBitmap)
+                shareBinding.title.text = shareTitle
+                shareBinding.tvContent.text = shareDesc
+                val shareBitmap = createShareBitmap(shareBinding.root,binding.flContainer)
+                shareBinding.ivCode.setImageDrawable(null)
+                codeBitmap?.recycle()
+                if (shareBitmap == null) {
+                    showToast(R.string.share_denied)
+                    return@getShareData
+                }
+                ShareDialog().shareBitmapData(shareBitmap).show(supportFragmentManager, "")
+            }else{
+                val coverUrl = covers.firstOrNull().orEmpty()
+                if (coverUrl.isNotEmpty()) {
+                    ShareDialog().shareLinkData(true, shareUrl, coverUrl, shareTitle, shareDesc).show(supportFragmentManager, "")
+                } else {
+                    val bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
+                    ShareDialog().shareLinkData(true, bitmap, shareUrl, shareTitle, shareDesc).show(supportFragmentManager, "")
+                }
+            }
         }
+    }
+
+    private fun createShareBitmap(footerView: View, contentView: View): Bitmap? {
+        val width = contentView.width
+        val contentHeight = contentView.height
+        if (width <= 0 || contentHeight <= 0) return null
+
+        footerView.measure(
+            View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        val footerHeight = footerView.measuredHeight
+        if (footerHeight <= 0) return null
+        footerView.layout(0, 0, width, footerHeight)
+
+        val totalHeight = contentHeight.toLong() + footerHeight
+        if (totalHeight > Int.MAX_VALUE) return null
+        val bitmap = Bitmap.createBitmap(width, totalHeight.toInt(), Bitmap.Config.RGB_565)
+        val canvas = Canvas(bitmap)
+        contentView.draw(canvas)
+        canvas.translate(0f, contentHeight.toFloat())
+        footerView.draw(canvas)
+        return bitmap
     }
 }
