@@ -16,7 +16,9 @@ import com.common.weight.titlebar.CommonTitleBar
 import com.demo.project.R
 import com.demo.project.databinding.ActivityWebBinding
 import com.demo.project.ui.fragment.WebFragment
+import com.dian.annotation.RequireLogin
 
+@RequireLogin
 class WebActivity : BaseAppBindActivity<ActivityWebBinding>() {
 
     companion object {
