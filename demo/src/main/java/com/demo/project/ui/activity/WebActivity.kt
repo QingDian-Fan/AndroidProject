@@ -12,9 +12,11 @@ import com.common.share.dialog.ShareDialog
 import com.common.ui.BaseAppBindActivity
 import com.common.utils.ResourcesUtil
 import com.common.utils.ScreenShotUtil
+import com.common.utils.code.generate.GenerateCodeUtils
 import com.common.weight.titlebar.CommonTitleBar
 import com.demo.project.R
 import com.demo.project.databinding.ActivityWebBinding
+import com.demo.project.databinding.LayoutShareFooterBinding
 import com.demo.project.ui.fragment.WebFragment
 import com.dian.annotation.RequireLogin
 
@@ -105,7 +107,11 @@ class WebActivity : BaseAppBindActivity<ActivityWebBinding>() {
 
     private fun showShareDialog() {
         webFragment?.getShareData { url, covers, title, desc ->
-           val mBitmap = ScreenShotUtil.shotView(binding.flContainer)
+
+
+
+
+            val mBitmap = ScreenShotUtil.shotView(binding.flContainer)
             ShareDialog().shareBitmapData(mBitmap).show(supportFragmentManager, "")
             /* val shareUrl = url.ifEmpty { webFragment?.getCurrentUrlString().orEmpty() }
             val shareTitle = title.ifEmpty {

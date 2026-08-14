@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.os.Bundle
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
+import com.common.auth.AuthManager
 import com.common.ui.BaseAppBindActivity
 import com.common.utils.ext.gone
 import com.common.utils.ext.visible
@@ -25,7 +26,7 @@ class LoginActivity : BaseAppBindActivity<ActivityLoginBinding>() {
         fun start(mContext: Context) {
             val intent = Intent(mContext, LoginActivity::class.java).apply {
                 if (mContext !is Activity) {
-                    flags=FLAG_ACTIVITY_NEW_TASK
+                    flags = FLAG_ACTIVITY_NEW_TASK
                 }
             }
             mContext.startActivity(intent)
@@ -35,6 +36,7 @@ class LoginActivity : BaseAppBindActivity<ActivityLoginBinding>() {
     override fun getLayoutId(): Int = R.layout.activity_login
 
     override fun initialize(savedInstanceState: Bundle?) {
+        AuthManager.logout()
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.fragmentContainerView) as NavHostFragment
 
@@ -55,7 +57,11 @@ class LoginActivity : BaseAppBindActivity<ActivityLoginBinding>() {
     private fun changeTitleBar(isLoginPage: Boolean) {
         if (isLoginPage) {
             setPageTitle(getString(R.string.login_action))
-            getTitleBarView()?.setRightText(getString(R.string.register_action), Color.parseColor("#FF40A9FF"), ScreenUtils.dp2PxInt(this, 16f))
+            getTitleBarView()?.setRightText(
+                getString(R.string.register_action),
+                Color.parseColor("#FF40A9FF"),
+                ScreenUtils.dp2PxInt(this, 16f)
+            )
             getTitleBarView()?.getRightTextView()?.visible()
         } else {
             setPageTitle(getString(R.string.register_action))
