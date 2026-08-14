@@ -12,6 +12,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <com.common.scan.view.ActionIconView
+        android:id="@+id/iv_close"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_gravity="center_horizontal"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="@dimen/dp_50"
+        android:layout_marginStart="@dimen/dp_25"
+        android:background="@drawable/bg_button_radius_max"
+        android:gravity="center"
+        android:padding="5dp"
+        android:src="@mipmap/icon_code_close" />
+
     <com.common.weight.CameraButtonView
         android:id="@+id/captureButton"
         android:layout_width="@dimen/dp_80"

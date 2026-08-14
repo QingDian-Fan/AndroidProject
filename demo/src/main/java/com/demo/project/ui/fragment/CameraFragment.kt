@@ -58,12 +58,14 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
     override fun getLayoutId(): Int = R.layout.fragment_camera
 
     override fun initialize(savedInstanceState: Bundle?) {
+
         setupCaptureButton()
         setupSwitchCameraButton()
         // LivePermissions.getInstance() 内部用 commitNow() 添加保留 Fragment，
         // 而此刻宿主 FragmentManager 正在执行事务（正在创建本 Fragment），直接调用会抛
         // “FragmentManager is already executing transactions”。post 到事务结束后再申请。
         binding.root.post { requestPermissionThenStart() }
+        binding.ivClose.setOnClickListener { activity?.onBackPressed() }
     }
 
     /**
@@ -72,7 +74,7 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
      */
     private fun requestPermissionThenStart() {
         val activity = activity as? AppCompatActivity ?: return
-        LivePermissions.Companion.getInstance(activity)
+        LivePermissions.getInstance(activity)
             .addInterceptor(DefaultPermissionInterceptor())
             .request(
                 Manifest.permission.CAMERA,
@@ -170,7 +172,11 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
             ContextCompat.getMainExecutor(context),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    com.common.utils.LogUtil.e("CameraX", "Photo capture failed: ${exc.message}", exc)
+                    com.common.utils.LogUtil.e(
+                        "CameraX",
+                        "Photo capture failed: ${exc.message}",
+                        exc
+                    )
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
@@ -259,6 +265,7 @@ class CameraFragment : BaseAppBindFragment<FragmentCameraBinding>() {
                 val seconds = elapsedTime % 60
                 binding.recordTimer.text = String.format("%02d:%02d", minutes, seconds)
             }
+
             override fun onFinish() {}
         }.start()
     }
