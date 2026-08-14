@@ -2,8 +2,9 @@ package com.common.utils.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.core.MultiProcessDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.PreferencesFileSerializer
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.common.utils.Utils
 import kotlinx.coroutines.CoroutineScope
@@ -17,7 +18,8 @@ object AppDataStore {
     fun init(context: Context = Utils.getAppContext()) {
         if (::dataStore.isInitialized) return
 
-        dataStore = PreferenceDataStoreFactory.create(
+        dataStore = MultiProcessDataStoreFactory.create(
+            serializer = PreferencesFileSerializer,
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
             produceFile = {
                 context.applicationContext
