@@ -33,7 +33,7 @@ class DebugDialog : DialogFragment() {
         val mTvTitle = mView.findViewById<AppCompatTextView>(R.id.tv_title)
         val mEtInput = mView.findViewById<AppCompatEditText>(R.id.et_input)
         mTvTitle.text = ResourcesUtil.getString(R.string.text_schema)
-        mEtInput.setText("demo://web?link_url=https://www.wanandroid.com")
+        mEtInput.setText("demo://login")
         mTvConfirm.singleClick {
             if (!TextUtils.isEmpty(mEtInput.text.toString().trim())) {
                 SchemeUtils.toOpenActivity(requireContext(), Uri.parse(mEtInput.text.toString().trim()) )

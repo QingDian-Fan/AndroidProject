@@ -58,7 +58,6 @@ class WebMenuDialog : AppCompatDialogFragment() {
         binding.dialogWebMenuIvDismiss.setOnClickListener {
             dismissAllowingStateLoss()
         }
-
         binding.dialogWebMenuIvCollect.setOnClickListener {
             listener?.onCollect()
         }

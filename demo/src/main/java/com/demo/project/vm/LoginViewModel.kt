@@ -19,8 +19,10 @@ class LoginViewModel : BaseViewModel() {
             return
         }
         launchOnUI {
+            showLoadingView(true)
             mRepo.doLogin(username, password)
                 .onSuccess {
+                    showLoadingView(false)
                     loginInfo.value = it
                 }
                 .onFailure { _, _ ->
