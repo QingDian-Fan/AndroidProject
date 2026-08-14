@@ -1,5 +1,8 @@
 package com.demo.project.ui.fragment
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
@@ -10,11 +13,16 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.core.net.toUri
 import com.common.theme.NightMode
 import com.common.theme.NightModeManager
 import com.common.ui.BaseAppBindFragment
 import com.common.utils.InputMethodUtils
+import com.common.utils.IntentUtil
+import com.common.utils.ResourcesUtil
+import com.common.utils.ext.gone
 import com.common.utils.ext.showAllowStateLoss
+import com.common.utils.ext.visible
 import com.common.weight.webview.bean.WebDataEntry
 import com.common.weight.webview.callback.IWebMenuListener
 import com.common.weight.webview.callback.LoadProgressCallBack
@@ -28,8 +36,6 @@ import com.demo.project.ui.dialog.WebMenuDialog
 import com.demo.project.ui.dialog.WebShareDialog
 import com.demo.project.web.WebViewDarkModeHelper
 import com.demo.project.web.WebViewDarkModeHelper.Mode
-import androidx.core.net.toUri
-import com.common.utils.ResourcesUtil
 
 class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), WebViewCallBack {
 
@@ -37,6 +43,8 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
         const val KEY_URL_DATA = "KEY_URL_DATA"
         private const val EXTRA_URL = "urlString"
         private const val DEFAULT_URL = "https://www.wanandroid.com"
+
+        private const val SEARCH_ENGINE_URL = "https://www.baidu.com/s?wd="
 
         @JvmStatic
         fun getFragment() = WebExplorerFragment()
@@ -109,6 +117,19 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
                 CollectWebPageUtil.collectWebPage(webEntry)
             } else {
                 CollectWebPageUtil.removeCollectWebPage(webEntry)
+            }
+        }
+        binding.tvCopyLink.setOnClickListener {
+            val clipboardManager =
+                context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager?
+            clipboardManager?.setPrimaryClip(ClipData.newPlainText("url", binding.webView.url.orEmpty()))
+            showToast(getString(R.string.text_copy_success))
+        }
+        binding.tvOpenBrowser.setOnClickListener {
+            context?.let {
+                if (binding.webView.url.orEmpty().startsWith("http")){
+                    IntentUtil.openBrowser(it,binding.webView.url.orEmpty())
+                }
             }
         }
         binding.ivMenu.setOnClickListener {
@@ -192,11 +213,16 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
             }
         }
         binding.ivInto.setOnClickListener {
-            val url = binding.etTitle.text.toString().trim()
+            var url = binding.etTitle.text.toString().trim()
             if (url.isNotEmpty()) {
+                if (url.startsWith("www.")){
+                    url+="http://"
+                }
                 val uri = url.toUri()
                 if (uri.scheme == "http" || uri.scheme == "https") {
                     binding.webView.loadUrl(url)
+                }else{
+                    binding.webView.loadUrl("${SEARCH_ENGINE_URL}${url}")
                 }
             }
             binding.etTitle.clearFocus()
@@ -224,10 +250,13 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
         binding.etTitle.tag = binding.webView.url
         if (binding.etTitle.hasFocus()) {
             binding.etTitle.setText(binding.webView.url)
+            binding.llEditMenu.visible()
         } else if (!TextUtils.isEmpty(binding.webView.title)) {
             binding.etTitle.setText(binding.webView.title)
+            binding.llEditMenu.gone()
         } else {
             binding.etTitle.setText(binding.webView.url)
+            binding.llEditMenu.gone()
         }
     }
 

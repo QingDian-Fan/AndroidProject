@@ -75,4 +75,7 @@
     <string name="web_share_chooser_title">分享图片</string>
     <string name="share_cancel">分享取消</string>
     <string name="share_denied">分享失败</string>
+    <string name="text_copy_link">复制链接</string>
+    <string name="text_onpen_in_browser">浏览器打开</string>
+    <string name="text_copy_success">复制成功</string>
 </resources>

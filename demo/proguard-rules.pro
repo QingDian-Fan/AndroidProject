@@ -93,3 +93,8 @@
 #   OpenCV JNI / 扫码           -> lib_common-scan
 #   FFmpeg JNI                  -> lib_common-player
 #   Parcelable / 图片选择入口   -> lib-common-media-picker
+
+
+# 保证实体类不被混淆
+-keep class com.demo.project.model.** { *; }
+
