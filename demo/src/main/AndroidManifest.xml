@@ -41,10 +41,12 @@
         <activity
             android:name=".ui.activity.WebExplorerActivity"
             android:exported="false"
+            android:process=":web"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.WebActivity"
             android:exported="false"
+            android:process=":web"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.activity.VideoPlayerActivity"
@@ -115,6 +117,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_provider_paths" />
         </provider>
+
+        <service
+            android:name=".web.ipc.MainCommandService"
+            android:exported="false" />
 
         <activity
             android:name=".wxapi.WXEntryActivity"
