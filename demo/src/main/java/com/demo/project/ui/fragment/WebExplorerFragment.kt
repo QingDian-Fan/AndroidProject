@@ -46,7 +46,8 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
         private const val EXTRA_URL = "urlString"
         private const val DEFAULT_URL = "https://www.wanandroid.com"
 
-        private const val SEARCH_ENGINE_URL = "https://www.baidu.com/s?wd="
+        private const val SEARCH_BAIDU_ENGINE_URL = "https://www.baidu.com/s?wd="
+        private const val SEARCH_GOOGLE_ENGINE_URL = "https://www.google.com/search?q="
 
         @JvmStatic
         fun getFragment() = WebExplorerFragment()
@@ -263,7 +264,7 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
         if (Patterns.WEB_URL.matcher(addressWithScheme).matches()) {
             return addressWithScheme
         }
-        return "$SEARCH_ENGINE_URL${Uri.encode(input)}"
+        return "$SEARCH_BAIDU_ENGINE_URL${Uri.encode(input)}"
     }
 
     override fun pageStarted(url: String?) {
