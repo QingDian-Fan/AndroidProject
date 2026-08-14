@@ -85,7 +85,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/rl_search_header"
-        android:background="@color/white"
+        android:background="@color/bg_common"
         android:orientation="horizontal"
         android:visibility="gone">
 

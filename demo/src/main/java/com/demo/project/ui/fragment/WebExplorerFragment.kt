@@ -4,8 +4,10 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Patterns
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -213,18 +215,8 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
             }
         }
         binding.ivInto.setOnClickListener {
-            var url = binding.etTitle.text.toString().trim()
-            if (url.isNotEmpty()) {
-                if (url.startsWith("www.")){
-                    url+="http://"
-                }
-                val uri = url.toUri()
-                if (uri.scheme == "http" || uri.scheme == "https") {
-                    binding.webView.loadUrl(url)
-                }else{
-                    binding.webView.loadUrl("${SEARCH_ENGINE_URL}${url}")
-                }
-            }
+            val input = binding.etTitle.text.toString().trim()
+            if (input.isNotEmpty()) binding.webView.loadUrl(resolveInputUrl(input))
             binding.etTitle.clearFocus()
         }
         binding.etTitle.setOnEditorActionListener(object : TextView.OnEditorActionListener {
@@ -258,6 +250,20 @@ class WebExplorerFragment : BaseAppBindFragment<FragmentH5ContainerBinding>(), W
             binding.etTitle.setText(binding.webView.url)
             binding.llEditMenu.gone()
         }
+    }
+
+    private fun resolveInputUrl(input: String): String {
+        val uri = input.toUri()
+        val isHttpUrl = uri.host?.isNotEmpty() == true &&
+            (uri.scheme.equals("http", ignoreCase = true) ||
+                uri.scheme.equals("https", ignoreCase = true))
+        if (isHttpUrl) return input
+
+        val addressWithScheme = "https://$input"
+        if (Patterns.WEB_URL.matcher(addressWithScheme).matches()) {
+            return addressWithScheme
+        }
+        return "$SEARCH_ENGINE_URL${Uri.encode(input)}"
     }
 
     override fun pageStarted(url: String?) {
